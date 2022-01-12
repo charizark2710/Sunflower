@@ -16,5 +16,5 @@ func SignToken(payload *model.Credential, secrect string) (string, error) {
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, credential)
 		return token.SignedString([]byte(secrect))
 	}
-
+	return "", err
 }
