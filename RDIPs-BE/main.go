@@ -1,8 +1,8 @@
 package main
 
 import (
-	mimddlewere "github.com/charizark2710/Automate-Garden/RDIPs-BE/middlewere"
-	"github.com/charizark2710/Automate-Garden/RDIPs-BE/routers"
+	mimddlewere "./middlewere"
+	"./routers"
 	"github.com/gin-gonic/gin"
 )
 
