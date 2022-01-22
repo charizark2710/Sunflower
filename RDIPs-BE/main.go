@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	mimddlewere "github.com/charizark2710/Automate-Garden/RDIPs-BE/middlewere"
+	middleware "github.com/charizark2710/Automate-Garden/RDIPs-BE/middleware"
 	"github.com/charizark2710/Automate-Garden/RDIPs-BE/routers"
 	"github.com/joho/godotenv"
 
@@ -17,8 +17,8 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 	r := gin.Default()
-	r.Use(mimddlewere.SetHeader())
-	r.Use(mimddlewere.Validation())
+	r.Use(middleware.SetHeader())
+	r.Use(middleware.Validation())
 	routers.BaseRouter(r)
 	r.Run(":" + os.Getenv("PORT"))
 }
