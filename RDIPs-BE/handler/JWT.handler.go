@@ -3,7 +3,7 @@ package handler
 import (
 	"fmt"
 
-	"github.com/charizark2710/Automate-Garden/RDIPs-BE/model"
+	"github.com/charizark2710/Sunflower/RDIPs-BE/model"
 	"github.com/golang-jwt/jwt"
 )
 
