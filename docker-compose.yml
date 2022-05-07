@@ -1,0 +1,40 @@
+# Use postgres/example user/password credentials
+version: '3.1'
+
+services:
+  db:
+    env_file:
+      - .env
+    image: postgres
+    restart: always
+    ports:
+      - '${POSTGRES_PORT}:${POSTGRES_PORT}'
+    volumes:
+      - db:/var/lib/postgresql/data
+    networks:
+      - pi4
+  api:
+    env_file:
+      - .env
+    container_name: sunflower_api
+    build:
+      context: ./RDIPs-BE
+      dockerfile: Dockerfile
+      target: production
+    depends_on:
+      - db
+    ports:
+      - '${PORT}:${PORT}'
+    links:
+      - db
+    # volumes:
+    #   - './:/volume_sunflower'
+    networks:
+      - pi4
+volumes:
+  db:
+    driver: local
+
+networks:
+  pi4:
+    driver: bridge
