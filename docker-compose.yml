@@ -13,9 +13,20 @@ services:
       - db:/var/lib/postgresql/data
     networks:
       - pi4
-  api:
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
     env_file:
       - .env
+    ports:
+      - "9090:80"
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+    networks:
+      - pi4
+    links:
+      - db:sunflower
+  api:
     container_name: sunflower_api
     build:
       context: ./RDIPs-BE
@@ -33,8 +44,7 @@ services:
       - pi4
 volumes:
   db:
-    driver: local
-
+  pgadmin:
 networks:
   pi4:
     driver: bridge
