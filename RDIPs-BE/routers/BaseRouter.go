@@ -10,5 +10,5 @@ func InitRouter(router *gin.Engine) {
 			"message": "pong",
 		})
 	})
-	DeviceRouter(router)
+	DevicesRouter(router)
 }

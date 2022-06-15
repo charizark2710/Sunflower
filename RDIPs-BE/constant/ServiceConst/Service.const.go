@@ -5,5 +5,6 @@ import (
 )
 
 var ServicesMap = map[string]interface{}{
-	"/devices": services.GetAllDevices,
+	"GET/devices":  services.GetAllDevices,
+	"POST/devices": services.PostDevice,
 }

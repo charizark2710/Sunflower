@@ -1,11 +1,12 @@
 package routers
 
 import (
-	"github.com/charizark2710/Sunflower/RDIPs-BE/constant"
+	urlconst "github.com/charizark2710/Sunflower/RDIPs-BE/constant/URLConst"
 	"github.com/charizark2710/Sunflower/RDIPs-BE/controller"
 	"github.com/gin-gonic/gin"
 )
 
-func DeviceRouter(router *gin.Engine) {
-	router.GET(constant.GetAllDevices, controller.Controller)
+func DevicesRouter(router *gin.Engine) {
+	router.GET(urlconst.GetAllDevices, controller.Controller)
+	router.POST(urlconst.PostDevice, controller.Controller)
 }

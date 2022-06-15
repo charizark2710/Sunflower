@@ -1,4 +1,4 @@
-package constant
+package LogConstant
 
 const Info = "01000"
 const Warning = "01001"
