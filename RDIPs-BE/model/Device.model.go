@@ -14,15 +14,15 @@ type SysDevice struct {
 // 	return "sys_devices"
 // }
 
-func (m *SysDevice) CreateDevices() error {
-	db := DbHelper.GetDb()
-	if !db.Migrator().HasTable(m) {
-		err := db.Migrator().CreateTable(m)
-		if err != nil {
-			return err
-		}
-		err = db.Save(m).Error
-		return err
-	}
-	return db.Save(m).Error
-}
+// func (m *SysDevice) CreateDevices() error {
+// 	db := DbHelper.GetDb()
+// 	if !db.Migrator().HasTable(m) {
+// 		err := db.Migrator().CreateTable(m)
+// 		if err != nil {
+// 			return err
+// 		}
+// 		err = db.Save(m).Error
+// 		return err
+// 	}
+// 	return db.Save(m).Error
+// }
