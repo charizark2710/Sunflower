@@ -3,8 +3,8 @@ package middleware
 import (
 	"os"
 
-	"github.com/charizark2710/Automate-Garden/RDIPs-BE/handler"
-	"github.com/charizark2710/Automate-Garden/RDIPs-BE/model"
+	"github.com/charizark2710/Sunflower/RDIPs-BE/handler"
+	"github.com/charizark2710/Sunflower/RDIPs-BE/model"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
