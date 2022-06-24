@@ -9,4 +9,6 @@ var ServicesMap = map[string]interface{}{
 	"GET" + urlconst.GetAllDevices:   services.GetAllDevices,
 	"POST" + urlconst.PostDevice:     services.PostDevice,
 	"GET" + urlconst.GetDetailDevice: services.GetDetailDevice,
+	"PUT" + urlconst.PutDetailDevice: services.UpdateDevice,
+	"DELETE" + urlconst.DeleteDevice: services.DeleteDevice,
 }

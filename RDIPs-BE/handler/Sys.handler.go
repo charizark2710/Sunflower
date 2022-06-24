@@ -14,7 +14,7 @@ func getStructType(i interface{}) interface{} {
 func Read(i interface{}) error {
 	db := model.DbHelper.GetDb()
 	model := getStructType(i)
-	err := db.Find(model).Error
+	err := db.Find(model).Where("deleted = ?", true).Error
 	return err
 }
 
@@ -35,6 +35,13 @@ func Create(i interface{}) error {
 func ReadDetail(i interface{}, id string) error {
 	db := model.DbHelper.GetDb()
 	model := getStructType(i)
-	err := db.Where("id = ?", id).First(model).Error
+	err := db.Where("id = ? AND deleted = ?", id, true).First(model).Error
+	return err
+}
+
+func Update(i interface{}, updatedData interface{}) error {
+	db := model.DbHelper.GetDb()
+	model := getStructType(i)
+	err := db.Model(model).Updates(updatedData).Error
 	return err
 }
