@@ -2,11 +2,30 @@
 version: '3.1'
 
 services:
+  rabbitmq:
+    container_name: "rabbitmq"
+    build:
+      context: ./RDIPs-Broker
+      dockerfile: Dockerfile
+    environment:
+      - RABBITMQ_ERLANG_COOKIE=/var/lib/rabbitmq/.erlang.cookie
+      - RABBITMQ_CONFIG_FILES=/etc/rabbitmq/rabbitmq.conf
+      - RABBITMQ_MNESIA_DIR=/var/lib/rabbitmq/mnesia
+      - RABBITMQ_LOG_BASE=/var/log/rabbitmq
+      - RABBITMQ_ENABLED_PLUGINS_FILE=/etc/rabbitmq/enabled_plugins
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+    volumes:
+      - './:/var/lib/rabbitmq'
+    networks:
+      - pi4
   db:
+    container_name: postgres
     env_file:
       - .env
     image: postgres
-    restart: always
+    restart: unless-stopped
     ports:
       - '${POSTGRES_PORT}:${POSTGRES_PORT}'
     volumes:
@@ -14,8 +33,9 @@ services:
     networks:
       - pi4
   pgadmin:
+    container_name: pgadmin4
     image: dpage/pgadmin4
-    restart: always
+    restart: unless-stopped
     env_file:
       - .env
     ports:
@@ -35,16 +55,17 @@ services:
     depends_on:
       - db
     ports:
-      - '${PORT}:${PORT}'
+      - '8080:8080'
     links:
-      - db
-    # volumes:
-    #   - './:/volume_sunflower'
+      - db:sunflower
+    volumes:
+      - './:/srv/www/volume_sunflower'
     networks:
       - pi4
 volumes:
   db:
   pgadmin:
+  api:
 networks:
   pi4:
     driver: bridge
