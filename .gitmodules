@@ -1,0 +1,3 @@
+[submodule "RDIPs-Broker/RDIPs-Broker/dependencies/AMQP-CPP"]
+	path = RDIPs-Broker/RDIPs-Broker/dependencies/AMQP-CPP
+	url = https://github.com/CopernicaMarketingSoftware/AMQP-CPP
