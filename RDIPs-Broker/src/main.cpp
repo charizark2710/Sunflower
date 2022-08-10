@@ -1,12 +1,12 @@
 #include <amqpcpp.h>
 #include <amqpcpp/linux_tcp.h>
 #include <amqpcpp/linux_tcp/tcpchannel.h>
-#include "./connection/MyTcpHandler.cpp"
+#include <connection/MyTcpHandler.h>
 #include <amqpcpp/libev.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
-#include "./connection/connection.cpp"
+#include <connection/connection.h>
 #include <poll.h>
 #include <netdb.h>
 #include <sys/select.h>
@@ -95,8 +95,6 @@ struct hostent *server;
 
 int main(int argc, char const *argv[])
 {
-    int isParent = fork();
-
     MyTcpHandler myHandler;
 
     // address of the server
@@ -123,7 +121,7 @@ int main(int argc, char const *argv[])
     // callback operation when a message was received
     auto messageCb = [&](const AMQP::Message &message, uint64_t deliveryTag, bool redelivered)
     {
-        printf("parent message received %s at %d \n", message.body(), isParent);
+        printf("parent message received %s at %d \n", message.body());
 
         // acknowledge the message
         channel.ack(deliveryTag);
