@@ -6,7 +6,6 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
-#include <connection/connection.h>
 #include <poll.h>
 #include <netdb.h>
 #include <sys/select.h>
@@ -98,7 +97,7 @@ int main(int argc, char const *argv[])
     MyTcpHandler myHandler;
 
     // address of the server
-    AMQP::Address address("amqp://guest:guest@localhost/");
+    AMQP::Address address("amqp://admin:admin@localhost/");
 
     // create a AMQP connection object
     AMQP::TcpConnection connection(&myHandler, address);

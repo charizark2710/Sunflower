@@ -1,7 +1,7 @@
-#include <amqpcpp.h>
-#include <amqpcpp/linux_tcp.h>
-#include <poll.h>
-#include <sys/fcntl.h>
+#pragma once
+ 
+#include <headers.h>
+
 class MyTcpHandler : public AMQP::TcpHandler
 {
 public:
