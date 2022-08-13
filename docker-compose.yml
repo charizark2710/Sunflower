@@ -4,20 +4,33 @@ version: '3.1'
 services:
   rabbitmq:
     container_name: "rabbitmq"
+    restart: unless-stopped
     build:
-      context: ./RDIPs-Broker
-      dockerfile: Dockerfile
+      context: ./RDIPs-Gateway
+      dockerfile: Broker.Dockerfile
     environment:
       - RABBITMQ_ERLANG_COOKIE=/var/lib/rabbitmq/.erlang.cookie
       - RABBITMQ_CONFIG_FILES=/etc/rabbitmq/rabbitmq.conf
-      - RABBITMQ_MNESIA_DIR=/var/lib/rabbitmq/mnesia
+      - RABBITMQ_MNESIA_BASE=/var/lib/rabbitmq/mnesia
       - RABBITMQ_LOG_BASE=/var/log/rabbitmq
       - RABBITMQ_ENABLED_PLUGINS_FILE=/etc/rabbitmq/enabled_plugins
     ports:
       - '5672:5672'
       - '15672:15672'
+      - '1883:1883'
     volumes:
       - './:/var/lib/rabbitmq'
+    networks:
+      - pi4
+  gateway:
+    container_name: "gateway"
+    build:
+      context: ./RDIPs-Gateway
+      dockerfile: Gateway.Dockerfile
+    ports:
+      - '1000:1000'
+    volumes:
+      - './:/var/lib/gateway'
     networks:
       - pi4
   db:
