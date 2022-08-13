@@ -1,5 +1,5 @@
 #pragma once
-
+#include <iostream>
 #include <amqpcpp.h>
 #include <amqpcpp/linux_tcp.h>
 

@@ -22,9 +22,11 @@ int main(int argc, char const *argv[])
 
     // address of the server
     AMQP::Address address("amqp://admin:admin@localhost/");
+    printf("Something %s \n", "OK");
 
     // create a AMQP connection object
     AMQP::TcpConnection connection(&myHandler, address);
+    printf("Connect %s \n", "OK");
 
     AMQP::TcpChannel channel(&connection);
 
@@ -48,12 +50,15 @@ int main(int argc, char const *argv[])
 
         // acknowledge the message
         channel.ack(deliveryTag);
+        // channel.publish(EXCHANGE_NAME, "Test", "OK Confirm");
         usleep(2000);
     };
 
     signal->bind("Test");
 
     signal->listener(messageCb, startCb, errorCb);
+
+    channel.publish(EXCHANGE_NAME, "Test", "TEEST");
 
     auto fds = &myHandler.fds;
 
@@ -70,5 +75,6 @@ int main(int argc, char const *argv[])
             connection.process(fds->fd, AMQP::writable);
         }
     }
+    delete signal;
     return 0;
 }

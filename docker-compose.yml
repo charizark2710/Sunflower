@@ -5,21 +5,22 @@ services:
   rabbitmq:
     container_name: "rabbitmq"
     restart: unless-stopped
+    # command: tail -F /dev/null
     build:
       context: ./RDIPs-Gateway
       dockerfile: Broker.Dockerfile
     environment:
       - RABBITMQ_ERLANG_COOKIE=/var/lib/rabbitmq/.erlang.cookie
       - RABBITMQ_CONFIG_FILES=/etc/rabbitmq/rabbitmq.conf
-      - RABBITMQ_MNESIA_BASE=/var/lib/rabbitmq/mnesia
-      - RABBITMQ_LOG_BASE=/var/log/rabbitmq
+      - RABBITMQ_MNESIA_BASE=/data/mnesia
+      - RABBITMQ_LOG_BASE=/data/log
       - RABBITMQ_ENABLED_PLUGINS_FILE=/etc/rabbitmq/enabled_plugins
     ports:
       - '5672:5672'
       - '15672:15672'
       - '1883:1883'
     volumes:
-      - './:/var/lib/rabbitmq'
+      - ~/.docker-conf/rabbitmq/data/:/data/mnesia
     networks:
       - pi4
   gateway:
@@ -29,8 +30,10 @@ services:
       dockerfile: Gateway.Dockerfile
     ports:
       - '1000:1000'
+    links:
+      - rabbitmq:sfBroker
     volumes:
-      - './:/var/lib/gateway'
+      - './RDIPs-Gateway:/var/lib/gateway'
     networks:
       - pi4
   db:
@@ -72,7 +75,7 @@ services:
     links:
       - db:sunflower
     volumes:
-      - './:/srv/www/volume_sunflower'
+      - './RDIPs-BE:/srv/www/volume_sunflower'
     networks:
       - pi4
 volumes:

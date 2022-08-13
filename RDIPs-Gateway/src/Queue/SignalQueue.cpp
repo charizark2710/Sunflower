@@ -17,8 +17,10 @@ namespace Queue
 
     void SignalQueue::initQueue(std::string name)
     {
+        std::cout << "Init queue \n";
         channel->declareQueue(name);
         channel->setQos(QOS);
+        std::cout << "Init queue Succeed \n";
     }
 
     void SignalQueue::initExchange(std::string name)
@@ -40,5 +42,6 @@ namespace Queue
     void SignalQueue::bind(std::string routingKey)
     {
         channel->bindQueue(EXCHANGE_NAME, QUEUE_NAME, routingKey);
+        std::cout << "succeed \n";
     }
 } // namespace Queue

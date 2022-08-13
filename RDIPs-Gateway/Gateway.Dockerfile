@@ -1,4 +1,4 @@
-FROM gcc:12.1.0
+FROM gcc:9.4.0
 
 WORKDIR /RDIPs-Gateway
 
@@ -11,5 +11,5 @@ USER RDIPs-Gateway
 # Copy broker cpp
 COPY --chown=RDIPs-Gateway:rdips . .
 RUN ./premake5 gmake2
-RUN make config=release -C ./build
+RUN make config=debug -C ./build
 CMD [ "./bin/RDIPs-Gateway" ]
