@@ -12,7 +12,6 @@ namespace Queue
     SignalQueue::~SignalQueue()
     {
         channel->close();
-        delete channel;
     }
 
     void SignalQueue::initQueue(std::string name)
@@ -25,7 +24,7 @@ namespace Queue
 
     void SignalQueue::initExchange(std::string name)
     {
-        channel->declareExchange(name);
+        channel->declareExchange(name, AMQP::topic);
     }
 
     void SignalQueue::listener(std::function<void(const AMQP::Message &message, uint64_t deliveryTag, bool redelivered)> messageCb,

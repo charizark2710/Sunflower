@@ -1,10 +1,13 @@
 #pragma once
- 
+
 #include <headers.h>
+#include <Queue/SignalQueue.h>
 
 class MyTcpHandler : public AMQP::TcpHandler
 {
 public:
+    Queue::SignalQueue *signal;
+    AMQP::TcpChannel *channel;
     struct pollfd fds;
     /**
      *  Method that is called by the AMQP library when a new connection
@@ -16,18 +19,14 @@ public:
         // @todo
         //  add your own implementation, for example initialize things
         //  to handle the connection.
-        // while (!connection->initialized())
-        // {
-        //     printf("Waiting");
-        // }
         return;
     }
 
     /**
-     *  Method that is called by the AMQP library when the TCP connection 
+     *  Method that is called by the AMQP library when the TCP connection
      *  has been established. After this method has been called, the library
      *  still has take care of setting up the optional TLS layer and of
-     *  setting up the AMQP connection on top of the TCP layer., This method 
+     *  setting up the AMQP connection on top of the TCP layer., This method
      *  is always paired with a later call to onLost().
      *  @param  connection      The connection that can now be used
      */
@@ -38,7 +37,7 @@ public:
     }
 
     /**
-     *  Method that is called when the secure TLS connection has been established. 
+     *  Method that is called when the secure TLS connection has been established.
      *  This is only called for amqps:// connections. It allows you to inspect
      *  whether the connection is secure enough for your liking (you can
      *  for example check the server certicate). The AMQP protocol still has
@@ -67,6 +66,37 @@ public:
         //  instance, and start publishing or consuming
 
         // and create a channel
+        printf("Login succeed \n");
+        channel = new AMQP::TcpChannel(connection);
+
+        signal = new Queue::SignalQueue(*channel);
+
+        auto startCb = [](const std::string &consumertag)
+        {
+            std::cout << "consume operation started" << std::endl;
+        };
+
+        // callback function that is called when the consume operation failed
+        auto errorCb = [](const char *message)
+        {
+            std::cout << message << std::endl;
+        };
+
+        // callback operation when a message was received
+        auto messageCb = [&](const AMQP::Message &message, uint64_t deliveryTag, bool redelivered)
+        {
+            printf("parent message received %s \n", message.body());
+
+            // acknowledge the message
+            channel->ack(deliveryTag);
+            // channel->publish(EXCHANGE_NAME, "Test", "OK Confirm");
+        };
+
+        signal->bind("Test");
+
+        signal->listener(messageCb, startCb, errorCb);
+
+        channel->publish(EXCHANGE_NAME, "Test", "TEEST");
     }
 
     /**
@@ -88,7 +118,7 @@ public:
     /**
      *  Method that is called when the AMQP protocol is ended. This is the
      *  counter-part of a call to connection.close() to graceful shutdown
-     *  the connection. Note that the TCP connection is at this time still 
+     *  the connection. Note that the TCP connection is at this time still
      *  active, and you will also receive calls to onLost() and onDetached()
      *  @param  connection      The connection over which the AMQP protocol ended
      */
@@ -96,6 +126,8 @@ public:
     {
 
         printf("CLOSED");
+        delete signal;
+        channel->close();
         // @todo
         //  add your own implementation (probably not necessary, but it could
         //  be useful if you want to do some something immediately after the
@@ -150,6 +182,11 @@ public:
         if (flags == 0)
             return;
         if (flags & AMQP::readable)
+        {
+            fds.fd = fd;
+            fds.events = flags;
+        }
+        if (flags & AMQP::writable)
         {
             fds.fd = fd;
             fds.events = flags;

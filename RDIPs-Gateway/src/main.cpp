@@ -6,7 +6,6 @@
 #include <poll.h>
 #include <netdb.h>
 #include <sys/select.h>
-#include <Queue/SignalQueue.h>
 
 void error(const char *msg)
 {
@@ -21,44 +20,11 @@ int main(int argc, char const *argv[])
     MyTcpHandler myHandler;
 
     // address of the server
-    AMQP::Address address("amqp://admin:admin@localhost/");
-    printf("Something %s \n", "OK");
+    AMQP::Address address("amqp://admin:admin@sfBroker:5672/");
 
     // create a AMQP connection object
     AMQP::TcpConnection connection(&myHandler, address);
     printf("Connect %s \n", "OK");
-
-    AMQP::TcpChannel channel(&connection);
-
-    Queue::SignalQueue *signal = new Queue::SignalQueue(channel);
-
-    auto startCb = [](const std::string &consumertag)
-    {
-        std::cout << "consume operation started" << std::endl;
-    };
-
-    // callback function that is called when the consume operation failed
-    auto errorCb = [](const char *message)
-    {
-        std::cout << message << std::endl;
-    };
-
-    // callback operation when a message was received
-    auto messageCb = [&](const AMQP::Message &message, uint64_t deliveryTag, bool redelivered)
-    {
-        printf("parent message received %s \n", message.body());
-
-        // acknowledge the message
-        channel.ack(deliveryTag);
-        // channel.publish(EXCHANGE_NAME, "Test", "OK Confirm");
-        usleep(2000);
-    };
-
-    signal->bind("Test");
-
-    signal->listener(messageCb, startCb, errorCb);
-
-    channel.publish(EXCHANGE_NAME, "Test", "TEEST");
 
     auto fds = &myHandler.fds;
 
@@ -66,6 +32,7 @@ int main(int argc, char const *argv[])
     while (true)
     {
         int ret = poll(fds, 1, -1);
+
         if (fds->revents & POLLIN)
         {
             connection.process(fds->fd, AMQP::readable);
@@ -74,7 +41,7 @@ int main(int argc, char const *argv[])
         {
             connection.process(fds->fd, AMQP::writable);
         }
+
     }
-    delete signal;
     return 0;
 }
