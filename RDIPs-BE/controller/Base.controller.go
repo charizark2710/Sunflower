@@ -17,10 +17,11 @@ func Controller(c *gin.Context) {
 		c.JSON(500, "Wrong type of services functions")
 	} else {
 		result, err := fn(c)
-		result.SetMessage(err.Error())
-		result.SetError(err)
 		if err != nil {
+			result.SetMessage(err.Error())
+			result.SetError(err)
 			c.Error(err)
+			return
 		}
 		c.JSON(result.HttpCode, result)
 	}
