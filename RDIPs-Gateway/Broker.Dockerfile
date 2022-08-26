@@ -1,20 +1,21 @@
-FROM rabbitmq:latest as base
+FROM rabbitmq:3.10.7-management-alpine as base
 
 WORKDIR /rabbitmq
 
+RUN addgroup rdips
+RUN addgroup rabbitmq rdips
 
-RUN groupadd -f rdips
 RUN chown -R rabbitmq:rdips /rabbitmq
 RUN chmod -R gu+rwx /rabbitmq
-RUN chown -R rabbitmq:rabbitmq /var/lib/rabbitmq
+RUN chown -R rabbitmq:rdips /var/lib/rabbitmq
 
 RUN mkdir -p /data/log
 RUN mkdir -p /data/mnesia
 
-RUN chown -R rabbitmq:rabbitmq /data/mnesia
+RUN chown -R rabbitmq:rdips /data/mnesia
 RUN chmod -R gu+rwx /data/mnesia
 
-RUN chown -R rabbitmq:rabbitmq /data/log
+RUN chown -R rabbitmq:rdips /data/log
 RUN chmod -R gu+rwx /data/log
 
 USER rabbitmq
