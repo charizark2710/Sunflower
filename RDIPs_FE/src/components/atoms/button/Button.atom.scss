@@ -1,0 +1,43 @@
+// :root {
+//     --primary: #ffca93;
+//   }
+
+.btn {
+  padding: 8px 20px;
+  border-radius: 10px;
+  outline: none;
+  border: none;
+  cursor: pointer;
+  &.MuiButton-root {
+    color: #ffca93;
+  }
+  &.MuiButton-root:hover {
+    border: 2px solid white;
+    color: white;
+  }
+}
+
+.btn--primary {
+  background-color: var(--primary);
+  color: #0d0d0d;
+  border: 1px solid var(--primary);
+}
+
+.btn--outline {
+  &.MuiButton-root {
+    background-color: transparent;
+    padding: 8px 20px;
+    border: 1px solid var(--primary);
+    transition: all 0.3s ease-out;
+  }
+}
+
+.btn--medium {
+  padding: 8px 20px;
+  font-size: 18px;
+}
+
+.btn--large {
+  padding: 12px 26px;
+  font-size: 20px;
+}

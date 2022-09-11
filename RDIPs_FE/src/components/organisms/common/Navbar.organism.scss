@@ -1,0 +1,58 @@
+.navbar {
+    &.MuiAppBar-root {
+        background: #2c2c2c;
+        flex-direction: row;
+        height: 80px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 1.2rem;
+        top: 0;
+    }
+}
+
+.navbar-container {
+    display: flex !important;
+    justify-content: space-between;
+    align-items: center;
+    /* height: 80px; */
+    /* width: 150vw; */
+}
+
+.navbar-logo {
+    color: #ffca93;
+    justify-self: start;
+    margin-left: 20px;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 3rem;
+    display: flex;
+    align-items: center;
+}
+
+.fa-typo3 {
+    margin-left: 0.5rem;
+    font-size: 1.8rem;
+}
+
+.nav-menu {
+    .MuiLink-root {
+        color: #ffca93 !important;
+    }
+    display: flex;
+    grid-template-columns: repeat(4, auto);
+    grid-gap: 30px;
+    list-style: none;
+    text-align: center;
+    justify-content: flex-end;
+    margin-right: 2.5rem;
+    align-items: center;
+}
+
+.fa-bars {
+    color: #ffca93;
+}
+
+.menu-icon {
+    display: none;
+}
