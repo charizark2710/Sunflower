@@ -85,7 +85,9 @@ function NavbarOrganism() {
                 { to: '/#about-us', className: 'nav-Links', onClick: closeMobileMenu, children: 'About Us' },
                 { to: '/#login', className: 'nav-Links-mobile', onClick: closeMobileMenu, children: 'Login' },
             ]} isClick={click} />
-            {button && <ButtonAtom onClick={() => { alert("TEST") }} buttonStyle='btn--outline'>SIGN UP</ButtonAtom>}
+            {button && <ButtonAtom onClick={() => { alert("TEST") }} buttonStyle='btn--outline'>
+              <Typography> SIGN UP </Typography>
+            </ButtonAtom>}
         </AppBar>
     )
 }
