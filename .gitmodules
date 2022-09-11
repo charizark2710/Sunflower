@@ -1,0 +1,9 @@
+[submodule "RDIPs-Gateway/RDIPs-Gateway/dependencies/AMQP-CPP"]
+	path = RDIPs-Gateway/RDIPs-Gateway/dependencies/AMQP-CPP
+	url = https://github.com/CopernicaMarketingSoftware/AMQP-CPP
+[submodule "RDIPs-Gateway/dependencies"]
+	path = RDIPs-Gateway/dependencies
+	url = https://github.com/CopernicaMarketingSoftware/AMQP-CPP
+[submodule "RDIPs-Gateway/dependencies/AMQP-CPP"]
+	path = RDIPs-Gateway/dependencies/AMQP-CPP
+	url = https://github.com/CopernicaMarketingSoftware/AMQP-CPP
