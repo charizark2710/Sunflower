@@ -1,15 +1,19 @@
-import React from 'react';
-import { Router, Route, Routes, BrowserRouter } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Route, Routes, BrowserRouter } from 'react-router-dom';
 
 import './App.scss';
-import Homepage from './components/pages/homepage';
+import Header from './components/pages/common/Header';
+import TempPage from './components/pages/temp.page';
 function App() {
   return (
+    <>
+      <Header />
       <BrowserRouter>
         <Routes>
-          <Route path='/' element={<Homepage/>} />
+          <Route path='/' element={<TempPage />} />
         </Routes>
       </BrowserRouter>
+    </>
   );
 }
 
