@@ -4,10 +4,15 @@ import './Link.molecules.scss'
 
 export const LinkMolecules = ({ links, isClick, children }) => {
     return (
-        <div className={isClick ? 'nav-menu active' : 'nav-menu'}>
+        <div className={isClick ? 'link-menu active' : 'link-menu'}>
             {links.map((link) => {
                 return (
-                    <div className={'nav-item'}>
+                    <div key={link.to} style={{
+                        display: 'flex',
+                        width: `calc(100%/${links.length})`,
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}>
                         <LinkAtom
                             to={link.to}
                             onClick={link.onClick}
@@ -18,6 +23,6 @@ export const LinkMolecules = ({ links, isClick, children }) => {
                     </div>)
             })}
             {children}
-        </div>
+        </div >
     )
 };

@@ -1,6 +1,8 @@
-// :root {
-//     --primary: #ffca93;
-//   }
+/* Todo: back color default
+**:root {
+**     --primary: #ffca93;
+**   }
+*/
 
 .btn {
   padding: 8px 20px;
@@ -9,7 +11,7 @@
   border: none;
   cursor: pointer;
   &.MuiButton-root {
-    color: #ffca93;
+    color: #E2E8F6;
   }
   &.MuiButton-root:hover {
     border: 2px solid white;
@@ -29,6 +31,15 @@
     padding: 8px 20px;
     border: 1px solid var(--primary);
     transition: all 0.3s ease-out;
+    
+  }
+}
+
+.btn--login {
+  &.MuiButton-root:hover {
+    color: white;
+    border: 0px;
+    background-color: rgba(255, 255, 255, 0.5);
   }
 }
 

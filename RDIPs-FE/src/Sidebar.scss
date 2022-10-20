@@ -1,0 +1,21 @@
+.App{
+    width: 200px;
+    height:85vh;
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: center;
+    justify-content: center;
+    background-color: brown;
+  }
+  
+  body{
+    margin: 0%;
+    padding: 0%;
+  }
+  
+
+  .Sidebar{
+    height: 100%;
+    width: 150px;
+    background-color: aqua;
+  }

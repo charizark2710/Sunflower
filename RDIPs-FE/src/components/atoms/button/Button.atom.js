@@ -2,7 +2,7 @@ import React from 'react';
 import './Button.atom.scss';
 import { Button } from '@mui/material';
 
-const STYLES = ['btn--primary', 'btn--outline'];
+const STYLES = ['btn--primary', 'btn--outline', 'btn--login'];
 
 const SIZES = ['btn--medium', 'btn--large'];
 

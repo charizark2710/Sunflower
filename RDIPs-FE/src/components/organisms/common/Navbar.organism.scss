@@ -35,19 +35,6 @@
     font-size: 1.8rem;
 }
 
-.nav-menu {
-    .MuiLink-root {
-        color: #ffca93 !important;
-    }
-    display: flex;
-    grid-template-columns: repeat(4, auto);
-    grid-gap: 30px;
-    list-style: none;
-    text-align: center;
-    justify-content: flex-end;
-    margin-right: 2.5rem;
-    align-items: center;
-}
 
 .fa-bars {
     color: #ffca93;

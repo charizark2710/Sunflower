@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
+import './Temp.page.scss'
 function TempPage() {
     return (
-        <div>TEST</div>
+        <div className="Sidebar" > Thấy thì mất 5 nghìn</div>
     )
 }
 

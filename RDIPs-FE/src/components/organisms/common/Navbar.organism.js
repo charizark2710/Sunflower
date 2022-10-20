@@ -2,7 +2,6 @@ import { AppBar, IconButton, Toolbar, Typography } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { ButtonAtom } from '../../atoms/button/Button.atom';
 import './Navbar.organism.scss';
 import { LinkMolecules } from '../../molecules/link-molecules/Link.molecules';
@@ -80,14 +79,19 @@ function NavbarOrganism() {
                 </Typography> */}
             </Toolbar>
             <LinkMolecules links={[
-                { to: '/', className: 'nav-Links', onClick: closeMobileMenu, children: 'Home' },
-                { to: '/#discover', className: 'nav-Links', onClick: closeMobileMenu, children: 'Discover' },
-                { to: '/#about-us', className: 'nav-Links', onClick: closeMobileMenu, children: 'About Us' },
-                { to: '/#login', className: 'nav-Links-mobile', onClick: closeMobileMenu, children: 'Login' },
+                { to: '/', className: 'link-item', onClick: closeMobileMenu, children: 'Home' },
+                { to: '/#discover', className: 'link-item', onClick: closeMobileMenu, children: 'Discover' },
+                { to: '/#about-us', className: 'link-item', onClick: closeMobileMenu, children: 'About Us' },
+               
             ]} isClick={click} />
+            <div>
             {button && <ButtonAtom onClick={() => { alert("TEST") }} buttonStyle='btn--outline'>
               <Typography> SIGN UP </Typography>
             </ButtonAtom>}
+            {button && <ButtonAtom onClick={() =>{ alert("go") }} buttonStyle='btn--login'>
+            <Typography> Login </Typography>
+            </ButtonAtom>}</div>
+           
         </AppBar>
     )
 }
