@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/charizark2710/Sunflower/RDIPs-BE/handler"
-	"github.com/charizark2710/Sunflower/RDIPs-BE/model"
+	commonModel "github.com/charizark2710/Sunflower/RDIPs-BE/model/common"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -27,7 +27,7 @@ func Validation() gin.HandlerFunc {
 				c.AbortWithStatus(500)
 				return
 			}
-			token, signError := handler.SignToken(&model.Credential{UserName: "test", OtherInfo: "", ID: tokenID}, secret)
+			token, signError := handler.SignToken(&commonModel.Credential{UserName: "test", OtherInfo: "", ID: tokenID}, secret)
 			if signError != nil {
 				c.AbortWithStatus(500)
 				return
