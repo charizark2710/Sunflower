@@ -6,6 +6,8 @@ type helper struct {
 	DB *gorm.DB
 }
 
+var DbHelper *helper = &helper{}
+
 func (h *helper) GetDb() *gorm.DB {
 	return h.DB
 }
