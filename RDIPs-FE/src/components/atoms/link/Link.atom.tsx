@@ -1,8 +1,14 @@
 import React from 'react';
 import Link from '@mui/material/Link';
 import './Link.atom.scss'
-             
-export const LinkAtom = ({ onClick, to, children, className }) => {
+    
+export interface LinkAtomProps {
+    onClick?: (args: any) => void;
+    to: string;
+    className?: string;
+    children: React.ReactNode;
+}
+export const LinkAtom : React.FC<LinkAtomProps> = ({ onClick, to, children, className = '' }) => {
     return (
         <Link
             underline='none'

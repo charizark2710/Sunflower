@@ -1,6 +1,9 @@
 import { Grid } from "@mui/material";
 
-const SidebarTemplate = (props) => {
+interface SidebarTemplateProps {
+    sidebar: React.ReactNode;
+}
+const SidebarTemplate: React.FC<SidebarTemplateProps> = (props) => {
     return (
         <Grid container spacing={3}>
             <Grid item xs={14}>

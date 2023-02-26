@@ -1,19 +1,19 @@
-import { AppBar, IconButton, Toolbar, Typography } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
+import { AppBar, IconButton, Toolbar, Typography } from '@mui/material';
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { ButtonAtom } from '../../atoms/button/Button.atom';
-import './Navbar.organism.scss';
 import { LinkMolecules } from '../../molecules/link-molecules/Link.molecules';
+import './Navbar.organism.scss';
 
 function NavbarOrganism() {
     const [click, setClick] = useState(false);
     const [button, setButton] = useState(true);
-    const handleClick = () => setClick(!click);
+    // const handleClick = () => setClick(!click);
     const closeMobileMenu = () => setClick(false);
 
     const showButton = () => {
-        if (window.innerWidth = 960) {
+        if (window.innerWidth === 960) {
             setButton(false);
         } else {
             setButton(true);

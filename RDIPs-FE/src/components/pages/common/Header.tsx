@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import NavbarOrganism from '../../organisms/common/Navbar.organism';
 import HeaderTemplate from '../../templates/common/Header.template';
 

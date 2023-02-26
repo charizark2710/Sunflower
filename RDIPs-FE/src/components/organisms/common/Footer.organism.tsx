@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
-import './Footer.organism.scss';
 import { ButtonAtom } from '../../atoms/button/Button.atom';
-import { LinkMolecules } from '../../molecules/Link.molecules';
+import { LinkMolecules } from '../../molecules/link-molecules/Link.molecules';
+import './Footer.organism.scss';
 
 function FooterOrganism() {
   return (
@@ -25,9 +24,9 @@ function FooterOrganism() {
           </form>
         </div>
       </section>
-      <div class='footer-links'>
+      <div className='footer-links'>
         <div className='footer-link-wrapper'>
-          <div class='footer-link-items'>
+          <div className='footer-link-items'>
             <h2>About Us</h2>
             <LinkMolecules to='/sign-up'>How it works</LinkMolecules>
             <LinkMolecules to='/'>Testimonials</LinkMolecules>
@@ -35,7 +34,7 @@ function FooterOrganism() {
             <LinkMolecules to='/'>Investors</LinkMolecules>
             <LinkMolecules to='/'>Terms of Service</LinkMolecules>
           </div>
-          <div class='footer-link-items'>
+          <div className='footer-link-items'>
             <h2>Contact Us</h2>
             <LinkMolecules to='/'>Contact</LinkMolecules>
             <LinkMolecules to='/'>Support</LinkMolecules>
@@ -44,14 +43,14 @@ function FooterOrganism() {
           </div>
         </div>
         <div className='footer-link-wrapper'>
-          <div class='footer-link-items'>
+          <div className='footer-link-items'>
             <h2>Videos</h2>
             <LinkMolecules to='/'>Submit Video</LinkMolecules>
             <LinkMolecules to='/'>Ambassadors</LinkMolecules>
             <LinkMolecules to='/'>Agency</LinkMolecules>
             <LinkMolecules to='/'>Influencer</LinkMolecules>
           </div>
-          <div class='footer-link-items'>
+          <div className='footer-link-items'>
             <h2>Social Media</h2>
             <LinkMolecules to='/'>Instagram</LinkMolecules>
             <LinkMolecules to='/'>Facebook</LinkMolecules>
@@ -60,55 +59,55 @@ function FooterOrganism() {
           </div>
         </div>
       </div>
-      <section class='social-media'>
-        <div class='social-media-wrap'>
-          <div class='footer-logo'>
+      <section className='social-media'>
+        <div className='social-media-wrap'>
+          <div className='footer-logo'>
             <LinkMolecules to='/' className='social-logo'>
               RDIPS
-              <i class='fab fa-typo3' />
+              <i className='fab fa-typo3' />
             </LinkMolecules>
           </div>
-          <small class='website-rights'>RDIPS © 2020</small>
-          <div class='social-icons'>
+          <small className='website-rights'>RDIPS © 2020</small>
+          <div className='social-icons'>
             <LinkMolecules
-              class='social-icon-link facebook'
+              className='social-icon-link facebook'
               to='/'
               target='_blank'
               aria-label='Facebook'
             >
-              <i class='fab fa-facebook-f' />
+              <i className='fab fa-facebook-f' />
             </LinkMolecules>
             <LinkMolecules
-              class='social-icon-link instagram'
+              className='social-icon-link instagram'
               to='/'
               target='_blank'
               aria-label='Instagram'
             >
-              <i class='fab fa-instagram' />
+              <i className='fab fa-instagram' />
             </LinkMolecules>
             <LinkMolecules
-              class='social-icon-link youtube'
+              className='social-icon-link youtube'
               to='/'
               target='_blank'
               aria-label='Youtube'
             >
-              <i class='fab fa-youtube' />
+              <i className='fab fa-youtube' />
             </LinkMolecules>
             <LinkMolecules
-              class='social-icon-link twitter'
+              className='social-icon-link twitter'
               to='/'
               target='_blank'
               aria-label='Twitter'
             >
-              <i class='fab fa-twitter' />
+              <i className='fab fa-twitter' />
             </LinkMolecules>
             <LinkMolecules
-              class='social-icon-link twitter'
+              className='social-icon-link twitter'
               to='/'
               target='_blank'
               aria-label='LinkedIn'
             >
-              <i class='fab fa-linkedin' />
+              <i className='fab fa-linkedin' />
             </LinkMolecules>
           </div>
         </div>

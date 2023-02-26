@@ -1,8 +1,20 @@
 import React from 'react';
-import { LinkAtom } from '../../atoms/link/Link.atom';
+import { LinkAtom, LinkAtomProps } from '../../atoms/link/Link.atom';
 import './Link.molecules.scss'
 
-export const LinkMolecules = ({ links, isClick, children }) => {
+interface LinkMoleculesProps {
+    links?: Link[];
+    isClick?: boolean;
+    target?: string;
+    children?: React.ReactNode;
+    to?: string;
+    className?:string;
+}
+
+interface Link extends LinkAtomProps {
+    key?: string;
+  }
+export const LinkMolecules: React.FC<LinkMoleculesProps> = ({ links = [], isClick, children }) => {
     return (
         <div className={isClick ? 'link-menu active' : 'link-menu'}>
             {links.map((link) => {
