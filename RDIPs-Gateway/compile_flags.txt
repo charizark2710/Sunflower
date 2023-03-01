@@ -1,4 +1,5 @@
 -xc++
+-std=c++17
 -I
 ./include/
 -I

@@ -1,6 +1,5 @@
 **/bin
 **/bin-int
-**/build
-**/dependencies/AMQP-CPP/examples
-**/dependencies/bin
-**/dependencies/bin-int
+**/**/build
+**/**/bin
+**/**/bin-int
