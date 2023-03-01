@@ -2,15 +2,15 @@
 
 #include <headers.h>
 
-namespace Queue
+namespace Signal
 {
-    class QueueWrapper
+    class SignalWrapper
     {
     public:
-        virtual ~QueueWrapper() = default;
-
+        virtual ~SignalWrapper() = default;
     protected:
         AMQP::TcpChannel *channel;
+        virtual void Start() = 0;
 
         virtual void initQueue(std::string name, int flag, AMQP::Table table){};
         virtual void initQueue(std::string name){};
@@ -24,6 +24,7 @@ namespace Queue
         {
             return channel->id();
         }
+
     };
 
-} // namespace Queue
+} // namespace Signal

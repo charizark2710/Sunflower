@@ -20,20 +20,30 @@ services:
       - '15672:15672'
       - '1883:1883'
     networks:
-      - pi4
+      pi4:
+        aliases:
+          - sfBroker
   gateway:
     container_name: "gateway"
+    # Maybe there some memory leak that prevent docker to excute command so this is good for now
+    # entrypoint: ["./bin/RDIPs-Gateway"]
+    entrypoint: ["tail", "-f", "/dev/null"]
     build:
       context: ./RDIPs-Gateway
       dockerfile: Gateway.Dockerfile
+    env_file:
+      - .env
     ports:
-      - '1000:1000'
-    links:
-      - rabbitmq:sfBroker
+      - '8080:8080'
+    depends_on:
+      - rabbitmq
     volumes:
       - './RDIPs-Gateway:/var/lib/gateway'
+    # command: ["/bin/sh", "-c", "tail -F /dev/null"]
     networks:
-      - pi4
+      pi4:
+        aliases:
+          - sfBroker
   db:
     container_name: postgres
     env_file:
