@@ -14,6 +14,7 @@ include "./dependencies"
 project "RDIPs-Gateway"
     kind "ConsoleApp"
     language "C++"
+    cppdialect "C++17"
     targetdir("./bin")
     objdir("./bin-int")
     files {"./src/**.h", "./src/**.cpp", "./include/**,h"}
