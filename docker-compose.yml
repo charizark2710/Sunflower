@@ -28,6 +28,8 @@ services:
       dockerfile: Gateway.Dockerfile
     ports:
       - '1000:1000'
+    depends_on:
+      - rabbitmq
     links:
       - rabbitmq:sfBroker
     volumes:
@@ -37,7 +39,7 @@ services:
   db:
     container_name: postgres
     env_file:
-      - .env
+      - ./local.env
     image: postgres
     restart: unless-stopped
     ports:
@@ -51,7 +53,7 @@ services:
     image: dpage/pgadmin4
     restart: unless-stopped
     env_file:
-      - .env
+      - ./local.env
     ports:
       - "9090:80"
     volumes:
