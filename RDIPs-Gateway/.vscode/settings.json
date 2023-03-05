@@ -1,6 +1,6 @@
 {
     "C_Cpp.intelliSenseEngine": "disabled",
-    "clangd.path": "/usr/bin/clangd",
+    "clangd.path": "clangd",
     "files.associations": {
         "*.ejs": "html",
         "array": "cpp",

@@ -1,8 +1,9 @@
 project "amqcpp"
     kind "StaticLib"
     language "C++"
+    pic "on"
     targetdir("./bin/%{prj.name}")
-    cppdialect "C++17"
+    cppdialect "c++17"
     objdir("./bin-int/%{prj.name}")
     files {"./AMQP-CPP/include/**.h", "./AMQP-CPP/src/**.cpp", "./AMQP-CPP/src/**.h"}
 

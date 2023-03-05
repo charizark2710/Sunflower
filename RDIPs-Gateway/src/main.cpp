@@ -1,13 +1,11 @@
-#include "amqpcpp/login.h"
+#include "main.h"
+
+#include <amqpcpp/login.h>
 #include <amqpcpp.h>
 #include <amqpcpp/linux_tcp.h>
 #include <amqpcpp/linux_tcp/tcpchannel.h>
+
 #include <connection/MyTcpHandler.h>
-#include <cstdlib>
-#include <unistd.h>
-#include <poll.h>
-#include <netdb.h>
-#include <sys/select.h>
 
 void error(const char *msg)
 {
