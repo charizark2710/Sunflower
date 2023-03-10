@@ -19,6 +19,8 @@ public:
         // @todo
         //  add your own implementation, for example initialize things
         //  to handle the connection.
+        printf("%s \n", "Attach");
+
         return;
     }
 
@@ -32,6 +34,8 @@ public:
      */
     virtual void onConnected(AMQP::TcpConnection *connection) override
     {
+        printf("%s \n", "Connection");
+
         // @todo
         //  add your own implementation (probably not needed)
     }
@@ -110,6 +114,10 @@ public:
      */
     virtual void onError(AMQP::TcpConnection *connection, const char *message) override
     {
+        printf("%s \n", message);
+        delete signal;
+        channel->close();
+        delete channel;
         // @todo
         //  add your own implementation, for example by reporting the error
         //  to the user of your program and logging the error
@@ -144,6 +152,10 @@ public:
     {
         // @todo
         //  add your own implementation (probably not necessary)
+        printf("LOST");
+        delete signal;
+        channel->close();
+        delete channel;
     }
 
     /**
@@ -155,6 +167,10 @@ public:
     {
         // @todo
         //  add your own implementation, like cleanup resources or exit the application
+        printf("Detached");
+        delete signal;
+        channel->close();
+        delete channel;
     }
 
     /**
