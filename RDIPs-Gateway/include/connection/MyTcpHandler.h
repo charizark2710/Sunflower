@@ -1,12 +1,12 @@
 #pragma once
 
 #include <headers.h>
-#include <Queue/SignalQueue.h>
+#include <Signal/TestSignal.h>
 
 class MyTcpHandler : public AMQP::TcpHandler
 {
 public:
-    Queue::SignalQueue *signal;
+    Signal::TestSignal *signal;
     AMQP::TcpChannel *channel;
     struct pollfd fds;
     /**
@@ -73,34 +73,9 @@ public:
         printf("Login succeed \n");
         channel = new AMQP::TcpChannel(connection);
 
-        signal = new Queue::SignalQueue(*channel);
-
-        auto startCb = [](const std::string &consumertag)
-        {
-            std::cout << "consume operation started" << std::endl;
-        };
-
-        // callback function that is called when the consume operation failed
-        auto errorCb = [](const char *message)
-        {
-            std::cout << message << std::endl;
-        };
-
-        // callback operation when a message was received
-        auto messageCb = [&](const AMQP::Message &message, uint64_t deliveryTag, bool redelivered)
-        {
-            printf("parent message received %s \n", message.body());
-
-            // acknowledge the message
-            channel->ack(deliveryTag);
-            // channel->publish(EXCHANGE_NAME, "Test", "OK Confirm");
-        };
-
-        signal->bind("Test");
-
-        signal->listener(messageCb, startCb, errorCb);
-
-        channel->publish(EXCHANGE_NAME, "Test", "TEEST");
+        // declere new signal here
+        signal = new Signal::TestSignal(*channel, EXCHANGE_TEST, QUEUE_TEST);
+        signal->Start();
     }
 
     /**
