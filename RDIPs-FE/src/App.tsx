@@ -1,14 +1,15 @@
 import { BrowserRouter } from 'react-router-dom';
 import './App.css';
 import Header from './components/pages/common/Header';
-import { AdminRoute } from './routes';
+import { AdminRoute, ScrollParallaxRoute } from './routes';
 
 function App() {
   return (
   <>
-    <Header />
+    {/* <Header /> */}
     <BrowserRouter>
       <AdminRoute />
+      <ScrollParallaxRoute/>
     </BrowserRouter>
   </>
   );
