@@ -1,0 +1,11 @@
+-std=c++17
+-xc++
+-Wunused-parameter
+-I
+./include/
+-I
+./dependencies/AMQP-CPP/include/
+-I
+./dependencies/AMQP-CPP/include/amqpcpp/
+-I
+./dependencies/AMQP-CPP/src/

@@ -11,5 +11,5 @@ USER RDIPs-Gateway
 # Copy broker cpp
 COPY --chown=RDIPs-Gateway:rdips . .
 RUN ./premake5 gmake2
-RUN make config=release -C ./build
-CMD [ "./bin/RDIPs-Gateway" ]
+RUN make -C ./build
+# ENTRYPOINT ["./bin/RDIPs-Gateway"]
