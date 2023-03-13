@@ -1,11 +1,13 @@
 import { ParallaxProvider } from 'react-scroll-parallax';
 import BannerOneOrganism from '../organisms/parallax/BannerOne.organism';
-import * as style from './Parallax.module.scss';
+import './Parallax.page.scss';
 function ParallaxPage() {
     return (
+      <div id='parallax'>
         <ParallaxProvider>
           <BannerOneOrganism/>
         </ParallaxProvider>
+      </div>
     )
 }
 

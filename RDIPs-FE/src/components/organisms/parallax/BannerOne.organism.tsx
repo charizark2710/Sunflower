@@ -1,13 +1,13 @@
 import { ParallaxBanner, ParallaxBannerLayer } from 'react-scroll-parallax';
-import * as style from './BannerOne.module.scss';
+import './BannerOne.organism.scss';
 
-function BannerOneOrganism() {
+const BannerOneOrganism = () => {
     return (
-      <ParallaxBanner>
-        <ParallaxBannerLayer>
+      <div className='banner-one'>
+        <div className='container'>
           Banner 1
-        </ParallaxBannerLayer>
-      </ParallaxBanner>
+        </div>
+      </div>
     )
 }
 
