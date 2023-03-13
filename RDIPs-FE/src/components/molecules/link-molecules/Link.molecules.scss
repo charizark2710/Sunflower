@@ -1,0 +1,26 @@
+.items {
+  position: relative;
+  
+}
+
+.link-menu {
+  display: flex;
+  height: 40px;
+  justify-content: space-around;
+  align-items: center;
+  width: 25%;
+}
+
+.link-menu > * > * {
+  &.MuiTypography-root {
+    color: #e2e8f6;
+  }
+}
+
+.link-menu.active {
+  background: #242222;
+  left: 0;
+  opacity: 1;
+  transition: all 0.5s ease;
+  z-index: 1;
+}
