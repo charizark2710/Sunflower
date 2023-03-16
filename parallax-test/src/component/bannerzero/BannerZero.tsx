@@ -6,7 +6,7 @@ const BannerZero = () => {
   return (
     <div className="banner-zero">
       <div className="container">
-        <p className="scroll-text">Scroll Down</p>
+        <p className="scroll-text">SCROLL</p>
         <div className="arrow-down-container">
           <KeyboardDoubleArrowDownIcon className="arrow-down" />
         </div>

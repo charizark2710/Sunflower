@@ -11,12 +11,15 @@
 .container {
   position: relative;
   width: 40em;
+  text-align: center;
 }
 
 .scroll-text {
-  color: #ffffff;
+  color: #405d86;
   font-size: 100px;
   font-weight: 800;
+  letter-spacing: 20px;
+  margin-bottom: 0;
 }
 
 .arrow-down-container {

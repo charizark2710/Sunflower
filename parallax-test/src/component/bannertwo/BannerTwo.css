@@ -1,0 +1,9 @@
+.banner-two {
+    background-color: #85FFBD;
+    background-image: linear-gradient(0deg, #85FFBD 0%, #F7CE68 100%);
+    display: flex;
+    /* flex-flow: row wrap; */
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
