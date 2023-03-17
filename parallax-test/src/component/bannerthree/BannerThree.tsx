@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Parallax,
   ParallaxBanner,
@@ -25,7 +25,7 @@ const yellowBackground: BannerLayer = {
 };
 
 const solarDevice: BannerLayer = {
-  rotateY: [-70, 90, "easeOut"],
+  rotateY: [-90, 30, "easeOut"],
   // scale: [0.3, 7],
   // translateY: ["290%", "0%"],
   // translateX: ["10%", "70%"],
@@ -33,13 +33,44 @@ const solarDevice: BannerLayer = {
   children: (
     <img src={solarDeviceImage} alt="solar device" className="solar-device" />
   ),
+  // startScroll: 0,
+  // endScroll: 950,
+  onChange: (e) => {
+    const posY = e.el.children[0].getBoundingClientRect().y;
+    console.log("W", window.scrollY);
+    console.log("Y", posY);
+    if (950 < window.scrollY) {
+      e.el.children[0].setAttribute("style", `top: ${window.scrollY - 950}px`)
+    } else {
+      e.el.children[0].removeAttribute("style")
+    }
+  }
 };
+
+
+
 const BannerThree = () => {
+
+  // const solarDevice: BannerLayer = {
+  //   rotateY: [-70, 0, "easeOut"],
+  //   // scale: [0.3, 7],
+  //   // translateY: ["290%", "0%"],
+  //   // translateX: ["10%", "70%"],
+  //   translateY: ["50%", "0%"],
+  //   children: (
+  //     <img src={solarDeviceImage} alt="solar device" className="solar-device" />
+  //   ),
+  //   // startScroll: 100,
+  //   // endScroll: 500,
+  // };
+
   return (
-    <ParallaxBanner
-      layers={[sun, yellowBackground, solarDevice]}
-      className="banner-three"
-    />
+    <>
+      <ParallaxBanner
+        layers={[yellowBackground, sun, solarDevice]}
+        className="banner-three"
+      />
+    </>
   );
 };
 
