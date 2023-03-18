@@ -1,4 +1,3 @@
-import { Box } from '@mui/material';
 import { HighchartsReact } from 'highcharts-react-official';
 import Highcharts from 'highcharts/highstock';
 import React, { useEffect, useMemo } from 'react';
@@ -20,7 +19,7 @@ export interface DataDetail {
 }
 
 export const HighChartCustom: React.FC<HighChartsProps> = (props : HighChartsProps) => {
-  let currentData = props.chartData;
+  const [currentData, setCurrentData] = React.useState(props.chartData);
   let currentSelectedFromDate = null;//choose from the date min in timeline
   let currentSelectedToDate = null;//choose from the date max in timeline
   let amountDisplay :number = 0;// distance between them
@@ -209,10 +208,6 @@ export const HighChartCustom: React.FC<HighChartsProps> = (props : HighChartsPro
 
   return (
     <div className='highchart-container'>
-      <Box>
-        <span>From: </span> 
-        <span>To: </span>
-      </Box>
       <HighchartsReact
         highcharts={Highcharts}
         options={getOptions(props.typeChart)}

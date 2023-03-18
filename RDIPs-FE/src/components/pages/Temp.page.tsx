@@ -1,6 +1,7 @@
 import { Box, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
 import React from 'react';
 import chartData from '../../lib/chartData.json';
+import DatePickerCustom from '../../lib/highchart/DatePickerCustom';
 import { HighChartCustom } from '../../lib/highchart/HighChartCustom';
 import { TypeChart } from '../../utils/enum';
 import './Temp.page.scss';
@@ -11,6 +12,16 @@ function TempPage() {
   const handleChange = (event: SelectChangeEvent) => {
     setType(event.target.value);
   };
+
+  const onNextClick = () => {
+    console.log("Xứng đáng là con trai của taaaaa next");
+    
+  }
+
+  const onPrevClick = () => {
+    console.log("Xứng đáng là con trai của taaaaa right");
+    
+  }
 
   const listTimeType = ["Day", "Week", "Month", "Year", "Decade"];
 
@@ -23,7 +34,7 @@ function TempPage() {
   return (
     // <div className="Sidebar" > Thấy thì mất 5 nghìn</div>
 
-    <div>
+    <div style={{padding: '15px'}}>
       <h5>Range Selection</h5>
 
       <Box
@@ -49,6 +60,9 @@ function TempPage() {
             </Select>
         </FormControl>
         </span>
+      </Box>
+      <Box>
+        <DatePickerCustom fromDate={chartData[0].dateTime} onNextClick={onNextClick} onPrevClick={onPrevClick} disabled={false}></DatePickerCustom>
       </Box>
 
       <h5>Case 1: Sline chart </h5>
