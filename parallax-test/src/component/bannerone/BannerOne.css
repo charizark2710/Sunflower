@@ -12,3 +12,21 @@
   position: relative;
   width: 40em;
 }
+
+.sun {
+  width: 100%;
+}
+
+.sunlight-one {
+  position: absolute;
+}
+
+.sunlight-two {
+  position: absolute;
+  left: 60%;
+}
+
+.sunlight-three {
+  position: absolute;
+  left: 30%;
+}
