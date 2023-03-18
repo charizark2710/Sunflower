@@ -13,20 +13,23 @@
   width: 40em;
 }
 
-.sun {
+.sun img {
   width: 100%;
 }
 
 .sunlight-one {
   position: absolute;
+  top: 110%;
 }
 
 .sunlight-two {
   position: absolute;
   left: 60%;
+  top: 110%;
 }
 
 .sunlight-three {
   position: absolute;
   left: 30%;
+  top: 110%;
 }

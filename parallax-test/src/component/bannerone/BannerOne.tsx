@@ -13,11 +13,11 @@ const BannerOne = () => {
   });
 
   const sunlightOneParallax = useParallax<HTMLDivElement>({
-    translateX: [-5, -100, "easeInQuad"],
+    translateX: [-5, -200, "easeInQuad"],
   });
 
   const sunlightTwoParallax = useParallax<HTMLDivElement>({
-    translateX: [-5, 100, "easeInQuad"],
+    translateX: [-5, 200, "easeInQuad"],
   });
 
   const sunlightThreeParallax = useParallax<HTMLDivElement>({
