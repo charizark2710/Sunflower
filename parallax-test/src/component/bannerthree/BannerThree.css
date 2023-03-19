@@ -2,7 +2,7 @@
   display: flex;
   /* align-items: center;
     justify-content: center; */
-  height: 150vh;
+  height: 170vh;
 }
 
 .container {
@@ -10,14 +10,45 @@
   width: 25em;
 }
 
-.yellow-background {
+.sun-light {
   /* background: url("../../assets/yellow-background.png"); */
-  width: 100%;
-  height: 70%;
+  width: 200%;
+  height: 100%;
+  /* height: %; */
+  /* position: relative; */
+  /* top: 0; */
   opacity: 0.7;
 }
+
+/* .yellowB{
+  top: 0;
+} */
 .solar-device {
   height: 256px;
   position: fixed;
-  left: 30%;
+  left: 70%;
+
+}
+
+.solar-device-2{
+  position: relative;
+}
+/* solar-device {
+  height: 256px;
+  position: fixed;
+  left: 50%;
+} */
+
+.wire{
+  margin-left: 450px;
+  position: absolute;
+  /* top: 1200px; */
+  opacity: 0.3;
+}
+
+.yellow-background{
+  height: 500px;
+  background-color: rgb(235, 235, 15);
+  position: relative;
+  top: 1100px
 }
