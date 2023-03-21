@@ -28,6 +28,42 @@
   color: #61dafb;
 }
 
+/* flex area */
+.flex-justify-center {
+  display: flex;
+  justify-content: center;
+}
+
+.flex-align-center {
+  display: flex;
+  align-items: center;
+}
+
+.flex-justify-start {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.flex-align-start {
+  display: flex;
+  align-items: start;
+}
+
+.flex-justify-end {
+  display: flex;
+  justify-content: end;
+}
+
+.flex-align-end {
+  display: flex;
+  align-items: end;
+}
+
+/* color */
+.blue-white-background {
+  background-color: #F2F4F5;
+}
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);

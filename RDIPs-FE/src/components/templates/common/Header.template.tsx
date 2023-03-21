@@ -1,13 +1,12 @@
 import { Grid } from "@mui/material";
-
 interface HeaderTemplateProps {
-    navbar: React.ReactNode;
+    header: React.ReactNode;
 }
 const HeaderTemplate: React.FC<HeaderTemplateProps> = (props) => {
     return (
         <Grid container spacing={2}>
             <Grid item xs={12}>
-                {props.navbar}
+                {props.header}
             </Grid>
         </Grid>
     )

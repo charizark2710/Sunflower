@@ -1,14 +1,13 @@
 import { BrowserRouter } from 'react-router-dom';
 import './App.css';
-import Header from './components/pages/common/Header';
+import AdminPage from './components/pages/admin/AdminPage';
 import { AdminRoute } from './routes';
 
 function App() {
   return (
   <>
-    <Header />
     <BrowserRouter>
-      <AdminRoute />
+      <AdminPage children= {<AdminRoute />} />
     </BrowserRouter>
   </>
   );
