@@ -1,54 +1,37 @@
-/* Todo: back color default
-**:root {
-**     --primary: #ffca93;
-**   }
-*/
-
 .btn {
   padding: 8px 20px;
   border-radius: 10px;
   outline: none;
   border: none;
   cursor: pointer;
+
   &.MuiButton-root {
-    color: #E2E8F6;
+    text-transform: none;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 15px;
+    border-radius: 15px;
   }
   &.MuiButton-root:hover {
-    border: 2px solid white;
-    color: white;
-  }
-}
-
-.btn--primary {
-  background-color: var(--primary);
-  color: #0d0d0d;
-  border: 1px solid var(--primary);
-}
-
-.btn--outline {
-  &.MuiButton-root {
-    background-color: transparent;
-    padding: 8px 20px;
-    border: 1px solid var(--primary);
-    transition: all 0.3s ease-out;
-    
+    opacity: 0.5;
   }
 }
 
 .btn--login {
-  &.MuiButton-root:hover {
-    color: white;
-    border: 0px;
-    background-color: rgba(255, 255, 255, 0.5);
+  &.MuiButton-root, &.MuiButton-root:hover {
+    background: #000000;
+    color: #FFFFFF;
   }
 }
 
-.btn--medium {
-  padding: 8px 20px;
-  font-size: 18px;
+.btn--register {
+  &.MuiButton-root, &.MuiButton-root:hover {
+    color: #000000;
+  }
 }
 
-.btn--large {
-  padding: 12px 26px;
-  font-size: 20px;
+.btn--small {
+  font-size: 12px;
 }
+

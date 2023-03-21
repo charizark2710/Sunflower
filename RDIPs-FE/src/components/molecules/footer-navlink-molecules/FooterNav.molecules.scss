@@ -1,19 +1,13 @@
-.items {
-  position: relative;
-  
-}
-
 .link-menu {
   display: flex;
   height: 40px;
   justify-content: space-around;
   align-items: center;
-  width: 25%;
 }
 
 .link-menu > * > * {
   &.MuiTypography-root {
-    color: #e2e8f6;
+    color: #000000;
   }
 }
 

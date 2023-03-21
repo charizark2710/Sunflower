@@ -1,4 +1,5 @@
 import { useRoutes, RouteObject } from "react-router-dom"
+import HomePage from './components/pages/admin/home/Home.page'
 import TempPage from './components/pages/Temp.page'
 
 export function AdminRoute(): ReturnType<typeof useRoutes> {
@@ -9,7 +10,7 @@ export function AdminRoute(): ReturnType<typeof useRoutes> {
     },
     {
       path: "/admin",
-      element: <TempPage />
+      element: <HomePage />
     }
   ]
 
