@@ -1,4 +1,10 @@
-.container {
+.admin-container {
   background-color: #F2F4F5;
-  min-height: 70vh;
+  min-height: 100vh;
+  
+  .right-side {
+    .body-container {
+      min-height: 75vh;
+    }
+  }
 }
