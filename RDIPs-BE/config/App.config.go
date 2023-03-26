@@ -24,7 +24,10 @@ func DbConfig() (*gorm.DB, error) {
 		return nil, err
 	}
 	err = db.Exec("CREATE SCHEMA IF NOT EXISTS " + os.Getenv("POSTGRES_SCHEMA")).Error
-	err = db.Exec(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp";`).Error
+	// if err != nil {
+	// 	return db, err
+	// }
+	// err = db.Exec(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp";`).Error
 
 	return db, err
 }

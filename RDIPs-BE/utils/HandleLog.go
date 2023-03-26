@@ -9,10 +9,10 @@ import (
 var logList = make(map[string]string)
 
 func Log(id string, arg ...interface{}) {
-	if id == LogConstant.Error {
-		log.Fatalln(logList[id], arg)
+	if id == LogConstant.Fatal {
+		log.Fatalf(logList[id], arg)
 	} else {
-		log.Println(logList[id], arg)
+		log.Printf(logList[id], arg)
 	}
 }
 

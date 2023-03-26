@@ -18,10 +18,8 @@ func Controller(c *gin.Context) {
 	} else {
 		result, err := fn(c)
 		if err != nil {
+			utils.Log(LogConstant.Error, err)
 			result.SetMessage(err.Error())
-			result.SetError(err)
-			c.Error(err)
-			return
 		}
 		c.JSON(result.HttpCode, result)
 	}
