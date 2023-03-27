@@ -1,5 +1,5 @@
 import AcUnitIcon from '@mui/icons-material/AcUnit';
-import SunFlowerIcon from '../../atoms/icon/SunflowerIcon.atom.';
+import SunFlowerIcon from '../../atoms/icon/SunflowerIcon.atom';
 import { StraightAtom } from '../../atoms/straight/Straight.atom';
 import './SunflowerLabel.mocules.scss';
 
