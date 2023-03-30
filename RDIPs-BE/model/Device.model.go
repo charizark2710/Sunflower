@@ -30,21 +30,23 @@ type Devices struct {
 	AppVersion     int        `json:"app_ver"`
 	ParentID       string     `json:"parentID"`
 	Parent         *Devices   `json:"parent,omitempty"`
+	Histories      []History  `json:"histories,omitempty"`
 }
 
 type SysDevices struct {
 	// User      SysUser    `gorm:"column:user;type:uuid"`
 
-	Id             string      `gorm:"default:gen_random_uuid();primaryKey;column:id;type:uuid"`
-	CreatedAt      time.Time   `gorm:"column:created_at;"`
-	UpdatedAt      time.Time   `gorm:"column:updated_at;"`
-	Type           deviceType  `gorm:"column:type;"`
-	Status         statusEnum  `gorm:"column:status;default:active"`
-	LifeTime       time.Time   `gorm:"column:life_time"`
-	FirwareVersion int         `gorm:"column:firmware_ver;type:integer"`
-	AppVersion     int         `gorm:"column:app_ver;type:integer"`
-	ParentID       string      `gorm:"column:parent;uniqueIndex;default:NULL"`
-	Parent         *SysDevices `gorm:"foreignKey:ParentID"`
+	Id             string       `gorm:"default:gen_random_uuid();primaryKey;column:id;type:uuid"`
+	CreatedAt      time.Time    `gorm:"column:created_at;"`
+	UpdatedAt      time.Time    `gorm:"column:updated_at;"`
+	Type           deviceType   `gorm:"column:type;"`
+	Status         statusEnum   `gorm:"column:status;default:active"`
+	LifeTime       time.Time    `gorm:"column:life_time"`
+	FirwareVersion int          `gorm:"column:firmware_ver;type:integer"`
+	AppVersion     int          `gorm:"column:app_ver;type:integer"`
+	ParentID       string       `gorm:"column:parent;uniqueIndex;default:NULL"`
+	Parent         *SysDevices  `gorm:"foreignKey:ParentID"`
+	Histories      []SysHistory `gorm:"foreignKey:DeviceId;references:Id"`
 }
 
 func (SysDevices) TableName() string {
@@ -65,6 +67,15 @@ func (in SysDevices) ConvertToJson(out *Devices) {
 		out.Parent = &Devices{}
 		in.Parent.ConvertToJson(out.Parent)
 	}
+	if len(in.Histories) != 0 {
+		out.Histories = []History{}
+		for _, history := range in.Histories {
+			outHistory := History{}
+			history.ConvertToJson(&outHistory)
+			out.Histories = append(out.Histories, outHistory)
+		}
+	}
+
 }
 
 func (in Devices) ConvertToDB(out *SysDevices) {
@@ -80,5 +91,13 @@ func (in Devices) ConvertToDB(out *SysDevices) {
 	if in.Parent != nil {
 		out.Parent = &SysDevices{}
 		in.Parent.ConvertToDB(out.Parent)
+	}
+	if len(in.Histories) != 0 {
+		out.Histories = []SysHistory{}
+		for _, history := range in.Histories {
+			outHistory := SysHistory{}
+			history.ConvertToDB(&outHistory)
+			out.Histories = append(out.Histories, outHistory)
+		}
 	}
 }
