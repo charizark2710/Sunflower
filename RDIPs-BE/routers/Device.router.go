@@ -12,4 +12,8 @@ func DevicesRouter(router *gin.Engine) {
 	router.GET(urlconst.GetDetailDevice, controller.Controller)
 	router.PUT(urlconst.PutDetailDevice, controller.Controller)
 	router.DELETE(urlconst.DeleteDevice, controller.Controller)
+
+	router.POST(urlconst.PostHistory, controller.Controller)
+	router.GET(urlconst.GetDetailHistory, controller.Controller)
+	router.GET(urlconst.GetHistoriesOfDevice, controller.Controller)
 }

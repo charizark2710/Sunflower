@@ -6,4 +6,8 @@ const (
 	GetDetailDevice = "/devices/:id"
 	PutDetailDevice = "/devices/:id"
 	DeleteDevice    = "/devices/:id"
+
+	PostHistory          = "/history"
+	GetDetailHistory     = "/history/:id"
+	GetHistoriesOfDevice = "/history/devices/:id"
 )
