@@ -67,6 +67,15 @@ func (in SysDevices) ConvertToJson(out *Devices) {
 		out.Parent = &Devices{}
 		in.Parent.ConvertToJson(out.Parent)
 	}
+	if len(in.Histories) != 0 {
+		out.Histories = []History{}
+		for _, history := range in.Histories {
+			outHistory := History{}
+			history.ConvertToJson(&outHistory)
+			out.Histories = append(out.Histories, outHistory)
+		}
+	}
+
 }
 
 func (in Devices) ConvertToDB(out *SysDevices) {
@@ -82,5 +91,13 @@ func (in Devices) ConvertToDB(out *SysDevices) {
 	if in.Parent != nil {
 		out.Parent = &SysDevices{}
 		in.Parent.ConvertToDB(out.Parent)
+	}
+	if len(in.Histories) != 0 {
+		out.Histories = []SysHistory{}
+		for _, history := range in.Histories {
+			outHistory := SysHistory{}
+			history.ConvertToDB(&outHistory)
+			out.Histories = append(out.Histories, outHistory)
+		}
 	}
 }
