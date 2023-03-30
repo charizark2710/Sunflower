@@ -12,4 +12,8 @@ const (
 	PostPerformance      = "/performances"
 	GetDetailPerformance = "/performances/:id"
 	PutDetailPerformance = "/performances/:id"
+
+	//History
+	PostHistory      = "/history"
+	GetDetailHistory = "/history/:id"
 )
