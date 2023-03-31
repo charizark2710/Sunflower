@@ -60,7 +60,6 @@ func (f *FileIO) open(IOtype string, date time.Time) error {
 			f.wFile = file
 			go func() {
 				// time.Sleep(10 * time.Second)
-
 				time.Sleep(1 * time.Hour)
 				m.Lock()
 				defer m.Unlock()
@@ -77,7 +76,6 @@ func (f *FileIO) open(IOtype string, date time.Time) error {
 				}
 			}()
 		}
-		fileStreamArr[f.Name] = nil
 		fileStreamArr[f.Name] = f
 	} else {
 		f.rFile = fileStreamArr[f.Name].rFile
