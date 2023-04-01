@@ -73,14 +73,3 @@ var PutPerformance = func(c *gin.Context) (commonModel.ResponseTemplate, error) 
 		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
 	}
 }
-
-var DeletePerformance = func(c *gin.Context) (commonModel.ResponseTemplate, error) {
-	utils.Log(LogConstant.Info, "DeletePerformance Start")
-	id := c.Param("id")
-	err := handler.Delete(&model.SysPerformance{Id: id}, id)
-	if err != nil {
-		utils.Log(LogConstant.Error, err)
-		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
-	}
-	return commonModel.ResponseTemplate{HttpCode: 200, Data: nil, Message: ""}, err
-}

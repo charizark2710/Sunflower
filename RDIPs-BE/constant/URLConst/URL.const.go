@@ -12,5 +12,4 @@ const (
 	PostPerformance      = "/performances"
 	GetDetailPerformance = "/performances/:id"
 	PutDetailPerformance = "/performances/:id"
-	DeletePerformance    = "/performances/:id"
 )

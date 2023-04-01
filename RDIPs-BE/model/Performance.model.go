@@ -2,8 +2,6 @@ package model
 
 import (
 	"time"
-
-	"gorm.io/gorm"
 )
 
 type Performance struct {
@@ -14,11 +12,10 @@ type Performance struct {
 }
 
 type SysPerformance struct {
-	Id           string         `gorm:"default:gen_random_uuid();primaryKey;column:id;type:uuid"`
-	CreatedAt    time.Time      `gorm:"column:created_at;"`
-	UpdatedAt    time.Time      `gorm:"column:updated_at;"`
-	DeletedAt    gorm.DeletedAt `gorm:"column:deleted_at;index"`
-	DocumentName string         `gorm:"column:document_name"`
+	Id           string    `gorm:"default:gen_random_uuid();primaryKey;column:id;type:uuid"`
+	CreatedAt    time.Time `gorm:"column:created_at;"`
+	UpdatedAt    time.Time `gorm:"column:updated_at;"`
+	DocumentName string    `gorm:"column:document_name"`
 }
 
 func (SysPerformance) TableName() string {
