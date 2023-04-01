@@ -9,9 +9,10 @@ import (
 var logList = make(map[string]string)
 
 func Log(id string, arg ...interface{}) {
-	if id == LogConstant.Fatal {
+	switch id {
+	case LogConstant.Fatal:
 		log.Fatalf(logList[id], arg)
-	} else {
+	default:
 		log.Printf(logList[id], arg)
 	}
 }
