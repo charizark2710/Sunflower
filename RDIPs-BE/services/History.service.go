@@ -40,16 +40,3 @@ var GetDetailHistory = func(c *gin.Context) (commonModel.ResponseTemplate, error
 	utils.Log(LogConstant.Info, "GetDetailHistory End")
 	return commonModel.ResponseTemplate{HttpCode: 200, Data: historyBody}, nil
 }
-
-var GetHistoriesOfDevice = func(c *gin.Context) (commonModel.ResponseTemplate, error) {
-	id := c.Param("id")
-	deviceBody := model.SysDevices{}
-	db := commonModel.DbHelper.GetDb()
-	err := db.Where("id = ? AND status != ?", id, model.Disable).Preload("Histories").First(&deviceBody).Error
-	if err != nil {
-		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
-	}
-	resData := model.Devices{}
-	deviceBody.ConvertToJson(&resData)
-	return commonModel.ResponseTemplate{HttpCode: 200, Data: deviceBody}, nil
-}

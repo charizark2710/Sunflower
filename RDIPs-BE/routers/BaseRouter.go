@@ -11,4 +11,5 @@ func InitRouter(router *gin.Engine) {
 		})
 	})
 	DevicesRouter(router)
+	HistoryRouter(router)
 }
