@@ -30,6 +30,7 @@ type Devices struct {
 	AppVersion     int        `json:"app_ver"`
 	ParentID       string     `json:"parentID"`
 	Parent         *Devices   `json:"parent,omitempty"`
+	Name           string     `json:"name"`
 }
 
 type SysDevices struct {
@@ -45,6 +46,7 @@ type SysDevices struct {
 	AppVersion     int         `gorm:"column:app_ver;type:integer"`
 	ParentID       string      `gorm:"column:parent;uniqueIndex;default:NULL"`
 	Parent         *SysDevices `gorm:"foreignKey:ParentID"`
+	Name           string      `gorm:"column:name"`
 }
 
 func (SysDevices) TableName() string {
