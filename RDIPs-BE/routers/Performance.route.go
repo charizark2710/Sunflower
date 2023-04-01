@@ -11,5 +11,4 @@ func PerformanceRouter(router *gin.Engine) {
 	router.POST(urlconst.PostPerformance, controller.Controller)
 	router.GET(urlconst.GetDetailPerformance, controller.Controller)
 	router.PUT(urlconst.PutDetailPerformance, controller.Controller)
-	router.DELETE(urlconst.DeletePerformance, controller.Controller)
 }

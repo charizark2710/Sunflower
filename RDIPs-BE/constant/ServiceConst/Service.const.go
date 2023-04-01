@@ -17,5 +17,4 @@ var ServicesMap = map[string]interface{}{
 	"POST" + urlconst.PostPerformance:     services.PostPerformance,
 	"GET" + urlconst.GetDetailPerformance: services.GetDetailPerformance,
 	"PUT" + urlconst.PutDetailPerformance: services.PutPerformance,
-	"DELETE" + urlconst.DeletePerformance: services.DeletePerformance,
 }
