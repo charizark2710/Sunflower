@@ -48,3 +48,12 @@ func Update(i interface{}, updatedData interface{}) error {
 	}
 	return db.Model(i).Updates(updatedData).Error
 }
+
+func Delete(i interface{}, id string) error {
+	var db = commonModel.DbHelper.GetDb()
+	err := getStructType(i, db)
+	if err != nil {
+		return err
+	}
+	return db.Where("id = ?", id).Delete(i).Error
+}
