@@ -12,7 +12,7 @@
 
 - [ ] Khi tạo API mới luôn defined trong RDIPs-BE/constant/ServiceConst theo format . : serviceFunc
 
-- [ ] serviceFunc luôn theo dạng func(c *gin.Context) (commonModel.ResponseTemplate, error)
+- [ ] serviceFunc luôn theo dạng func(body []byte) (commonModel.ResponseTemplate, error)
 
 - [ ] Tạo file service trong package services
 

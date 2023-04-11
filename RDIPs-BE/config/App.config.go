@@ -6,6 +6,10 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
+
+	AMQPconst "RDIPs-BE/constant/AMQP_Const"
+
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 func DbConfig() (*gorm.DB, error) {
@@ -24,10 +28,30 @@ func DbConfig() (*gorm.DB, error) {
 		return nil, err
 	}
 	err = db.Exec("CREATE SCHEMA IF NOT EXISTS " + os.Getenv("POSTGRES_SCHEMA")).Error
-	// if err != nil {
-	// 	return db, err
-	// }
-	// err = db.Exec(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp";`).Error
 
 	return db, err
+}
+
+func RabbitMqConfig() (*amqp.Connection, *amqp.Channel, error) {
+	conn, err := amqp.Dial(
+		"amqp://" +
+			os.Getenv("BROKER_USER") +
+			":" + os.Getenv("BROKER_PASSWORD") +
+			"@" + os.Getenv("BROKER_HOST") +
+			":" + os.Getenv("BROKER_PORT") + "/")
+	if err != nil {
+		return nil, nil, err
+	}
+
+	ch, chErr := conn.Channel()
+	if chErr != nil {
+		return nil, nil, chErr
+	}
+
+	// Declare exchange
+	for _, exchange := range AMQPconst.ExhangeArr {
+		ch.ExchangeDeclare(exchange, "topic", true, false, false, false, nil)
+	}
+
+	return conn, ch, nil
 }

@@ -31,7 +31,7 @@ var GetDetailHistory = func(c *gin.Context) (commonModel.ResponseTemplate, error
 	utils.Log(LogConstant.Info, "GetDetailHistory Start")
 	id := c.Param("id")
 	historyBody := model.SysHistory{}
-	db := commonModel.DbHelper.GetDb()
+	db := commonModel.Helper.GetDb()
 	err := db.Where("id = ?", id).First(&historyBody).Error
 	if err != nil {
 		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err

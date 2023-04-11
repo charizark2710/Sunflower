@@ -13,7 +13,7 @@ import (
 var GetAllPerformances = func(c *gin.Context) (commonModel.ResponseTemplate, error) {
 	utils.Log(LogConstant.Info, "GetAllPerformances Start")
 	var performanceModel []model.SysPerformance
-	db := commonModel.DbHelper.GetDb()
+	db := commonModel.Helper.GetDb()
 	err := db.Find(&performanceModel).Error
 	if err != nil {
 		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
@@ -47,7 +47,7 @@ var GetDetailPerformance = func(c *gin.Context) (commonModel.ResponseTemplate, e
 	utils.Log(LogConstant.Info, "GetDetailPerformance Start")
 	id := c.Param("id")
 	performanceBody := model.SysPerformance{}
-	db := commonModel.DbHelper.GetDb()
+	db := commonModel.Helper.GetDb()
 	err := db.Where("id = ?", id).First(&performanceBody).Error
 	if err != nil {
 		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
