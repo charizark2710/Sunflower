@@ -3,7 +3,7 @@ package utils
 import (
 	"log"
 
-	LogConstant "github.com/charizark2710/Sunflower/RDIPs-BE/constant/LogConst"
+	LogConstant "RDIPs-BE/constant/LogConst"
 )
 
 var logList = make(map[string]string)

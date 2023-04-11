@@ -1,8 +1,8 @@
 package ServiceConst
 
 import (
-	urlconst "github.com/charizark2710/Sunflower/RDIPs-BE/constant/URLConst"
-	"github.com/charizark2710/Sunflower/RDIPs-BE/services"
+	urlconst "RDIPs-BE/constant/URLConst"
+	"RDIPs-BE/services"
 )
 
 var ServicesMap = map[string]interface{}{

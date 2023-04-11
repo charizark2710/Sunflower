@@ -3,7 +3,8 @@ package handler
 import (
 	"reflect"
 
-	commonModel "github.com/charizark2710/Sunflower/RDIPs-BE/model/common"
+	commonModel "RDIPs-BE/model/common"
+
 	"gorm.io/gorm"
 )
 
