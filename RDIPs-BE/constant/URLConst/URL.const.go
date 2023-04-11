@@ -8,13 +8,13 @@ const (
 	DeleteDevice    = "/devices/:id"
 
 	//Performances
-	GetAllPerformances   = "/performances"
-	PostPerformance      = "/performances"
+	GetAllPerformances = "/performances"
+	// PostPerformance      = "/performances"
 	GetDetailPerformance = "/performances/:id"
 	PutDetailPerformance = "/performances/:id"
 
 	//History
-	PostHistory      = "/history"
+	// PostHistory      = "/history"
 	GetDetailHistory = "/history/:id"
 	PutDetailHistory = "/history/:id"
 )

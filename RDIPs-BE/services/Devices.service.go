@@ -14,7 +14,7 @@ import (
 var GetAllDevices = func(c *gin.Context) (commonModel.ResponseTemplate, error) {
 	utils.Log(LogConstant.Info, "GetAllDevices Start")
 	var deviceModel []model.SysDevices
-	db := commonModel.DbHelper.GetDb()
+	db := commonModel.Helper.GetDb()
 	err := db.Where("status != ?", model.Disable).Preload("Parent").Find(&deviceModel).Error
 	if err != nil {
 		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
@@ -30,6 +30,8 @@ var GetAllDevices = func(c *gin.Context) (commonModel.ResponseTemplate, error) {
 const DEFAULT_DOCUMENT_NAME string = "performance.docs"
 
 var PostDevice = func(c *gin.Context) (commonModel.ResponseTemplate, error) {
+	utils.Log(LogConstant.Info, "PostDevice Start")
+	defer utils.Log(LogConstant.Info, "PostDevice End")
 	deviceBody := model.Devices{}
 	if err := c.BindJSON(&deviceBody); err == nil {
 		deviceObj := model.SysDevices{}
@@ -78,6 +80,8 @@ var PostDevice = func(c *gin.Context) (commonModel.ResponseTemplate, error) {
 }
 
 var GetDetailDevice = func(c *gin.Context) (commonModel.ResponseTemplate, error) {
+	utils.Log(LogConstant.Info, "GetDetailDevice Start")
+	defer utils.Log(LogConstant.Info, "GetDetailDevice End")
 	id := c.Param("id")
 	detail := c.Query("detail")
 	deviceBody := model.SysDevices{}
@@ -99,6 +103,8 @@ var GetDetailDevice = func(c *gin.Context) (commonModel.ResponseTemplate, error)
 }
 
 var UpdateDevice = func(c *gin.Context) (commonModel.ResponseTemplate, error) {
+	utils.Log(LogConstant.Info, "UpdateDevice Start")
+	defer utils.Log(LogConstant.Info, "UpdateDevice End")
 	id := c.Param("id")
 	deviceBody := model.Devices{}
 	if err := c.BindJSON(&deviceBody); err == nil {
@@ -115,6 +121,8 @@ var UpdateDevice = func(c *gin.Context) (commonModel.ResponseTemplate, error) {
 }
 
 var DeleteDevice = func(c *gin.Context) (commonModel.ResponseTemplate, error) {
+	utils.Log(LogConstant.Info, "DeleteDevice Start")
+	defer utils.Log(LogConstant.Info, "DeleteDevice End")
 	id := c.Param("id")
 	err := handler.Update(&model.SysDevices{Id: id}, model.SysDevices{Status: model.Disable})
 	if err != nil {

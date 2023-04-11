@@ -27,7 +27,7 @@ func getStructType(i interface{}, db *gorm.DB) error {
 // }
 
 func Create(i interface{}) error {
-	var db = commonModel.DbHelper.GetDb()
+	var db = commonModel.Helper.GetDb()
 	err := getStructType(i, db)
 	if err != nil {
 		return err
@@ -42,7 +42,7 @@ func Create(i interface{}) error {
 // }
 
 func Update(i interface{}, updatedData interface{}) error {
-	var db = commonModel.DbHelper.GetDb()
+	var db = commonModel.Helper.GetDb()
 	err := getStructType(i, db)
 	if err != nil {
 		return err
