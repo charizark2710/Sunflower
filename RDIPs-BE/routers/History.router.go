@@ -1,8 +1,9 @@
 package routers
 
 import (
-	urlconst "github.com/charizark2710/Sunflower/RDIPs-BE/constant/URLConst"
-	"github.com/charizark2710/Sunflower/RDIPs-BE/controller"
+	urlconst "RDIPs-BE/constant/URLConst"
+	"RDIPs-BE/controller"
+
 	"github.com/gin-gonic/gin"
 )
 

@@ -1,11 +1,12 @@
 package services
 
 import (
-	LogConstant "github.com/charizark2710/Sunflower/RDIPs-BE/constant/LogConst"
-	"github.com/charizark2710/Sunflower/RDIPs-BE/handler"
-	"github.com/charizark2710/Sunflower/RDIPs-BE/model"
-	commonModel "github.com/charizark2710/Sunflower/RDIPs-BE/model/common"
-	"github.com/charizark2710/Sunflower/RDIPs-BE/utils"
+	LogConstant "RDIPs-BE/constant/LogConst"
+	"RDIPs-BE/handler"
+	"RDIPs-BE/model"
+	commonModel "RDIPs-BE/model/common"
+	"RDIPs-BE/utils"
+
 	"github.com/gin-gonic/gin"
 )
 

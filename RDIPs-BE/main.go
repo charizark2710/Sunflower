@@ -3,11 +3,11 @@ package main
 import (
 	"os"
 
-	"github.com/charizark2710/Sunflower/RDIPs-BE/config"
-	middleware "github.com/charizark2710/Sunflower/RDIPs-BE/middleware"
-	commonModel "github.com/charizark2710/Sunflower/RDIPs-BE/model/common"
-	"github.com/charizark2710/Sunflower/RDIPs-BE/routers"
-	"github.com/charizark2710/Sunflower/RDIPs-BE/utils"
+	"RDIPs-BE/config"
+	middleware "RDIPs-BE/middleware"
+	commonModel "RDIPs-BE/model/common"
+	"RDIPs-BE/routers"
+	"RDIPs-BE/utils"
 
 	"github.com/gin-gonic/gin"
 )

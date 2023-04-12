@@ -3,7 +3,8 @@ package handler
 import (
 	"fmt"
 
-	commonModel "github.com/charizark2710/Sunflower/RDIPs-BE/model/common"
+	commonModel "RDIPs-BE/model/common"
+
 	"github.com/golang-jwt/jwt"
 )
 
