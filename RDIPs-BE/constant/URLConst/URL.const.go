@@ -3,7 +3,7 @@ package urlconst
 const (
 	GetAllDevices   = "/devices"
 	PostDevice      = "/devices"
-	GetDetailDevice = "/devices/:id"
+	GetDetailDevice = "/devices/:id/"
 	PutDetailDevice = "/devices/:id"
 	DeleteDevice    = "/devices/:id"
 
@@ -16,4 +16,5 @@ const (
 	//History
 	PostHistory      = "/history"
 	GetDetailHistory = "/history/:id"
+	PutDetailHistory = "/history/:id"
 )

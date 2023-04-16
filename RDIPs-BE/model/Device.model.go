@@ -36,17 +36,28 @@ type Devices struct {
 type SysDevices struct {
 	// User      SysUser    `gorm:"column:user;type:uuid"`
 
-	Id             string      `gorm:"default:gen_random_uuid();primaryKey;column:id;type:uuid"`
-	CreatedAt      time.Time   `gorm:"column:created_at;"`
-	UpdatedAt      time.Time   `gorm:"column:updated_at;"`
-	Type           deviceType  `gorm:"column:type;"`
-	Status         statusEnum  `gorm:"column:status;default:active"`
-	LifeTime       time.Time   `gorm:"column:life_time"`
-	FirwareVersion int         `gorm:"column:firmware_ver;type:integer"`
-	AppVersion     int         `gorm:"column:app_ver;type:integer"`
-	ParentID       string      `gorm:"column:parent;uniqueIndex;default:NULL"`
-	Parent         *SysDevices `gorm:"foreignKey:ParentID"`
-	Name           string      `gorm:"column:name"`
+	Id             string       `gorm:"default:gen_random_uuid();primaryKey;column:id;type:uuid"`
+	CreatedAt      time.Time    `gorm:"column:created_at;"`
+	UpdatedAt      time.Time    `gorm:"column:updated_at;"`
+	Type           deviceType   `gorm:"column:type;"`
+	Status         statusEnum   `gorm:"column:status;default:active"`
+	LifeTime       time.Time    `gorm:"column:life_time"`
+	FirwareVersion int          `gorm:"column:firmware_ver;type:integer"`
+	AppVersion     int          `gorm:"column:app_ver;type:integer"`
+	ParentID       string       `gorm:"column:parent;uniqueIndex;default:NULL"`
+	Parent         *SysDevices  `gorm:"foreignKey:ParentID"`
+	Name           string       `gorm:"column:name"`
+	DeviceRel      SysDeviceRel `gorm:"foreignKey:DeviceID"`
+}
+
+type DevicesWithDeviceRelAndDetail struct {
+	Device    Devices             `json:"device"`
+	DeviceRel DeviceRelWithDetail `json:"device_rel,omitempty"`
+}
+
+type DevicesWithDeviceRel struct {
+	Device    Devices   `json:"device"`
+	DeviceRel DeviceRel `json:"device_rel,omitempty"`
 }
 
 func (SysDevices) TableName() string {
@@ -67,6 +78,16 @@ func (in SysDevices) ConvertToJson(out *Devices) {
 		out.Parent = &Devices{}
 		in.Parent.ConvertToJson(out.Parent)
 	}
+}
+
+func (in SysDevices) ConvertToJsonWithDeviceRel(out *DevicesWithDeviceRel) {
+	in.ConvertToJson(&out.Device)
+	in.DeviceRel.ConvertToJson(&out.DeviceRel)
+}
+
+func (in SysDevices) ConvertToJsonWithDeviceRelAndDetail(out *DevicesWithDeviceRelAndDetail) {
+	in.ConvertToJson(&out.Device)
+	in.DeviceRel.ConvertToJsonWithDetail(&out.DeviceRel)
 }
 
 func (in Devices) ConvertToDB(out *SysDevices) {

@@ -21,4 +21,5 @@ var ServicesMap = map[string]interface{}{
 	//History
 	"POST" + urlconst.PostHistory:     services.PostHistory,
 	"GET" + urlconst.GetDetailHistory: services.GetDetailHistory,
+	"PUT" + urlconst.PutDetailHistory: services.UpdateHistory,
 }
