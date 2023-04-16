@@ -49,3 +49,11 @@ func Update(i interface{}, updatedData interface{}) error {
 	}
 	return db.Model(i).Updates(updatedData).Error
 }
+
+func CreateWithTx(i interface{}, tx *gorm.DB) error {
+	var db = commonModel.DbHelper.GetDb()
+	if err := getStructType(i, db); err != nil {
+		return err
+	}
+	return tx.Create(i).Error
+}
