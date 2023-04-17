@@ -3,8 +3,9 @@ package middleware
 import (
 	"os"
 
-	"github.com/charizark2710/Sunflower/RDIPs-BE/handler"
-	commonModel "github.com/charizark2710/Sunflower/RDIPs-BE/model/common"
+	"RDIPs-BE/handler"
+	commonModel "RDIPs-BE/model/common"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )

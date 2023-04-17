@@ -2,9 +2,10 @@ import AcUnitIcon from '@mui/icons-material/AcUnit';
 import SunFlowerIcon from '../../atoms/icon/SunflowerIcon.atom';
 import { StraightAtom } from '../../atoms/straight/Straight.atom';
 import './SunflowerLabel.mocules.scss';
+import { LinkAtom, LinkAtomProps } from '../../atoms/link/Link.atom';
 
 interface SunLabelProps {
-  labelName: React.ReactNode;
+  link?: LinkAtomProps;
   icon?: string;
   style?: {
     fontWeight?: string;
@@ -24,8 +25,10 @@ const defaultStyle = {
   lineHeight: '15px',
 };
 
+const defaultLink = { to: '/', className: 'link-item', children: 'Home' };
+
 const SunflowerLabel: React.FC<SunLabelProps> = ({
-  labelName = 'List Devices',
+  link = defaultLink,
   icon = '',
   style = defaultStyle,
   iconPos = 0,
@@ -38,18 +41,21 @@ const SunflowerLabel: React.FC<SunLabelProps> = ({
       case 'toggle':
         return <SunFlowerIcon />;
       default:
-        return <AcUnitIcon fontSize='inherit' />;
+        return <AcUnitIcon fontSize='inherit'/>;
     }
   }
   return (
-    <div style={style} onClick={onClick}>
-      <div className='flex-align-center flex-justify-center' style={{height: height}}>
+    <div style={style} >
+      <div className='flex-align-center flex-justify-center side-bar-item' style={{height: height}}>
         <div>
           {iconPos === 0 ? iconItem() : ''}
           &nbsp;
-          {size==='md' ? labelName : ""}
+          {size==='md' ?
+          <LinkAtom to={link.to} className={link.className}>
+              {link.children}
+          </LinkAtom> : ""}
           &nbsp;
-          {iconPos === 1 ? iconItem() : ''}
+          <span onClick={onClick}> {iconPos === 1 ? iconItem() : ''}</span>
         </div>
       </div>
 

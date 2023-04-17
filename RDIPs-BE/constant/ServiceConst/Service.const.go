@@ -1,8 +1,8 @@
 package ServiceConst
 
 import (
-	urlconst "github.com/charizark2710/Sunflower/RDIPs-BE/constant/URLConst"
-	"github.com/charizark2710/Sunflower/RDIPs-BE/services"
+	urlconst "RDIPs-BE/constant/URLConst"
+	"RDIPs-BE/services"
 )
 
 var ServicesMap = map[string]interface{}{
@@ -11,4 +11,14 @@ var ServicesMap = map[string]interface{}{
 	"GET" + urlconst.GetDetailDevice: services.GetDetailDevice,
 	"PUT" + urlconst.PutDetailDevice: services.UpdateDevice,
 	"DELETE" + urlconst.DeleteDevice: services.DeleteDevice,
+
+	//Performances
+	"GET" + urlconst.GetAllPerformances:   services.GetAllPerformances,
+	"POST" + urlconst.PostPerformance:     services.PostPerformance,
+	"GET" + urlconst.GetDetailPerformance: services.GetDetailPerformance,
+	"PUT" + urlconst.PutDetailPerformance: services.PutPerformance,
+
+	//History
+	"POST" + urlconst.PostHistory:     services.PostHistory,
+	"GET" + urlconst.GetDetailHistory: services.GetDetailHistory,
 }
