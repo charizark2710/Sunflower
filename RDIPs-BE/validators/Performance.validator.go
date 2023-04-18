@@ -7,30 +7,27 @@ import (
 	"io"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 )
 
-var validate = validator.New()
-
-var PostDeviceValidator = func(c *gin.Context) error {
-	var device model.Devices
+var PostPerformanceValidator = func(c *gin.Context) error {
+	var performance model.Performance
 	jsonData, err := io.ReadAll(c.Request.Body)
 	if err != nil {
 		return err
 	}
-	if err = json.Unmarshal(jsonData, &device); err != nil {
+	if err = json.Unmarshal(jsonData, &performance); err != nil {
 		return err
 	}
-	if err := validate.Struct(&device); err != nil {
+	if err := validate.Struct(&performance); err != nil {
 		return err
 	}
 	c.Request.Body = io.NopCloser(bytes.NewBuffer(jsonData))
 	return nil
 }
 
-var UpdateDeviceValidator = func(c *gin.Context) error {
+var UpdatePerformanceValidator = func(c *gin.Context) error {
 	id := c.Param("id")
-	var device model.Devices
+	var performance model.Performance
 	if err := validate.Var(id, "required,uuid"); err != nil {
 		return err
 	}
@@ -38,10 +35,10 @@ var UpdateDeviceValidator = func(c *gin.Context) error {
 	if err != nil {
 		return err
 	}
-	if err = json.Unmarshal(jsonData, &device); err != nil {
+	if err = json.Unmarshal(jsonData, &performance); err != nil {
 		return err
 	}
-	if err := validate.Struct(&device); err != nil {
+	if err := validate.Struct(&performance); err != nil {
 		return err
 	}
 	c.Request.Body = io.NopCloser(bytes.NewBuffer(jsonData))

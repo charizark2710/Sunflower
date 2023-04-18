@@ -11,9 +11,9 @@ var ValidatorsMap = map[string]interface{}{
 	// "DELETE" + urlconst.DeleteDevice: services.DeleteDevice,
 
 	//Performances
-	// "POST" + urlconst.PostPerformance:     services.PostPerformance,
-	// "PUT" + urlconst.PutDetailPerformance: services.PutPerformance,
+	"POST" + urlconst.PostPerformance:     validators.PostPerformanceValidator,
+	"PUT" + urlconst.PutDetailPerformance: validators.UpdatePerformanceValidator,
 
 	//History
-	// "POST" + urlconst.PostHistory:     services.PostHistory,
+	"POST" + urlconst.PostHistory: validators.PostHistoryValidator,
 }
