@@ -17,6 +17,7 @@ func main() {
 	r := gin.Default()
 	r.Use(middleware.SetHeader())
 	r.Use(middleware.Validation())
+	r.Use(middleware.Validator())
 
 	db, err := config.DbConfig()
 	if err == nil {
