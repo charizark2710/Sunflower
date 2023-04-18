@@ -6,8 +6,8 @@ type History struct {
 	Id        string    `json:"id"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
-	LogPath   string    `json:"log_path"`
-	DeviceId  string    `json:"device_id"`
+	LogPath   string    `json:"log_path" validate:"required"`
+	DeviceId  string    `json:"device_id" validate:"required"`
 }
 
 type SysHistory struct {
