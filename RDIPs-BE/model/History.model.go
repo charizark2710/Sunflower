@@ -15,7 +15,7 @@ type SysHistory struct {
 	CreatedAt time.Time `gorm:"column:created_at;"`
 	UpdatedAt time.Time `gorm:"column:updated_at;"`
 	LogPath   string    `gorm:"column:log_path;type:string;size:256"`
-	DeviceId  string    `gorm:"column:device_id;"`
+	DeviceId  string    `gorm:"column:device_id;type:uuid"`
 }
 
 func (SysHistory) TableName() string {
