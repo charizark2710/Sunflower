@@ -1,6 +1,8 @@
 package routers
 
 import (
+	"RDIPs-BE/middleware"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -10,6 +12,7 @@ func InitRouter(router *gin.Engine) {
 			"message": "pong",
 		})
 	})
+	router.Use(middleware.Validator())
 	DevicesRouter(router)
 	PerformanceRouter(router)
 	HistoryRouter(router)
