@@ -27,7 +27,6 @@ var GetAllDevices = func(c *gin.Context) (commonModel.ResponseTemplate, error) {
 	return commonModel.ResponseTemplate{HttpCode: 200, Data: resData}, nil
 }
 
-const DEFAULT_LOG_FILE string = "hour.log"
 const DEFAULT_DOCUMENT_NAME string = "performance.docs"
 
 var PostDevice = func(c *gin.Context) (commonModel.ResponseTemplate, error) {
@@ -43,7 +42,7 @@ var PostDevice = func(c *gin.Context) (commonModel.ResponseTemplate, error) {
 			}
 
 			historyObj := model.SysHistory{
-				LogPath:  DEFAULT_LOG_FILE,
+				LogPath:  deviceObj.Name + "/",
 				DeviceId: deviceObj.Id,
 			}
 			if err := handler.CreateWithTx(&historyObj, tx); err != nil {
@@ -94,16 +93,8 @@ var GetDetailDevice = func(c *gin.Context) (commonModel.ResponseTemplate, error)
 		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
 	}
 
-	if detail == "true" {
-		//return detail of history and performance
-		resData := model.DevicesWithDeviceRelAndDetail{}
-		deviceBody.ConvertToJsonWithDeviceRelAndDetail(&resData)
-
-		return commonModel.ResponseTemplate{HttpCode: 200, Data: resData}, nil
-	}
-
-	resData := model.DevicesWithDeviceRel{}
-	deviceBody.ConvertToJsonWithDeviceRel(&resData)
+	resData := model.Devices{}
+	deviceBody.ConvertToJson(&resData)
 	return commonModel.ResponseTemplate{HttpCode: 200, Data: resData}, nil
 }
 

@@ -1,16 +1,10 @@
 package model
 
 type DeviceRel struct {
-	DeviceID      string `json:"device_id"`
-	HistoryID     string `json:"history_id"`
-	PerformanceID string `json:"performance_id"`
-}
-
-type DeviceRelWithDetail struct {
 	DeviceID      string      `json:"device_id"`
 	HistoryID     string      `json:"history_id"`
-	History       History     `json:"history,omitempty"`
 	PerformanceID string      `json:"performance_id"`
+	History       History     `json:"history,omitempty"`
 	Performance   Performance `json:"performance,omitempty"`
 }
 
@@ -30,15 +24,8 @@ func (in SysDeviceRel) ConvertToJson(out *DeviceRel) {
 	out.HistoryID = in.HistoryID
 	out.PerformanceID = in.PerformanceID
 	out.DeviceID = in.DeviceID
-}
-
-func (in SysDeviceRel) ConvertToJsonWithDetail(out *DeviceRelWithDetail) {
-	out.HistoryID = in.HistoryID
-	out.PerformanceID = in.PerformanceID
-	out.DeviceID = in.DeviceID
 	in.History.ConvertToJson(&out.History)
 	in.Performance.ConvertToJson(&out.Performance)
-
 }
 
 func (in DeviceRel) ConvertToDB(out *SysDeviceRel) {

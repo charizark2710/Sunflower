@@ -20,17 +20,21 @@ const (
 )
 
 type Devices struct {
-	Id             string     `json:"id"`
-	CreatedAt      time.Time  `json:"created_at"`
-	UpdatedAt      time.Time  `json:"updated_at"`
-	Type           deviceType `json:"type"`
-	Status         statusEnum `json:"status"`
-	LifeTime       time.Time  `json:"life_time"`
-	FirwareVersion int        `json:"firmware_ver"`
-	AppVersion     int        `json:"app_ver"`
-	ParentID       string     `json:"parentID"`
-	Parent         *Devices   `json:"parent,omitempty"`
-	Name           string     `json:"name"`
+	Id             string       `json:"id"`
+	CreatedAt      time.Time    `json:"created_at"`
+	UpdatedAt      time.Time    `json:"updated_at"`
+	Type           deviceType   `json:"type"`
+	Status         statusEnum   `json:"status"`
+	LifeTime       time.Time    `json:"life_time"`
+	FirwareVersion int          `json:"firmware_ver"`
+	AppVersion     int          `json:"app_ver"`
+	ParentID       string       `json:"parentID"`
+	Parent         *Devices     `json:"parent,omitempty"`
+	Name           string       `json:"name"`
+	HistoryID      string       `json:"historyID,omitempty"`
+	History        *History     `json:"history,omitempty"`
+	PerformanceID  string       `json:"performanceID,omitempty"`
+	Performance    *Performance `json:"performance,omitempty"`
 }
 
 type SysDevices struct {
@@ -48,16 +52,6 @@ type SysDevices struct {
 	Parent         *SysDevices  `gorm:"foreignKey:ParentID"`
 	Name           string       `gorm:"column:name"`
 	DeviceRel      SysDeviceRel `gorm:"foreignKey:DeviceID"`
-}
-
-type DevicesWithDeviceRelAndDetail struct {
-	Device    Devices             `json:"device"`
-	DeviceRel DeviceRelWithDetail `json:"device_rel,omitempty"`
-}
-
-type DevicesWithDeviceRel struct {
-	Device    Devices   `json:"device"`
-	DeviceRel DeviceRel `json:"device_rel,omitempty"`
 }
 
 func (SysDevices) TableName() string {
@@ -78,16 +72,25 @@ func (in SysDevices) ConvertToJson(out *Devices) {
 		out.Parent = &Devices{}
 		in.Parent.ConvertToJson(out.Parent)
 	}
-}
+	out.Name = in.Name
+	if in.DeviceRel.HistoryID != "" {
+		if in.DeviceRel.History.Id == "" {
+			out.HistoryID = in.DeviceRel.HistoryID
+		} else {
+			out.History = &History{}
+			in.DeviceRel.History.ConvertToJson(out.History)
+		}
+	}
 
-func (in SysDevices) ConvertToJsonWithDeviceRel(out *DevicesWithDeviceRel) {
-	in.ConvertToJson(&out.Device)
-	in.DeviceRel.ConvertToJson(&out.DeviceRel)
-}
+	if in.DeviceRel.PerformanceID != "" {
+		if in.DeviceRel.Performance.Id == "" {
+			out.PerformanceID = in.DeviceRel.PerformanceID
+		} else {
+			out.Performance = &Performance{}
+			in.DeviceRel.Performance.ConvertToJson(out.Performance)
+		}
+	}
 
-func (in SysDevices) ConvertToJsonWithDeviceRelAndDetail(out *DevicesWithDeviceRelAndDetail) {
-	in.ConvertToJson(&out.Device)
-	in.DeviceRel.ConvertToJsonWithDetail(&out.DeviceRel)
 }
 
 func (in Devices) ConvertToDB(out *SysDevices) {
@@ -104,4 +107,5 @@ func (in Devices) ConvertToDB(out *SysDevices) {
 		out.Parent = &SysDevices{}
 		in.Parent.ConvertToDB(out.Parent)
 	}
+	out.Name = in.Name
 }
