@@ -23,14 +23,14 @@ type Devices struct {
 	Id             string     `json:"id"`
 	CreatedAt      time.Time  `json:"created_at"`
 	UpdatedAt      time.Time  `json:"updated_at"`
-	Type           deviceType `json:"type"`
+	Type           deviceType `json:"type" validate:"required"`
 	Status         statusEnum `json:"status"`
 	LifeTime       time.Time  `json:"life_time"`
 	FirwareVersion int        `json:"firmware_ver"`
 	AppVersion     int        `json:"app_ver"`
 	ParentID       string     `json:"parentID"`
 	Parent         *Devices   `json:"parent,omitempty"`
-	Name           string     `json:"name"`
+	Name           string     `json:"name" validate:"required"`
 }
 
 type SysDevices struct {
