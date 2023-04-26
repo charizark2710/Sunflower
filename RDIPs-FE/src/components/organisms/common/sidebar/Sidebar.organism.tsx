@@ -6,16 +6,15 @@ const sideBarItems = [
     to: '/',
     className: 'link-item',
     children: (
-      <span>
+      <span style={{fontSize: '16px'}}>
         <strong>SUN</strong>flower
       </span>
     ),
   },
   { to: '/list-devices', className: 'link-item', children: 'List Devices' },
-  { to: '/', className: 'link-item', children: 'List Users' },
-  { to: '/', className: 'link-item', children: 'Button name' },
-  { to: '/', className: 'link-item', children: 'Button name' },
-  { to: '/', className: 'link-item', children: 'Button name' },
+  { to: '/list-users', className: 'link-item', children: 'List Users' },
+  { to: '/list-admin', className: 'link-item', children: 'List Admin' },
+  { to: '/campaign', className: 'link-item', children: 'Campaign' },
 ];
 
 const topLabelStyle = {
