@@ -18,40 +18,7 @@ import Typography from '@mui/material/Typography';
 import { alpha } from '@mui/material/styles';
 import { visuallyHidden } from '@mui/utils';
 import * as React from 'react';
-
-interface Data {
-  idDevice: any;
-  firmWareVer: any;
-  appVer: any;
-  common: any;
-  action: any;
-}
-
-function createData(idDevice: any, firmWareVer: any, appVer: any, common: any, action: any): Data {
-  return {
-    idDevice,
-    firmWareVer,
-    appVer,
-    common,
-    action,
-  };
-}
-
-const rows = [
-  createData('Cupcake', 305, 3.7, 67, 4.3),
-  createData('Donut', 452, 25.0, 51, 4.9),
-  createData('Eclair', 262, 16.0, 24, 6.0),
-  createData('Frozen yoghurt', 159, 6.0, 24, 4.0),
-  createData('Gingerbread', 356, 16.0, 49, 3.9),
-  createData('Honeycomb', 408, 3.2, 87, 6.5),
-  createData('Ice cream sandwich', 237, 9.0, 37, 4.3),
-  createData('Jelly Bean', 375, 0.0, 94, 0.0),
-  createData('KitKat', 518, 26.0, 65, 7.0),
-  createData('Lollipop', 392, 0.2, 98, 0.0),
-  createData('Marshmallow', 318, 0, 81, 2.0),
-  createData('Nougat', 360, 19.0, 9, 37.0),
-  createData('Oreo', 437, 18.0, 63, 4.0),
-];
+import { HeadCell } from '../../../utils/interface';
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
   if (b[orderBy] < a[orderBy]) {
@@ -72,10 +39,6 @@ function getComparator<Key extends keyof any>(
   return order === 'desc' ? (a, b) => descendingComparator(a, b, orderBy) : (a, b) => -descendingComparator(a, b, orderBy);
 }
 
-// Since 2020 all major browsers ensure sort stability with Array.prototype.sort().
-// stableSort() brings sort stability to non-modern browsers (notably IE11). If you
-// only support modern browsers you can replace stableSort(exampleArray, exampleComparator)
-// with exampleArray.slice().sort(exampleComparator)
 function stableSort<T>(array: readonly T[], comparator: (a: T, b: T) => number) {
   const stabilizedThis = array.map((el, index) => [el, index] as [T, number]);
   stabilizedThis.sort((a, b) => {
@@ -87,69 +50,25 @@ function stableSort<T>(array: readonly T[], comparator: (a: T, b: T) => number) 
   });
   return stabilizedThis.map((el) => el[0]);
 }
-
-interface HeadCell {
-  disablePadding: boolean;
-  id: keyof Data;
-  label: string;
-  numeric: boolean;
-}
-
-const headCells: readonly HeadCell[] = [
-  {
-    id: 'idDevice',
-    numeric: false,
-    disablePadding: false,
-    label: 'ID_Device',
-  },
-  {
-    id: 'firmWareVer',
-    numeric: true,
-    disablePadding: false,
-    label: 'Firmware version',
-  },
-  {
-    id: 'appVer',
-    numeric: true,
-    disablePadding: false,
-    label: 'App version',
-  },
-  {
-    id: 'common',
-    numeric: true,
-    disablePadding: false,
-    label: 'Status',
-  },
-  {
-    id: 'action',
-    numeric: true,
-    disablePadding: false,
-    label: 'Action',
-  },
-];
-
-const DEFAULT_ORDER = 'asc';
-const DEFAULT_ORDER_BY = 'firmWareVer';
-const DEFAULT_ROWS_PER_PAGE = 5;
-
 interface TableHeaderProps {
-  onRequestSort: (event: React.MouseEvent<unknown>, newOrderBy: keyof Data) => void;
+  headCells: HeadCell[];
+  onRequestSort: (event: React.MouseEvent<unknown>, newOrderBy: any) => void;
   order: Order;
   orderBy: string;
 }
 
 function EnhancedTableHead(props: TableHeaderProps) {
   const { order, orderBy, onRequestSort } = props;
-  const createSortHandler = (newOrderBy: keyof Data) => (event: React.MouseEvent<unknown>) => {
+  const createSortHandler = (newOrderBy: any) => (event: React.MouseEvent<unknown>) => {
     onRequestSort(event, newOrderBy);
   };
 
   return (
     <TableHead>
       <TableRow>
-        {headCells.map((headCell) => (
+        {props.headCells.map((headCell,i) => (
           <TableCell
-            key={headCell.id}
+            key={headCell.id || `a${i}`}
             align={headCell.numeric ? 'right' : 'left'}
             padding={headCell.disablePadding ? 'none' : 'normal'}
             sortDirection={orderBy === headCell.id ? order : false}
@@ -172,8 +91,9 @@ function EnhancedTableHead(props: TableHeaderProps) {
     </TableHead>
   );
 }
-
-interface EnhancedTableToolbarProps {}
+interface EnhancedTableToolbarProps {
+  title: string;
+}
 
 function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
   return (
@@ -187,7 +107,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
       }}
     >
       <Typography sx={{ flex: '1 1 100%' }} variant='h6' id='tableTitle' component='div'>
-        List Devices
+        {props.title}
       </Typography>
       <Tooltip title='Filter list'>
         <IconButton>
@@ -198,10 +118,21 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
   );
 }
 
-const TableAtom = (props: { onRowClick: (args: any) => void }) => {
-  const {onRowClick} = props;
+const TableAtom = (props: {
+  headCells: HeadCell[];
+  title: string;
+  rows: any[];
+  deviceColumns: any[];
+  onRowClick: (args: any) => void;
+}) => {
+  const rows = props.rows;
+  const DEFAULT_ORDER = 'asc';
+  const DEFAULT_ORDER_BY = props.deviceColumns[1];
+  const DEFAULT_ROWS_PER_PAGE = 5;
+
+  const { onRowClick } = props;
   const [order, setOrder] = React.useState<Order>(DEFAULT_ORDER);
-  const [orderBy, setOrderBy] = React.useState<keyof Data>(DEFAULT_ORDER_BY);
+  const [orderBy, setOrderBy] = React.useState<any>(DEFAULT_ORDER_BY);
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
   const [visibleRows, setVisibleRows] = React.useState<any[]>([]);
@@ -213,10 +144,10 @@ const TableAtom = (props: { onRowClick: (args: any) => void }) => {
     rowsOnMount = rowsOnMount.slice(0 * DEFAULT_ROWS_PER_PAGE, 0 * DEFAULT_ROWS_PER_PAGE + DEFAULT_ROWS_PER_PAGE);
 
     setVisibleRows(rowsOnMount);
-  }, []);
+  }, [DEFAULT_ORDER_BY, rows]);
 
   const handleRequestSort = React.useCallback(
-    (event: React.MouseEvent<unknown>, newOrderBy: keyof Data) => {
+    (event: React.MouseEvent<unknown>, newOrderBy: any) => {
       const isAsc = orderBy === newOrderBy && order === 'asc';
       const toggledOrder = isAsc ? 'desc' : 'asc';
       setOrder(toggledOrder);
@@ -226,27 +157,8 @@ const TableAtom = (props: { onRowClick: (args: any) => void }) => {
       const updatedRows = sortedRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
       setVisibleRows(updatedRows);
     },
-    [order, orderBy, page, rowsPerPage]
+    [order, orderBy, page, rowsPerPage, rows]
   );
-
-  const handleClick = (event: React.MouseEvent<unknown>, name: string) => {
-    console.log('ahihi');
-
-    // const selectedIndex = selected.indexOf(name);
-    // let newSelected: readonly string[] = [];
-
-    // if (selectedIndex === -1) {
-    //   newSelected = newSelected.concat(selected, name);
-    // } else if (selectedIndex === 0) {
-    //   newSelected = newSelected.concat(selected.slice(1));
-    // } else if (selectedIndex === selected.length - 1) {
-    //   newSelected = newSelected.concat(selected.slice(0, -1));
-    // } else if (selectedIndex > 0) {
-    //   newSelected = newSelected.concat(selected.slice(0, selectedIndex), selected.slice(selectedIndex + 1));
-    // }
-
-    // setSelected(newSelected);
-  };
 
   const handleChangePage = React.useCallback(
     (event: unknown, newPage: number) => {
@@ -262,7 +174,7 @@ const TableAtom = (props: { onRowClick: (args: any) => void }) => {
       const newPaddingHeight = (dense ? 33 : 53) * numEmptyRows;
       setPaddingHeight(newPaddingHeight);
     },
-    [order, orderBy, dense, rowsPerPage]
+    [order, orderBy, dense, rowsPerPage, rows]
   );
 
   const handleChangeRowsPerPage = React.useCallback(
@@ -279,7 +191,7 @@ const TableAtom = (props: { onRowClick: (args: any) => void }) => {
       // There is no layout jump to handle on the first page.
       setPaddingHeight(0);
     },
-    [order, orderBy]
+    [order, orderBy, rows]
   );
 
   const handleChangeDense = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -289,30 +201,36 @@ const TableAtom = (props: { onRowClick: (args: any) => void }) => {
   return (
     <Box sx={{ width: '100%' }} className='table-atom-container'>
       <Paper sx={{ width: '100%', mb: 2 }}>
-        <EnhancedTableToolbar />
+        <EnhancedTableToolbar title={props.title} />
         <TableContainer>
           <Table sx={{ minWidth: 750 }} aria-labelledby='tableTitle' size={dense ? 'small' : 'medium'}>
-            <EnhancedTableHead order={order} orderBy={orderBy} onRequestSort={handleRequestSort} />
+            <EnhancedTableHead
+              headCells={props.headCells}
+              order={order}
+              orderBy={orderBy}
+              onRequestSort={handleRequestSort}
+            />
             <TableBody>
               {visibleRows
                 ? visibleRows.map((row, index) => {
-                    const labelId = `enhanced-table-checkbox-${index}`;
-
                     return (
                       <TableRow
                         hover
                         onClick={() => onRowClick(row)}
                         tabIndex={-1}
-                        key={row.idDevice}
+                        key={row.idDevice+' '+index}
                         sx={{ cursor: 'pointer' }}
                       >
-                        <TableCell align='left' id={labelId}>
-                          {row.idDevice}
+                        <TableCell align='left'>
+                          {index + 1}
                         </TableCell>
-                        <TableCell align='right'>{row.firmWareVer}</TableCell>
-                        <TableCell align='right'>{row.appVer}</TableCell>
-                        <TableCell align='right'>{row.common}</TableCell>
-                        <TableCell align='right'>{row.action}</TableCell>
+                        {props.deviceColumns.map((col, i) => {
+                          return (
+                            <TableCell key={`${row.idDevice}${i}`} align={i === 0 ? 'left' : 'right'}>
+                              {row[col]}
+                            </TableCell>
+                          );
+                        })}
                       </TableRow>
                     );
                   })
