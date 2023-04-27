@@ -19,9 +19,6 @@ export interface DataDetail {
 }
 
 export const HighChartCustom: React.FC<HighChartsProps> = (props : HighChartsProps) => {
-  const [currentData, setCurrentData] = React.useState(props.chartData);
-  let currentSelectedFromDate = null;//choose from the date min in timeline
-  let currentSelectedToDate = null;//choose from the date max in timeline
   let amountDisplay :number = 0;// distance between them
   useMemo(()=>{
 
@@ -52,15 +49,7 @@ export const HighChartCustom: React.FC<HighChartsProps> = (props : HighChartsPro
         break;
       }
     }
-  }, [props])
-
-  function fromDate() {
-    return null;
-  }
-
-  function toDate() {
-    return null;
-  }
+  }, [props, amountDisplay])
 
   function getOptions(typeChart: TypeChart) {
     switch(typeChart) {

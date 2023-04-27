@@ -1,40 +1,36 @@
 import React from 'react';
 import { Box, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
 import chartData from '../../lib/chartData.json';
-import DatePickerCustom from '../../lib/highchart/DatePickerCustom';
+import DatePickerCustom from '../../lib/datepicker/DatePickerCustom';
 import { HighChartCustom } from '../../lib/highchart/HighChartCustom';
 import { TypeChart } from '../../utils/enum';
 import './Temp.page.scss';
 
 function TempPage() {
-   const [type, setType] = React.useState('1');
+  const [type, setType] = React.useState('1');
 
   const handleChange = (event: SelectChangeEvent) => {
     setType(event.target.value);
   };
 
   const onNextClick = () => {
-    console.log("Xứng đáng là con trai của taaaaa next");
-    
-  }
+    console.log('Xứng đáng là con trai của taaaaa next');
+  };
 
   const onPrevClick = () => {
-    console.log("Xứng đáng là con trai của taaaaa right");
-    
-  }
+    console.log('Xứng đáng là con trai của taaaaa right');
+  };
 
-  const listTimeType = ["Day", "Week", "Month", "Year", "Decade"];
+  const listTimeType = ['Day', 'Week', 'Month', 'Year', 'Decade'];
 
-  React.useEffect(()=>{
+  React.useEffect(() => {
     console.log(type);
-    
-  }, [type])
-
+  }, [type]);
 
   return (
     // <div className="Sidebar" > Thấy thì mất 5 nghìn</div>
 
-    <div style={{padding: '15px'}}>
+    <div style={{ padding: '15px' }}>
       <h5>Range Selection</h5>
 
       <Box
@@ -46,23 +42,35 @@ function TempPage() {
         }}
       >
         <span>
-        <FormControl fullWidth>
-            <InputLabel id="demo-simple-select-label">Filter By</InputLabel>
+          <FormControl fullWidth>
+            <InputLabel id='demo-simple-select-label'>Filter By</InputLabel>
             <Select
-                labelId="demo-simple-select-label"
-                value={type}
-                id='dateSelect' variant='outlined' sx={{ m: 2, maxWidth: 300 }} size='small'
-                onChange={handleChange}
+              labelId='demo-simple-select-label'
+              value={type}
+              id='dateSelect'
+              variant='outlined'
+              sx={{ m: 2, maxWidth: 300 }}
+              size='small'
+              onChange={handleChange}
             >
-                {listTimeType.map((type,i)=>{
-                   return <MenuItem key={i} value={i+1}>{type}</MenuItem>
-                })}
+              {listTimeType.map((type, i) => {
+                return (
+                  <MenuItem key={i} value={i + 1}>
+                    {type}
+                  </MenuItem>
+                );
+              })}
             </Select>
-        </FormControl>
+          </FormControl>
         </span>
       </Box>
       <Box>
-        <DatePickerCustom fromDate={chartData[0].dateTime} onNextClick={onNextClick} onPrevClick={onPrevClick} disabled={false}></DatePickerCustom>
+        <DatePickerCustom
+          fromDate={chartData[0].dateTime}
+          onNextClick={onNextClick}
+          onPrevClick={onPrevClick}
+          disabled={false}
+        ></DatePickerCustom>
       </Box>
 
       <h5>Case 1: Sline chart </h5>

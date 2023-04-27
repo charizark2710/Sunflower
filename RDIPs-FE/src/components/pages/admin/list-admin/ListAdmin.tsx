@@ -1,12 +1,10 @@
-import { useNavigate } from 'react-router-dom';
-import './ListUsers.scss';
-import TableAtom from '../../../atoms/table/Table.atom';
 import { HeadCell, TypeUserEnum, UserData } from '../../../../utils/interface';
+import TableAtom from '../../../atoms/table/Table.atom';
+import './ListAdmin.scss';
 
-const ListUsers = () => {
-  const navigate = useNavigate();
+const ListAdmin = () => {
   function navigateToDetailPage(detail: any) {
-    navigate('/detail-user', { replace: false, state: detail });
+    return;
   }
 
   const userListData = [
@@ -78,16 +76,16 @@ const ListUsers = () => {
   const userColumns = ['user_name', 'address', 'phone_num', 'email', 'type'];
 
   return (
-    <div className='list-users-container'>
+    <div className='list-admin-container'>
      <TableAtom
         onRowClick={navigateToDetailPage}
         rows={userListData}
         deviceColumns={userColumns}
-        title='List Users'
+        title='List Admin'
         headCells={headCells}
       />
     </div>
   );
 };
 
-export default ListUsers;
+export default ListAdmin;
