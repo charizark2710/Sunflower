@@ -30,7 +30,7 @@ type Devices struct {
 	AppVersion     int          `json:"app_ver"`
 	ParentID       string       `json:"parentID"`
 	Parent         *Devices     `json:"parent,omitempty"`
-	Name           string       `json:"name"`
+	Name           string       `json:"name" validate:"required"`
 	HistoryID      string       `json:"historyID,omitempty"`
 	History        *History     `json:"history,omitempty"`
 	PerformanceID  string       `json:"performanceID,omitempty"`
