@@ -10,7 +10,9 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rabbitmq/amqp091-go"
@@ -42,6 +44,8 @@ func ReceiveService(deliveries <-chan amqp091.Delivery) {
 		utils.Log(LogConstant.Info, "Start ACK Delivery: "+d.Exchange+" With key: "+d.RoutingKey)
 		err := d.Ack(true)
 		if err != nil {
+			utils.Log(LogConstant.Error, err)
+			time.Sleep(10 * time.Second)
 			ack(d)
 		} else {
 			utils.Log(LogConstant.Info, "Finish ACK Delivery: "+d.Exchange+" With key: "+d.RoutingKey)
@@ -55,6 +59,7 @@ func ReceiveService(deliveries <-chan amqp091.Delivery) {
 			Body:   http.NoBody,
 		}}
 		c.Request.Body = io.NopCloser(strings.NewReader(string(delivery.Body)))
+		c.Request.URL = &url.URL{RawQuery: "amqp=true"}
 		routingKeyArr := strings.Split(delivery.RoutingKey, ".")
 		service := ServiceConst.ServicesMap[routingKeyArr[len(routingKeyArr)-1]]
 		if fn, ok := service.(func(c *gin.Context) (commonModel.ResponseTemplate, error)); !ok {

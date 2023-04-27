@@ -10,11 +10,11 @@ const (
 	//Performances
 	GetAllPerformances = "/performances"
 	// PostPerformance      = "/performances"
-	GetDetailPerformance = "/performances/:id"
-	PutDetailPerformance = "/performances/:id"
+	GetDetailPerformance = "/performances/:deviceId"
+	PutDetailPerformance = "/performances/:deviceId"
 
 	//History
 	// PostHistory      = "/history"
-	GetDetailHistory = "/history/:id"
-	PutDetailHistory = "/history/:id"
+	GetDetailHistory = "/history/:deviceId"
+	PutDetailHistory = "/history/:deviceId"
 )

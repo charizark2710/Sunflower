@@ -27,8 +27,6 @@ var GetAllDevices = func(c *gin.Context) (commonModel.ResponseTemplate, error) {
 	return commonModel.ResponseTemplate{HttpCode: 200, Data: resData}, nil
 }
 
-const DEFAULT_DOCUMENT_NAME string = "performance.docs"
-
 var PostDevice = func(c *gin.Context) (commonModel.ResponseTemplate, error) {
 	utils.Log(LogConstant.Info, "PostDevice Start")
 	defer utils.Log(LogConstant.Info, "PostDevice End")
@@ -37,23 +35,25 @@ var PostDevice = func(c *gin.Context) (commonModel.ResponseTemplate, error) {
 		deviceObj := model.SysDevices{}
 		deviceBody.ConvertToDB(&deviceObj)
 
-		db := commonModel.DbHelper.GetDb()
+		db := commonModel.Helper.GetDb()
 		err := db.Transaction(func(tx *gorm.DB) error {
+			utils.Log(LogConstant.Info, "Create Device Start")
 			if err = handler.CreateWithTx(&deviceObj, tx); err != nil {
 				return err
 			}
 
 			historyObj := model.SysHistory{
-				LogPath:  deviceObj.Name + "/",
-				DeviceId: deviceObj.Id,
+				LogPath: deviceObj.Name + "/",
 			}
+			utils.Log(LogConstant.Info, "Create History Start")
 			if err := handler.CreateWithTx(&historyObj, tx); err != nil {
 				return err
 			}
 
 			performanceObj := model.SysPerformance{
-				DocumentName: DEFAULT_DOCUMENT_NAME,
+				DocumentName: deviceObj.Name,
 			}
+			utils.Log(LogConstant.Info, "Create Performance Start")
 			if err := handler.CreateWithTx(&performanceObj, tx); err != nil {
 				return err
 			}
@@ -63,6 +63,7 @@ var PostDevice = func(c *gin.Context) (commonModel.ResponseTemplate, error) {
 				PerformanceID: performanceObj.Id,
 				HistoryID:     historyObj.Id,
 			}
+			utils.Log(LogConstant.Info, "Create device_rel Start")
 			if err := handler.CreateWithTx(&deviceRelObj, tx); err != nil {
 				return err
 			}
@@ -85,7 +86,7 @@ var GetDetailDevice = func(c *gin.Context) (commonModel.ResponseTemplate, error)
 	id := c.Param("id")
 	detail := c.Query("detail")
 	deviceBody := model.SysDevices{}
-	db := commonModel.DbHelper.GetDb()
+	db := commonModel.Helper.GetDb()
 	var err error
 	if detail == "true" {
 		err = db.Where("id = ? AND status != ?", id, model.Disable).Preload("DeviceRel").Preload("DeviceRel.History").Preload("DeviceRel.Performance").First(&deviceBody).Error

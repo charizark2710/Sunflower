@@ -8,6 +8,7 @@ import (
 	"RDIPs-BE/utils"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 var GetAllPerformances = func(c *gin.Context) (commonModel.ResponseTemplate, error) {
@@ -60,10 +61,15 @@ var GetDetailPerformance = func(c *gin.Context) (commonModel.ResponseTemplate, e
 
 var PutPerformance = func(c *gin.Context) (commonModel.ResponseTemplate, error) {
 	utils.Log(LogConstant.Info, "UpdatePerformance Start")
-	id := c.Param("id")
+	deviceId := c.Param("deviceId")
+	db := commonModel.Helper.GetDb()
+	rel := model.DeviceRel{DeviceID: deviceId}
 	performanceBody := model.Performance{}
+	db.First(&rel).Preload("sys_history", func(db *gorm.DB) *gorm.DB {
+		return db.Order("sunflower.sys_history.log_path Desc").Limit(1)
+	})
 	if err := c.BindJSON(&performanceBody); err == nil {
-		performanceModel := model.SysPerformance{Id: id}
+		performanceModel := model.SysPerformance{Id: rel.PerformanceID}
 		err := handler.Update(&performanceModel, performanceBody)
 		if err != nil {
 			utils.Log(LogConstant.Error, err)

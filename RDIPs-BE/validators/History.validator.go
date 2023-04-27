@@ -2,25 +2,37 @@ package validators
 
 import (
 	"RDIPs-BE/model"
-	"bytes"
 	"encoding/json"
-	"io"
 
-	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 )
 
-var PostHistoryValidator = func(c *gin.Context) error {
+type HistoryValidator struct {
+	Validator
+}
+
+func (HistoryValidator) Post(body []byte) error {
+	var validate = validator.New()
 	var history model.History
-	jsonData, err := io.ReadAll(c.Request.Body)
+	err := json.Unmarshal(body, &history)
 	if err != nil {
-		return err
-	}
-	if err = json.Unmarshal(jsonData, &history); err != nil {
 		return err
 	}
 	if err := validate.Struct(&history); err != nil {
 		return err
 	}
-	c.Request.Body = io.NopCloser(bytes.NewBuffer(jsonData))
+	return nil
+}
+
+func (HistoryValidator) Put(body []byte) error {
+	var validate = validator.New()
+	var history model.History
+	err := json.Unmarshal(body, &history)
+	if err != nil {
+		return err
+	}
+	if err := validate.Struct(&history); err != nil {
+		return err
+	}
 	return nil
 }
