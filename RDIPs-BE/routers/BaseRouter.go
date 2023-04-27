@@ -12,7 +12,7 @@ func InitRouter(router *gin.Engine) {
 			"message": "pong",
 		})
 	})
-	router.Use(middleware.Validator())
+	router.Use(middleware.ValidatorMiddleware())
 	DevicesRouter(router)
 	PerformanceRouter(router)
 	HistoryRouter(router)

@@ -36,7 +36,7 @@ func InitAmqpRoutes() {
 	go func() {
 		AMQP_handler.ReceiveService(deliveries)
 	}()
-	for serviceName, _ := range ServiceConst.ServicesMap {
+	for serviceName := range ServiceConst.ServicesMap {
 		err = ch.QueueBind(queue.Name, "gateway.*."+serviceName, AMQPconst.DATA_EXCHANGE, false, nil)
 		if err != nil {
 			utils.Log(LogConstant.Fatal, err)

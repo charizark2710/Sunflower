@@ -51,7 +51,7 @@ func Update(i interface{}, updatedData interface{}) error {
 }
 
 func CreateWithTx(i interface{}, tx *gorm.DB) error {
-	var db = commonModel.DbHelper.GetDb()
+	var db = commonModel.Helper.GetDb()
 	if err := getStructType(i, db); err != nil {
 		return err
 	}

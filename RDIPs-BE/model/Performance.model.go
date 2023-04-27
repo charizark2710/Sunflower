@@ -9,6 +9,7 @@ type Performance struct {
 	CreatedAt    time.Time `json:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at"`
 	DocumentName string    `json:"document_name" validate:"required"`
+	Payload      string    `json:"payload"`
 }
 
 type SysPerformance struct {
