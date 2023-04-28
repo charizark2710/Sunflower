@@ -20,7 +20,6 @@ const (
 )
 
 type Devices struct {
-
 	Id             string       `json:"id"`
 	CreatedAt      time.Time    `json:"created_at"`
 	UpdatedAt      time.Time    `json:"updated_at"`
@@ -36,12 +35,10 @@ type Devices struct {
 	History        *History     `json:"history,omitempty"`
 	PerformanceID  string       `json:"performanceID,omitempty"`
 	Performance    *Performance `json:"performance,omitempty"`
-
 }
 
 type SysDevices struct {
 	// User      SysUser    `gorm:"column:user;type:uuid"`
-
 	Id             string       `gorm:"default:gen_random_uuid();primaryKey;column:id;type:uuid"`
 	CreatedAt      time.Time    `gorm:"column:created_at;"`
 	UpdatedAt      time.Time    `gorm:"column:updated_at;"`
@@ -52,7 +49,7 @@ type SysDevices struct {
 	AppVersion     int          `gorm:"column:app_ver;type:integer"`
 	ParentID       string       `gorm:"column:parent;uniqueIndex;default:NULL"`
 	Parent         *SysDevices  `gorm:"foreignKey:ParentID"`
-	Name           string       `gorm:"column:name"`
+	Name           string       `gorm:"column:name;unique"`
 	DeviceRel      SysDeviceRel `gorm:"foreignKey:DeviceID"`
 }
 

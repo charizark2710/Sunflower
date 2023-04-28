@@ -5,15 +5,15 @@ import (
 	"RDIPs-BE/validators"
 )
 
-var ValidatorsMap = map[string]interface{}{
-	"POST" + urlconst.PostDevice:     validators.PostDeviceValidator,
-	"PUT" + urlconst.PutDetailDevice: validators.UpdateDeviceValidator,
+var ValidatorsMap = map[string]validators.Validator{
+	"POST" + urlconst.PostDevice:     validators.DeviceValidator{},
+	"PUT" + urlconst.PutDetailDevice: validators.DeviceValidator{},
 	// "DELETE" + urlconst.DeleteDevice: services.DeleteDevice,
 
 	//Performances
-	"POST" + urlconst.PostPerformance:     validators.PostPerformanceValidator,
-	"PUT" + urlconst.PutDetailPerformance: validators.UpdatePerformanceValidator,
+	// "POST" + urlconst.PostPerformance:     validators.PostPerformanceValidator,
+	"PUT" + urlconst.PutDetailPerformance: validators.PerformanceValidator{},
 
 	//History
-	"POST" + urlconst.PostHistory: validators.PostHistoryValidator,
+	// "POST" + urlconst.PostHistory: validators.PostHistoryValidator,
 }

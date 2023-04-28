@@ -8,7 +8,7 @@ import (
 )
 
 func HistoryRouter(router *gin.Engine) {
-	router.POST(urlconst.PostHistory, controller.Controller)
+	// router.POST(urlconst.PostHistory, controller.Controller)
 	router.GET(urlconst.GetDetailHistory, controller.Controller)
 	router.PUT(urlconst.PutDetailHistory, controller.Controller)
 }

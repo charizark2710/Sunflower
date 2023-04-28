@@ -7,7 +7,7 @@ type History struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 	LogPath   string    `json:"log_path" validate:"required"`
-	DeviceId  string    `json:"device_id" validate:"required"`
+	Payload   string    `json:"payload"`
 }
 
 type SysHistory struct {
@@ -15,7 +15,6 @@ type SysHistory struct {
 	CreatedAt time.Time `gorm:"column:created_at;"`
 	UpdatedAt time.Time `gorm:"column:updated_at;"`
 	LogPath   string    `gorm:"column:log_path;type:string;size:256"`
-	DeviceId  string    `gorm:"column:device_id;type:uuid"`
 }
 
 func (SysHistory) TableName() string {
@@ -27,7 +26,6 @@ func (in SysHistory) ConvertToJson(out *History) {
 	out.CreatedAt = in.CreatedAt
 	out.UpdatedAt = in.UpdatedAt
 	out.LogPath = in.LogPath
-	out.DeviceId = in.DeviceId
 }
 
 func (in History) ConvertToDB(out *SysHistory) {
@@ -35,5 +33,4 @@ func (in History) ConvertToDB(out *SysHistory) {
 	out.CreatedAt = in.CreatedAt
 	out.UpdatedAt = in.UpdatedAt
 	out.LogPath = in.LogPath
-	out.DeviceId = in.DeviceId
 }
