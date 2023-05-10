@@ -6,12 +6,12 @@ import (
 	"RDIPs-BE/model"
 	commonModel "RDIPs-BE/model/common"
 	"RDIPs-BE/utils"
+	"encoding/json"
 
-	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
-var GetAllDevices = func(c *gin.Context) (commonModel.ResponseTemplate, error) {
+var GetAllDevices = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
 	utils.Log(LogConstant.Info, "GetAllDevices Start")
 	var deviceModel []model.SysDevices
 	db := commonModel.Helper.GetDb()
@@ -27,11 +27,11 @@ var GetAllDevices = func(c *gin.Context) (commonModel.ResponseTemplate, error) {
 	return commonModel.ResponseTemplate{HttpCode: 200, Data: resData}, nil
 }
 
-var PostDevice = func(c *gin.Context) (commonModel.ResponseTemplate, error) {
+var PostDevice = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
 	utils.Log(LogConstant.Info, "PostDevice Start")
 	defer utils.Log(LogConstant.Info, "PostDevice End")
 	deviceBody := model.Devices{}
-	if err := c.BindJSON(&deviceBody); err == nil {
+	if err := json.Unmarshal(c.Body, &deviceBody); err == nil {
 		deviceObj := model.SysDevices{}
 		deviceBody.ConvertToDB(&deviceObj)
 
@@ -80,7 +80,7 @@ var PostDevice = func(c *gin.Context) (commonModel.ResponseTemplate, error) {
 	}
 }
 
-var GetDetailDevice = func(c *gin.Context) (commonModel.ResponseTemplate, error) {
+var GetDetailDevice = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
 	utils.Log(LogConstant.Info, "GetDetailDevice Start")
 	defer utils.Log(LogConstant.Info, "GetDetailDevice End")
 	id := c.Param("id")
@@ -103,12 +103,12 @@ var GetDetailDevice = func(c *gin.Context) (commonModel.ResponseTemplate, error)
 	return commonModel.ResponseTemplate{HttpCode: 200, Data: resData}, nil
 }
 
-var UpdateDevice = func(c *gin.Context) (commonModel.ResponseTemplate, error) {
+var UpdateDevice = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
 	utils.Log(LogConstant.Info, "UpdateDevice Start")
 	defer utils.Log(LogConstant.Info, "UpdateDevice End")
 	id := c.Param("id")
 	deviceBody := model.Devices{}
-	if err := c.BindJSON(&deviceBody); err == nil {
+	if err := json.Unmarshal(c.Body, &deviceBody); err == nil {
 		deviceModel := model.SysDevices{Id: id}
 		err := handler.Update(&deviceModel, deviceBody)
 		if err != nil {
@@ -121,7 +121,7 @@ var UpdateDevice = func(c *gin.Context) (commonModel.ResponseTemplate, error) {
 	}
 }
 
-var DeleteDevice = func(c *gin.Context) (commonModel.ResponseTemplate, error) {
+var DeleteDevice = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
 	utils.Log(LogConstant.Info, "DeleteDevice Start")
 	defer utils.Log(LogConstant.Info, "DeleteDevice End")
 	id := c.Param("id")

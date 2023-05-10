@@ -8,13 +8,11 @@ import (
 	"RDIPs-BE/utils"
 	"context"
 	"encoding/json"
-	"io"
 	"net/http"
-	"net/url"
 	"strings"
+	"sync"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/rabbitmq/amqp091-go"
 )
 
@@ -54,26 +52,31 @@ func ReceiveService(deliveries <-chan amqp091.Delivery) {
 	defer cleanup()
 	for delivery := range deliveries {
 		utils.Log(LogConstant.Info, "Start Exchange: "+delivery.Exchange+" With key: "+delivery.RoutingKey)
-		c := gin.Context{Request: &http.Request{
-			Header: http.Header{"Content-Type": {"application/json"}, "Request-Type": {"amqp"}},
-			Body:   http.NoBody,
-		}}
-		c.Request.Body = io.NopCloser(strings.NewReader(string(delivery.Body)))
-		c.Request.URL = &url.URL{RawQuery: "amqp=true"}
-		routingKeyArr := strings.Split(delivery.RoutingKey, ".")
-		service := ServiceConst.ServicesMap[routingKeyArr[len(routingKeyArr)-1]]
-		if fn, ok := service.(func(c *gin.Context) (commonModel.ResponseTemplate, error)); !ok {
-			utils.Log(LogConstant.Error, "Wrong type of services functions")
-		} else {
-			result, err := fn(&c)
-			if err != nil {
-				utils.Log(LogConstant.Error, err)
-				result.SetMessage(err.Error())
-			}
-			response, _ := json.Marshal(result)
-			// if result.
-			Send(AMQPconst.DATA_EXCHANGE, []string{"*"}, response)
+		c := commonModel.ServiceContext{
+			Ctx: context.Background(),
+			Mu:  sync.Mutex{},
+			ServiceModel: commonModel.ServiceModel{
+				Body: []byte{},
+				Header: http.Header{
+					"Content-Type": {"application/json"}, "Request-Type": {"amqp"},
+				},
+			},
 		}
+		c.Body = delivery.Body
+		c.InitParamsAndQueries()
+		c.SetQuery("amqp", "true")
+		routingKeyArr := strings.Split(delivery.RoutingKey, ".")
+		fn := ServiceConst.ServicesMap[routingKeyArr[len(routingKeyArr)-1]]
+		result, err := fn(&c)
+		if err != nil {
+			utils.Log(LogConstant.Error, err)
+			result.Error = err
+			result.SetMessage(err.Error())
+		}
+		response, _ := json.Marshal(result)
+		// if result.
+		Send(AMQPconst.DATA_EXCHANGE, []string{"*"}, response)
+
 		go ack(&delivery)
 		utils.Log(LogConstant.Info, "Finish Exchange: "+delivery.Exchange+" With key: "+delivery.RoutingKey)
 	}

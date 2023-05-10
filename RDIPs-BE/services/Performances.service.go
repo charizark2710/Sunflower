@@ -6,12 +6,12 @@ import (
 	"RDIPs-BE/model"
 	commonModel "RDIPs-BE/model/common"
 	"RDIPs-BE/utils"
+	"encoding/json"
 
-	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
-var GetAllPerformances = func(c *gin.Context) (commonModel.ResponseTemplate, error) {
+var GetAllPerformances = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
 	utils.Log(LogConstant.Info, "GetAllPerformances Start")
 	var performanceModel []model.SysPerformance
 	db := commonModel.Helper.GetDb()
@@ -27,10 +27,10 @@ var GetAllPerformances = func(c *gin.Context) (commonModel.ResponseTemplate, err
 	return commonModel.ResponseTemplate{HttpCode: 200, Data: resData}, nil
 }
 
-var PostPerformance = func(c *gin.Context) (commonModel.ResponseTemplate, error) {
+var PostPerformance = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
 	utils.Log(LogConstant.Info, "PostPerformance Start")
 	performanceBody := model.Performance{}
-	if err := c.BindJSON(&performanceBody); err == nil {
+	if err := json.Unmarshal(c.Body, &performanceBody); err == nil {
 		performanceObj := model.SysPerformance{}
 		performanceBody.ConvertToDB(&performanceObj)
 		err := handler.Create(&performanceObj)
@@ -44,7 +44,7 @@ var PostPerformance = func(c *gin.Context) (commonModel.ResponseTemplate, error)
 	}
 }
 
-var GetDetailPerformance = func(c *gin.Context) (commonModel.ResponseTemplate, error) {
+var GetDetailPerformance = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
 	utils.Log(LogConstant.Info, "GetDetailPerformance Start")
 	id := c.Param("id")
 	performanceBody := model.SysPerformance{}
@@ -59,7 +59,7 @@ var GetDetailPerformance = func(c *gin.Context) (commonModel.ResponseTemplate, e
 	return commonModel.ResponseTemplate{HttpCode: 200, Data: performanceBody}, nil
 }
 
-var PutPerformance = func(c *gin.Context) (commonModel.ResponseTemplate, error) {
+var PutPerformance = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
 	utils.Log(LogConstant.Info, "UpdatePerformance Start")
 	deviceId := c.Param("deviceId")
 	db := commonModel.Helper.GetDb()
@@ -68,7 +68,7 @@ var PutPerformance = func(c *gin.Context) (commonModel.ResponseTemplate, error) 
 	db.First(&rel).Preload("sys_history", func(db *gorm.DB) *gorm.DB {
 		return db.Order("sunflower.sys_history.log_path Desc").Limit(1)
 	})
-	if err := c.BindJSON(&performanceBody); err == nil {
+	if err := json.Unmarshal(c.Body, &performanceBody); err == nil {
 		performanceModel := model.SysPerformance{Id: rel.PerformanceID}
 		err := handler.Update(&performanceModel, performanceBody)
 		if err != nil {
