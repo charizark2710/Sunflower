@@ -20,6 +20,28 @@ export interface DeviceChangeHistoryData {
   description: string
 }
 
+export interface UserData {
+  user_id: string;
+  user_name: string;
+  address: string;
+  phone_num: string;
+  email: string;
+  type: TypeUserEnum;
+}
+
+export enum TypeUserEnum {
+  Regular = 'regular',
+  Industrial = 'industrial'
+}
+
+export interface ReceiptData {
+  receive_id: string;
+  datetime: string;
+  component: string;
+  service: string;
+  total: number;
+}
+
 export enum StatusEnum {
   Default = 'default',
   Error = 'error',

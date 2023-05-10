@@ -7,6 +7,11 @@ import { TypeChart } from '../../../../../utils/enum';
 import { DeviceChangeHistoryData, DeviceLogHistoryData, HeadCell, StatusEnum } from '../../../../../utils/interface';
 import CollapseAtom from '../../../../atoms/collapse/Collapse';
 import TableAtom from '../../../../atoms/table/Table.atom';
+import DetailDeviceUser from './DetailDeviceUser';
+import Maintaince from './history/Maintainace';
+import Expense from './history/Expense';
+import Receipt from './history/Receipt';
+import Feedback from './history/Feedback';
 // import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 // import dayjs, { Dayjs } from 'dayjs';
 
@@ -177,33 +182,35 @@ export const HistoryChangeTableInDevice = () => {
   );
 };
 
-const DetailDevice = () => {
+const DetailUser = () => {
   let { state } = useLocation();
-  const detailDevice: any = state;
+  const detailUser: any = state;
 
   return (
     <div style={{ padding: '0 30px', backgroundColor: 'white', minHeight: '80vh' }}>
       <section>
-        <h3>Device information</h3>
-        <div>DeviceId: {detailDevice.device_id}</div>
-        <div>Device Name: {detailDevice.device_name}</div>
-        <div>Firmware version: {detailDevice.firmware_ver}</div>
-        <div>App version: {detailDevice.app_ver}</div>
-        <div>Type: {detailDevice.type}</div>
-        <div>Status: {detailDevice.status}</div>
-        <div>Life time: {detailDevice.lifetime}</div>
+        <h3>User information</h3>
+        <div>UserId: {detailUser.user_id}</div>
+        <div>User Name: {detailUser.user_name}</div>
+        <div>Firmware version: {detailUser.address}</div>
+        <div>App version: {detailUser.phone_num}</div>
+        <div>Type: {detailUser.email}</div>
+        <div>Status: {detailUser.type}</div>
       </section>
-      <section className='performance-statistics'>
-        <CollapseAtom buttonTitle='Performance statistics' children={<HighChartInDevice />} />
+      <section className='table-list-devices'>
+        <h3>List Devices Base User</h3>
+        <DetailDeviceUser />
       </section>
-      <section className='log-history'>
-        <CollapseAtom buttonTitle='Log history' children={<HistoryLogTableInDevice />} />
-      </section>
-      <section className='change-history'>
-        <CollapseAtom buttonTitle='Change history' children={<HistoryChangeTableInDevice />} />
+      <section className='history'>
+        <h3>History</h3>
+        {/* need to confirm more to complete */}
+        <CollapseAtom buttonTitle='Maintaince' children={<Maintaince />} />
+        <CollapseAtom buttonTitle='Feedback' children={<Feedback />} />
+        <CollapseAtom buttonTitle='Receipt' children={<Receipt />} />
+        <CollapseAtom buttonTitle='Expense' children={<Expense />} />
       </section>
     </div>
   );
 };
 
-export default DetailDevice;
+export default DetailUser;

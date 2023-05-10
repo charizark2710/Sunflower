@@ -2,8 +2,8 @@ import { useLocation } from 'react-router';
 
 const DetailHistoryChange = () => {
   let { state } = useLocation();
-  const detailHistoryLog: any = state;
-  console.log(detailHistoryLog);
+  const detailHistoryChange: any = state;
+  console.log(detailHistoryChange);
 
   return (
     <div style={{ padding: '0 30px', backgroundColor: 'white', minHeight: '80vh' }}>

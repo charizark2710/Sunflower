@@ -67,7 +67,6 @@ var UpdateHistory = func(c *commonModel.ServiceContext) (commonModel.ResponseTem
 			utils.Log(LogConstant.Error, err)
 			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
 		}
-
 		return commonModel.ResponseTemplate{HttpCode: 200, Data: nil}, nil
 	} else {
 		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
