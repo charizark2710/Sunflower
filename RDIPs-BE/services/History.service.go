@@ -6,16 +6,16 @@ import (
 	"RDIPs-BE/model"
 	commonModel "RDIPs-BE/model/common"
 	"RDIPs-BE/utils"
+	"encoding/json"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
-var PostHistory = func(c *gin.Context) (commonModel.ResponseTemplate, error) {
+var PostHistory = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
 	utils.Log(LogConstant.Info, "PostHistory Start")
 	historyBody := model.History{}
-	if err := c.BindJSON(&historyBody); err == nil {
+	if err := json.Unmarshal(c.Body, &historyBody); err == nil {
 		historyObj := model.SysHistory{}
 		historyBody.ConvertToDB(&historyObj)
 		err := handler.Create(&historyObj)
@@ -29,7 +29,7 @@ var PostHistory = func(c *gin.Context) (commonModel.ResponseTemplate, error) {
 	}
 }
 
-var GetDetailHistory = func(c *gin.Context) (commonModel.ResponseTemplate, error) {
+var GetDetailHistory = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
 	utils.Log(LogConstant.Info, "GetDetailHistory Start")
 	id := c.Param("deviceId")
 	historyBody := model.SysHistory{}
@@ -44,7 +44,7 @@ var GetDetailHistory = func(c *gin.Context) (commonModel.ResponseTemplate, error
 	return commonModel.ResponseTemplate{HttpCode: 200, Data: historyBody}, nil
 }
 
-var UpdateHistory = func(c *gin.Context) (commonModel.ResponseTemplate, error) {
+var UpdateHistory = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
 	deviceId := c.Param("deviceId")
 	amqp := c.Query("amqp")
 	db := commonModel.Helper.GetDb()
@@ -54,7 +54,7 @@ var UpdateHistory = func(c *gin.Context) (commonModel.ResponseTemplate, error) {
 		return db.Order("sunflower.sys_history.log_path Desc").Limit(1)
 	})
 	historyBody := model.History{}
-	if err := c.BindJSON(&historyBody); err == nil {
+	if err := json.Unmarshal(c.Body, &historyBody); err == nil {
 		if amqp == "true" {
 			go func() {
 				fileIO := handler.FileIO{Name: rel.History.LogPath}

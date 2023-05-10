@@ -5,23 +5,47 @@ import (
 	"RDIPs-BE/constant/ServiceConst"
 	commonModel "RDIPs-BE/model/common"
 	"RDIPs-BE/utils"
+	"context"
+	"io"
+	"sync"
 
 	"github.com/gin-gonic/gin"
 )
 
 func Controller(c *gin.Context) {
-	// Get Services
-	v := ServiceConst.ServicesMap[c.Request.Method+c.FullPath()]
+	// Prepare Services
+	fn := ServiceConst.ServicesMap[c.Request.Method+c.FullPath()]
+	bodyAsByteArray, err := io.ReadAll(c.Request.Body)
+	if err != nil {
+		utils.Log(LogConstant.Error, err)
+		c.JSON(500, err)
+	}
+	serviceCtx := commonModel.ServiceContext{Ctx: context.Background(), Mu: sync.Mutex{}, ServiceModel: commonModel.ServiceModel{
+		Body: bodyAsByteArray,
+	}}
+	setQueryAndParam(c, &serviceCtx)
+
 	// Handle service
-	if fn, ok := v.(func(c *gin.Context) (commonModel.ResponseTemplate, error)); !ok {
-		utils.Log(LogConstant.Error, "Wrong type of services functions")
-		c.JSON(500, "Wrong type of services functions")
-	} else {
-		result, err := fn(c)
-		if err != nil {
-			utils.Log(LogConstant.Error, err)
-			result.SetMessage(err.Error())
-		}
-		c.JSON(result.HttpCode, result)
+	result, err := fn(&serviceCtx)
+	if err != nil {
+		utils.Log(LogConstant.Error, err)
+		result.Error = err
+		result.SetMessage(err.Error())
+	}
+	c.JSON(result.HttpCode, result)
+}
+
+func setQueryAndParam(c *gin.Context, service *commonModel.ServiceContext) {
+	service.InitParamsAndQueries()
+
+	queries := c.Request.URL.Query()
+	params := c.Params
+
+	for qk, qv := range queries {
+		service.SetQuery(qk, qv[0])
+	}
+
+	for _, p := range params {
+		service.SetParam(p.Key, p.Value)
 	}
 }

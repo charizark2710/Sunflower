@@ -2,10 +2,13 @@ package ServiceConst
 
 import (
 	urlconst "RDIPs-BE/constant/URLConst"
+	commonModel "RDIPs-BE/model/common"
 	"RDIPs-BE/services"
 )
 
-var ServicesMap = map[string]interface{}{
+type ServiceFn func(*commonModel.ServiceContext) (commonModel.ResponseTemplate, error)
+
+var ServicesMap = map[string]ServiceFn{
 	"GET" + urlconst.GetAllDevices:   services.GetAllDevices,
 	"POST" + urlconst.PostDevice:     services.PostDevice,
 	"GET" + urlconst.GetDetailDevice: services.GetDetailDevice,
