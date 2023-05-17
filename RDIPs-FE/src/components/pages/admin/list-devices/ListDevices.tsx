@@ -47,44 +47,37 @@ const ListDevices = () => {
 
   const headCells: HeadCell[] = [
     {
-      numeric: false,
-      disablePadding: false,
+      numeric: undefined,
       label: 'STT',
     },
     {
       id: 'device_name',
       numeric: false,
-      disablePadding: false,
       label: 'Device Name',
     },
     {
       id: 'firmware_ver',
-      numeric: true,
-      disablePadding: false,
+      numeric: undefined,
       label: 'Firmware version',
     },
     {
       id: 'app_ver',
-      numeric: true,
-      disablePadding: false,
+      numeric: undefined,
       label: 'App version',
     },
     {
       id: 'type',
-      numeric: true,
-      disablePadding: false,
+      numeric: undefined,
       label: 'Type',
     },
     {
       id: 'status',
-      numeric: true,
-      disablePadding: false,
+      numeric: undefined,
       label: 'Status',
     },
     {
       id: 'lifetime',
-      numeric: true,
-      disablePadding: false,
+      numeric: undefined,
       label: 'Lifetime',
     },
   ];
@@ -96,7 +89,7 @@ const ListDevices = () => {
   }
 
   return (
-    <div className='list-devices-container'>
+    <div className='list-container'>
       <TableAtom
         onRowClick={navigateToDetailPage}
         rows={deviceListData}

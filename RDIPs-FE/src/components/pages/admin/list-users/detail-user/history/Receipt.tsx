@@ -22,38 +22,32 @@ const Receipt = () => {
 
   const headCells: HeadCell[] = [
     {
-      numeric: false,
-      disablePadding: false,
+      numeric: undefined,
       label: 'STT',
     },
     {
       id: 'receipt_id',
       numeric: false,
-      disablePadding: false,
       label: 'Receipt ID',
     },
     {
       id: 'datetime',
       numeric: true,
-      disablePadding: false,
       label: 'Datetime',
     },
     {
       id: 'component',
       numeric: true,
-      disablePadding: false,
       label: 'Component',
     },
     {
       id: 'service',
       numeric: true,
-      disablePadding: false,
       label: 'Service',
     },
     {
       id: 'total',
       numeric: true,
-      disablePadding: false,
       label: 'Total',
     },
   ];
@@ -66,7 +60,7 @@ const Receipt = () => {
   return (
     <div>
       <TableAtom
-        onRowClick = {onRowClick}
+        onRowClick={onRowClick}
         rows={receiptListData}
         deviceColumns={receiptColumns}
         title='Receipt Table'

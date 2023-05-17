@@ -9,15 +9,15 @@ export interface DeviceData {
 }
 
 export interface DeviceLogHistoryData {
-  datetime: string,
-  status: StatusEnum,
-  message: string
+  datetime: string;
+  status: StatusEnum;
+  message: string;
 }
 
 export interface DeviceChangeHistoryData {
-  datetime: string,
-  type: string,
-  description: string
+  datetime: string;
+  type: string;
+  description: string;
 }
 
 export interface UserData {
@@ -29,9 +29,17 @@ export interface UserData {
   type: TypeUserEnum;
 }
 
+export interface AdminData {
+  admin_id: string;
+  admin_name: string;
+  status: string;
+  role: string;
+  auhentication: string;
+}
+
 export enum TypeUserEnum {
   Regular = 'regular',
-  Industrial = 'industrial'
+  Industrial = 'industrial',
 }
 
 export interface ReceiptData {
@@ -46,12 +54,11 @@ export enum StatusEnum {
   Default = 'default',
   Error = 'error',
   Warning = 'warning',
-  Fatal = 'fatal'
+  Fatal = 'fatal',
 }
 
 export interface HeadCell {
-  disablePadding: boolean;
   id?: any;
   label: string;
-  numeric: boolean;
+  numeric: boolean | any;
 }
