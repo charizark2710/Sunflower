@@ -1,3 +1,4 @@
+import { StraightAtom } from '../../../atoms/straight/Straight.atom';
 import SunflowerLabel from '../../../molecules/label/SunflowerLabel.mocules';
 import './Sidebar.organism.scss';
 
@@ -6,7 +7,7 @@ const sideBarItems = [
     to: '/',
     className: 'link-item',
     children: (
-      <span style={{fontSize: '16px'}}>
+      <span style={{ fontSize: '16px' }}>
         <strong>SUN</strong>flower
       </span>
     ),
@@ -20,25 +21,31 @@ const sideBarItems = [
 const topLabelStyle = {
   fontSize: '16px',
   lineHeight: '19px',
+  marginBottom: '90px'
 };
+
+const straight = <StraightAtom width='100%' thick='0.1px' color='#8C8C8C' />;
 
 function SidebarOrganism({ onClick, size }: { onClick: (args: any) => void; size: string }) {
   return (
     <div className='sidebar'>
       {sideBarItems.map((item, i) => {
         return i === 0 ? (
-          <SunflowerLabel
-            key={i}
-            link={item}
-            iconPos={1}
-            height='62px'
-            style={topLabelStyle}
-            icon='toggle'
-            onClick={onClick}
-            size={size}
-          />
+          <>
+            <SunflowerLabel
+              key={i}
+              link={item}
+              iconPos={1}
+              height='62px'
+              style={topLabelStyle}
+              icon='toggle'
+              onClick={onClick}
+              size={size}
+            />
+            {straight}
+          </>
         ) : (
-          <SunflowerLabel key={i} link={item} size={size} />
+          <SunflowerLabel key={i} link={item} size={size} children={straight} />
         );
       })}
     </div>

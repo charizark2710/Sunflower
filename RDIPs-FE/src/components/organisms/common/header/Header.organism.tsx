@@ -1,11 +1,17 @@
-import { AppBar, Grid } from '@mui/material';
+import { AppBar, Box, Grid } from '@mui/material';
 
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import Badge from '@mui/material/Badge';
+import IconButton from '@mui/material/IconButton';
 import { useState } from 'react';
+import { useSelector } from 'react-redux';
+import avatar from '../../../../assets/Avatar.png';
+import gear from '../../../../assets/Gear.svg';
+import Image from '../../../atoms/image/Image';
 import { StraightAtom } from '../../../atoms/straight/Straight.atom';
 import { ClutterButtonMolecules } from '../../../molecules/clutter-button-mocules/ClutterButton.molecules';
 import { NavbarMolecules } from '../../../molecules/navbar-molecules/Navbar.molecules';
 import './Header.organism.scss';
-import { useSelector } from 'react-redux';
 
 function HeaderOrganism() {
   const navbarTitle = useSelector((state: any) => state.navbarTitle);
@@ -15,7 +21,7 @@ function HeaderOrganism() {
   const appBarStyle = {
     bgcolor: '#F3EDB5',
     color: '#000000',
-    padding: '5px 10px 0px 10px',
+    padding: '5px 70px 0px 10px',
   };
 
   const leftSideStyle = {
@@ -27,12 +33,26 @@ function HeaderOrganism() {
   return (
     <AppBar position='static' sx={appBarStyle}>
       {isLogin ? (
-        <Grid container sx={{ pb: '5px', minHeight: '64px', px: '70px' }}>
-          <Grid item xs={6}>
-            {navbarTitle}
+        <Grid container sx={{ pb: '5px', minHeight: '64px', alignItems: 'center', pl: '70px' }}>
+          <Grid item xs={5} fontWeight='bold'>
+            {navbarTitle ? navbarTitle : ''}
           </Grid>
-          <Grid item xs={6} sx={leftSideStyle}>
-            Personal Detail Frame Here
+          <Grid item xs={7} sx={{ ...leftSideStyle, alignItems: 'center' }}>
+            <div style={{ paddingRight: '15px', fontWeight: 'bold' }}>
+              <div>Admin: PBTAnh</div>
+              <div>#696969</div>
+            </div>
+            <Box>
+              <Image url={avatar} w={'60px'} />
+              <IconButton sx={{ transform: 'translate(-50%, -50%)', ml: '20px' }}>
+                <Badge badgeContent={100} color='secondary'>
+                  <NotificationsIcon />
+                </Badge>
+              </IconButton>
+              <IconButton sx={{ transform: 'translate(-50%, -50%)', ml: '5px' }}>
+                <Image url={gear} w={'30px'} />
+              </IconButton>
+            </Box>
           </Grid>
         </Grid>
       ) : (
