@@ -28,6 +28,10 @@
   color: #61dafb;
 }
 
+.list-container {
+  padding: 70px;
+}
+
 /* flex area */
 .flex-justify-center {
   display: flex;
@@ -60,8 +64,8 @@
 }
 
 /* color */
-.blue-white-background {
-  background-color: #F2F4F5;
+.deep-background {
+  background-color: #e9e5c9;
 }
 
 @keyframes App-logo-spin {

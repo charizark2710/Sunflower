@@ -18,21 +18,45 @@ const dataFooterRender = {
 };
 
 const footerLeftLinks = [
-  { to: dataFooterRender.linkAdditionLeft[0].link, className: 'link-item', children: dataFooterRender.linkAdditionLeft[0].name },
-  { to: dataFooterRender.linkAdditionLeft[1].link, className: 'link-item', children: dataFooterRender.linkAdditionLeft[1].name },
-  { to: dataFooterRender.linkAdditionLeft[2].link, className: 'link-item', children: dataFooterRender.linkAdditionLeft[2].name },
-  { to: dataFooterRender.linkAdditionLeft[3].link, className: 'link-item', children: dataFooterRender.linkAdditionLeft[3].name },
+  {
+    to: dataFooterRender.linkAdditionLeft[0].link,
+    className: 'link-item',
+    children: dataFooterRender.linkAdditionLeft[0].name,
+  },
+  {
+    to: dataFooterRender.linkAdditionLeft[1].link,
+    className: 'link-item',
+    children: dataFooterRender.linkAdditionLeft[1].name,
+  },
+  {
+    to: dataFooterRender.linkAdditionLeft[2].link,
+    className: 'link-item',
+    children: dataFooterRender.linkAdditionLeft[2].name,
+  },
+  {
+    to: dataFooterRender.linkAdditionLeft[3].link,
+    className: 'link-item',
+    children: dataFooterRender.linkAdditionLeft[3].name,
+  },
 ];
 
 const footerRightLinks = [
-  { to: dataFooterRender.linkAdditionRight[0].link, className: 'link-item', children: dataFooterRender.linkAdditionRight[0].name },
-  { to: dataFooterRender.linkAdditionRight[1].link, className: 'link-item', children: dataFooterRender.linkAdditionRight[1].name },
+  {
+    to: dataFooterRender.linkAdditionRight[0].link,
+    className: 'link-item',
+    children: dataFooterRender.linkAdditionRight[0].name,
+  },
+  {
+    to: dataFooterRender.linkAdditionRight[1].link,
+    className: 'link-item',
+    children: dataFooterRender.linkAdditionRight[1].name,
+  },
 ];
 
 function FooterOrganism() {
   return (
     <div className='footer-container'>
-      <Grid container className='blue-white-background '>
+      <Grid container className='deep-background'>
         <Grid item xs={5} sx={{ paddingLeft: '30px' }}>
           <NavbarMolecules links={footerLeftLinks} />
         </Grid>

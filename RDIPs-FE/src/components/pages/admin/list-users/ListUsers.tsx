@@ -25,7 +25,7 @@ const ListUsers = () => {
     address: string,
     phone_num: string,
     email: string,
-    type: TypeUserEnum,
+    type: TypeUserEnum
   ): UserData {
     return {
       user_id,
@@ -33,53 +33,47 @@ const ListUsers = () => {
       address,
       phone_num,
       email,
-      type
+      type,
     };
   }
 
   const headCells: HeadCell[] = [
     {
-      numeric: false,
-      disablePadding: false,
+      numeric: undefined,
       label: 'STT',
     },
     {
       id: 'user_name',
       numeric: false,
-      disablePadding: false,
       label: 'User Name',
     },
     {
       id: 'address',
       numeric: true,
-      disablePadding: false,
       label: 'Address',
     },
     {
       id: 'phone_num',
       numeric: true,
-      disablePadding: false,
       label: 'Phone number',
     },
     {
       id: 'email',
       numeric: true,
-      disablePadding: false,
       label: 'Email',
     },
     {
       id: 'type',
       numeric: true,
-      disablePadding: false,
       label: 'Type',
-    }
+    },
   ];
 
   const userColumns = ['user_name', 'address', 'phone_num', 'email', 'type'];
 
   return (
-    <div className='list-users-container'>
-     <TableAtom
+    <div className='list-container'>
+      <TableAtom
         onRowClick={navigateToDetailPage}
         rows={userListData}
         deviceColumns={userColumns}

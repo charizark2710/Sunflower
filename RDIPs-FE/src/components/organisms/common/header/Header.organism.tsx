@@ -1,18 +1,27 @@
-import { AppBar, Grid } from '@mui/material';
+import { AppBar, Box, Grid } from '@mui/material';
 
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import Badge from '@mui/material/Badge';
+import IconButton from '@mui/material/IconButton';
 import { useState } from 'react';
+import { useSelector } from 'react-redux';
+import avatar from '../../../../assets/Avatar.png';
+import gear from '../../../../assets/Gear.svg';
+import Image from '../../../atoms/image/Image';
 import { StraightAtom } from '../../../atoms/straight/Straight.atom';
 import { ClutterButtonMolecules } from '../../../molecules/clutter-button-mocules/ClutterButton.molecules';
 import { NavbarMolecules } from '../../../molecules/navbar-molecules/Navbar.molecules';
 import './Header.organism.scss';
 
 function HeaderOrganism() {
+  const navbarTitle = useSelector((state: any) => state.navbarTitle);
   const [click, setClick] = useState(false);
+  const isLogin = true;
 
   const appBarStyle = {
-    bgcolor: '#FFFFFF',
+    bgcolor: '#F3EDB5',
     color: '#000000',
-    padding: '5px 10px 0px 10px',
+    padding: '5px 70px 0px 10px',
   };
 
   const leftSideStyle = {
@@ -23,15 +32,42 @@ function HeaderOrganism() {
 
   return (
     <AppBar position='static' sx={appBarStyle}>
-      <Grid container sx={{paddingBottom: '5px'}}>
-        <Grid item xs={6}>
-          <NavbarMolecules isClick={click} />
+      {isLogin ? (
+        <Grid container sx={{ pb: '5px', minHeight: '64px', alignItems: 'center', pl: '70px' }}>
+          <Grid item xs={5} fontWeight='bold'>
+            {navbarTitle ? navbarTitle : ''}
+          </Grid>
+          <Grid item xs={7} sx={{ ...leftSideStyle, alignItems: 'center' }}>
+            <div style={{ paddingRight: '15px', fontWeight: 'bold' }}>
+              <div>Admin: PBTAnh</div>
+              <div>#696969</div>
+            </div>
+            <Box>
+              <Image url={avatar} w={'60px'} />
+              <IconButton sx={{ transform: 'translate(-50%, -50%)', ml: '20px' }}>
+                <Badge badgeContent={100} color='secondary'>
+                  <NotificationsIcon />
+                </Badge>
+              </IconButton>
+              <IconButton sx={{ transform: 'translate(-50%, -50%)', ml: '5px' }}>
+                <Image url={gear} w={'30px'} />
+              </IconButton>
+            </Box>
+          </Grid>
         </Grid>
-        <Grid item xs={6} sx={leftSideStyle}>
-          <ClutterButtonMolecules />
-        </Grid>
-      </Grid>
-      <StraightAtom />
+      ) : (
+        <>
+          <Grid container sx={{ paddingBottom: '5px' }}>
+            <Grid item xs={6}>
+              <NavbarMolecules isClick={click} />
+            </Grid>
+            <Grid item xs={6} sx={leftSideStyle}>
+              <ClutterButtonMolecules />
+            </Grid>
+          </Grid>
+          <StraightAtom />
+        </>
+      )}
     </AppBar>
   );
 }

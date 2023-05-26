@@ -19,11 +19,11 @@ function AdminPage(props: AdminPageProps) {
 
   return (
     <>
-      <Grid container className='admin-container'>
-        <Grid item xs={collapse? 0.7 : 2}>
-          <SidebarOrganism onClick={toggleCollapse} size={collapse? 'sm': 'md'}/>
+      <Grid container className='admin-container deep-background'>
+        <Grid item xs={collapse ? 0.7 : 2}>
+          <SidebarOrganism onClick={toggleCollapse} size={collapse ? 'sm' : 'md'} />
         </Grid>
-        <Grid item xs={collapse? 11.3 : 10} className='right-side'>
+        <Grid item xs={collapse ? 11.3 : 10} className='right-side'>
           <HeaderTemplate header={<HeaderOrganism />} />
           <div className='body-container'>{props.children}</div>
           <FooterOrganism />

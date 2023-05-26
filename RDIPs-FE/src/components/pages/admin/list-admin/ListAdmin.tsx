@@ -1,4 +1,4 @@
-import { HeadCell, TypeUserEnum, UserData } from '../../../../utils/interface';
+import { AdminData, HeadCell } from '../../../../utils/interface';
 import TableAtom from '../../../atoms/table/Table.atom';
 import './ListAdmin.scss';
 
@@ -8,76 +8,53 @@ const ListAdmin = () => {
   }
 
   const userListData = [
-    createData('U001', 'Ly Nguyen', '123 Thien Duong', '09876543212', 'thienduong@gmail.com', TypeUserEnum.Regular),
-    createData('U002', 'Anh Phan', '502 Thien Duong', '09876543213', 'thienduong1@gmail.com', TypeUserEnum.Industrial),
-    createData('U003', 'Canh Ngo', '503 Thien Duong', '098765432132', 'thienduong2@gmail.com', TypeUserEnum.Regular),
-    createData('U004', 'Thanh Bui', '504 Thien Duong', '09876543215', 'thienduong3@gmail.com', TypeUserEnum.Regular),
-    createData('U005', 'Minh Hung', '505 Thien Duong', '09876543212', 'thienduon4g@gmail.com', TypeUserEnum.Regular),
-    createData('U006', 'Huong Nguyen', '506 Thien Duong', '09876543212', 'thienduong5@gmail.com', TypeUserEnum.Industrial),
-    createData('U007', 'Huy Doan', '507 Thien Duong', '09876543212', 'thienduong6@gmail.com', TypeUserEnum.Regular),
+    createData('AD001', 'Ly Nguyen', 'single', 'dev', 'authernication'),
+    createData('AD002', 'Anh Phan', 'single', 'dev', 'authernication'),
+    createData('AD003', 'Canh Ngo', 'single', 'dev', 'authernication'),
   ];
 
-  function createData(
-    user_id: string,
-    user_name: string,
-    address: string,
-    phone_num: string,
-    email: string,
-    type: TypeUserEnum,
-  ): UserData {
+  function createData(admin_id: string, admin_name: string, status: string, role: string, auhentication: string): AdminData {
     return {
-      user_id,
-      user_name,
-      address,
-      phone_num,
-      email,
-      type
+      admin_id,
+      admin_name,
+      status,
+      role,
+      auhentication,
     };
   }
 
   const headCells: HeadCell[] = [
     {
-      numeric: false,
-      disablePadding: false,
+      numeric: undefined,
       label: 'STT',
     },
     {
       id: 'user_name',
       numeric: false,
-      disablePadding: false,
-      label: 'User Name',
+      label: 'Admin Name',
     },
     {
       id: 'address',
-      numeric: true,
-      disablePadding: false,
-      label: 'Address',
+      numeric: false,
+      label: 'Staus',
     },
     {
       id: 'phone_num',
-      numeric: true,
-      disablePadding: false,
-      label: 'Phone number',
+      numeric: false,
+      label: 'Role',
     },
     {
       id: 'email',
-      numeric: true,
-      disablePadding: false,
-      label: 'Email',
+      numeric: false,
+      label: 'Authentication',
     },
-    {
-      id: 'type',
-      numeric: true,
-      disablePadding: false,
-      label: 'Type',
-    }
   ];
 
-  const userColumns = ['user_name', 'address', 'phone_num', 'email', 'type'];
+  const userColumns = ['admin_name', 'status', 'role', 'authentication'];
 
   return (
-    <div className='list-admin-container'>
-     <TableAtom
+    <div className='list-container'>
+      <TableAtom
         onRowClick={navigateToDetailPage}
         rows={userListData}
         deviceColumns={userColumns}

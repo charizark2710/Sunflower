@@ -2,9 +2,19 @@ import { useNavigate } from 'react-router-dom';
 import { DeviceData, HeadCell } from '../../../../utils/interface';
 import TableAtom from '../../../atoms/table/Table.atom';
 import './ListDevices.scss';
+import { connect } from 'react-redux';
+import { useEffect } from 'react';
+import { setPage } from '../../../../redux/actions/page';
 
-const ListDevices = () => {
+interface ListDevicesProps {
+  dispatch: any;
+}
+
+const ListDevices: React.FC<ListDevicesProps> = ({ dispatch }) => {
   const navigate = useNavigate();
+  useEffect(() => {
+    dispatch(setPage('List Devices'));
+  }, [dispatch]);
 
   const deviceListData = [
     createData('D001', 'Device01', 1, 1, 'ABC', 'XYZ', 'lifetime'),
@@ -47,44 +57,37 @@ const ListDevices = () => {
 
   const headCells: HeadCell[] = [
     {
-      numeric: false,
-      disablePadding: false,
+      numeric: undefined,
       label: 'STT',
     },
     {
       id: 'device_name',
       numeric: false,
-      disablePadding: false,
       label: 'Device Name',
     },
     {
       id: 'firmware_ver',
-      numeric: true,
-      disablePadding: false,
+      numeric: undefined,
       label: 'Firmware version',
     },
     {
       id: 'app_ver',
-      numeric: true,
-      disablePadding: false,
+      numeric: undefined,
       label: 'App version',
     },
     {
       id: 'type',
-      numeric: true,
-      disablePadding: false,
+      numeric: undefined,
       label: 'Type',
     },
     {
       id: 'status',
-      numeric: true,
-      disablePadding: false,
+      numeric: undefined,
       label: 'Status',
     },
     {
       id: 'lifetime',
-      numeric: true,
-      disablePadding: false,
+      numeric: undefined,
       label: 'Lifetime',
     },
   ];
@@ -96,7 +99,7 @@ const ListDevices = () => {
   }
 
   return (
-    <div className='list-devices-container'>
+    <div className='list-container'>
       <TableAtom
         onRowClick={navigateToDetailPage}
         rows={deviceListData}
@@ -108,4 +111,4 @@ const ListDevices = () => {
   );
 };
 
-export default ListDevices;
+export default connect()(ListDevices);

@@ -78,26 +78,26 @@ export const HistoryLogTableInDevice = () => {
 
   const headCells: HeadCell[] = [
     {
-      numeric: false,
-      disablePadding: false,
+      numeric: undefined,
+
       label: 'STT',
     },
     {
       id: 'datetime',
       numeric: false,
-      disablePadding: false,
+
       label: 'Datetime',
     },
     {
       id: 'status',
       numeric: true,
-      disablePadding: false,
+
       label: 'Status',
     },
     {
       id: 'message',
       numeric: true,
-      disablePadding: false,
+
       label: 'Message',
     },
   ];
@@ -140,25 +140,21 @@ export const HistoryChangeTableInDevice = () => {
   const headCells: HeadCell[] = [
     {
       numeric: false,
-      disablePadding: false,
       label: 'STT',
     },
     {
       id: 'datetime',
       numeric: false,
-      disablePadding: false,
       label: 'Datetime',
     },
     {
       id: 'type',
       numeric: true,
-      disablePadding: false,
       label: 'Type',
     },
     {
       id: 'description',
       numeric: true,
-      disablePadding: false,
       label: 'Description',
     },
   ];

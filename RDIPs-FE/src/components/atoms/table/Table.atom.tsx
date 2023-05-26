@@ -1,9 +1,5 @@
-import FilterListIcon from '@mui/icons-material/FilterList';
 import Box from '@mui/material/Box';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import IconButton from '@mui/material/IconButton';
 import Paper from '@mui/material/Paper';
-import Switch from '@mui/material/Switch';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -12,10 +8,6 @@ import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import TableSortLabel from '@mui/material/TableSortLabel';
-import Toolbar from '@mui/material/Toolbar';
-import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
-import { alpha } from '@mui/material/styles';
 import { visuallyHidden } from '@mui/utils';
 import * as React from 'react';
 import { HeadCell } from '../../../utils/interface';
@@ -66,12 +58,13 @@ function EnhancedTableHead(props: TableHeaderProps) {
   return (
     <TableHead>
       <TableRow>
-        {props.headCells.map((headCell,i) => (
+        {props.headCells.map((headCell, i) => (
           <TableCell
             key={headCell.id || `a${i}`}
-            align={headCell.numeric ? 'right' : 'left'}
-            padding={headCell.disablePadding ? 'none' : 'normal'}
+            align='center'
+            padding='normal'
             sortDirection={orderBy === headCell.id ? order : false}
+            sx={{ fontWeight: 'bold' }}
           >
             <TableSortLabel
               active={orderBy === headCell.id}
@@ -91,32 +84,6 @@ function EnhancedTableHead(props: TableHeaderProps) {
     </TableHead>
   );
 }
-interface EnhancedTableToolbarProps {
-  title: string;
-}
-
-function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
-  return (
-    <Toolbar
-      sx={{
-        pl: { sm: 2 },
-        pr: { xs: 1, sm: 1 },
-        ...{
-          bgcolor: (theme) => alpha(theme.palette.primary.main, theme.palette.action.activatedOpacity),
-        },
-      }}
-    >
-      <Typography sx={{ flex: '1 1 100%' }} variant='h6' id='tableTitle' component='div'>
-        {props.title}
-      </Typography>
-      <Tooltip title='Filter list'>
-        <IconButton>
-          <FilterListIcon />
-        </IconButton>
-      </Tooltip>
-    </Toolbar>
-  );
-}
 
 const TableAtom = (props: {
   headCells: HeadCell[];
@@ -134,7 +101,6 @@ const TableAtom = (props: {
   const [order, setOrder] = React.useState<Order>(DEFAULT_ORDER);
   const [orderBy, setOrderBy] = React.useState<any>(DEFAULT_ORDER_BY);
   const [page, setPage] = React.useState(0);
-  const [dense, setDense] = React.useState(false);
   const [visibleRows, setVisibleRows] = React.useState<any[]>([]);
   const [rowsPerPage, setRowsPerPage] = React.useState(DEFAULT_ROWS_PER_PAGE);
   const [paddingHeight, setPaddingHeight] = React.useState(0);
@@ -171,10 +137,10 @@ const TableAtom = (props: {
       // Avoid a layout jump when reaching the last page with empty rows.
       const numEmptyRows = newPage > 0 ? Math.max(0, (1 + newPage) * rowsPerPage - rows.length) : 0;
 
-      const newPaddingHeight = (dense ? 33 : 53) * numEmptyRows;
+      const newPaddingHeight = 53 * numEmptyRows;
       setPaddingHeight(newPaddingHeight);
     },
-    [order, orderBy, dense, rowsPerPage, rows]
+    [order, orderBy, rowsPerPage, rows]
   );
 
   const handleChangeRowsPerPage = React.useCallback(
@@ -194,16 +160,11 @@ const TableAtom = (props: {
     [order, orderBy, rows]
   );
 
-  const handleChangeDense = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setDense(event.target.checked);
-  };
-
   return (
     <Box sx={{ width: '100%' }} className='table-atom-container'>
       <Paper sx={{ width: '100%', mb: 2 }}>
-        <EnhancedTableToolbar title={props.title} />
         <TableContainer>
-          <Table sx={{ minWidth: 750 }} aria-labelledby='tableTitle' size={dense ? 'small' : 'medium'}>
+          <Table sx={{ minWidth: 750 }} aria-labelledby='tableTitle' size='medium'>
             <EnhancedTableHead
               headCells={props.headCells}
               order={order}
@@ -218,15 +179,16 @@ const TableAtom = (props: {
                         hover
                         onClick={() => onRowClick(row)}
                         tabIndex={-1}
-                        key={row.idDevice+' '+index}
+                        key={row.idDevice + ' ' + index}
                         sx={{ cursor: 'pointer' }}
                       >
-                        <TableCell align='left'>
-                          {index + 1}
-                        </TableCell>
+                        <TableCell align='center'>{index + 1}</TableCell>
                         {props.deviceColumns.map((col, i) => {
                           return (
-                            <TableCell key={`${row.idDevice}${i}`} align={i === 0 ? 'left' : 'right'}>
+                            <TableCell
+                              key={`${row.idDevice}${i}`}
+                              align={row.numeric === undefined ? 'center' : (!row.numeric ? 'left' : 'right')}
+                            >
                               {row[col]}
                             </TableCell>
                           );
@@ -257,7 +219,6 @@ const TableAtom = (props: {
           onRowsPerPageChange={handleChangeRowsPerPage}
         />
       </Paper>
-      <FormControlLabel control={<Switch checked={dense} onChange={handleChangeDense} />} label='Dense padding' />
     </Box>
   );
 };

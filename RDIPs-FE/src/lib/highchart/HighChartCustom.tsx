@@ -24,7 +24,7 @@ export const HighChartCustom: React.FC<HighChartsProps> = (props : HighChartsPro
 
     switch(props.timeType) {
       case DateFilter.Hour: {
-        console.log("in 1", props.chartData);
+        console.log("in 1");
         amountDisplay = 24
         break;
       }
