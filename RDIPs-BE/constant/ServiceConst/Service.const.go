@@ -27,5 +27,5 @@ var ServicesMap = map[string]ServiceFn{
 	"PUT" + urlconst.PutDetailHistory: services.UpdateHistory,
 
 	//Weather
-	"GET" + urlconst.GetWeatherNext14Days: services.GetWeatherNext14Days,
+	"GET" + urlconst.GetWeatherForecast: services.GetWeatherForecast,
 }

@@ -19,5 +19,5 @@ const (
 	PutDetailHistory = "/history/:deviceId"
 
 	//Weather
-	GetWeatherNext14Days = "/weather/14days"
+	GetWeatherForecast = "/weather/forecast"
 )
