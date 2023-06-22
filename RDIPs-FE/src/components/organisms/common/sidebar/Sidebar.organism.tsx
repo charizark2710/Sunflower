@@ -31,9 +31,9 @@ function SidebarOrganism({ onClick, size }: { onClick: (args: any) => void; size
     <div className='sidebar'>
       {sideBarItems.map((item, i) => {
         return i === 0 ? (
-          <>
+          <div key={i}>
             <SunflowerLabel
-              key={i}
+              
               link={item}
               iconPos={1}
               height='62px'
@@ -43,7 +43,7 @@ function SidebarOrganism({ onClick, size }: { onClick: (args: any) => void; size
               size={size}
             />
             {straight}
-          </>
+          </div>
         ) : (
           <SunflowerLabel key={i} link={item} size={size} children={straight} />
         );

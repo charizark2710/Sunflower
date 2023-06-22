@@ -2,7 +2,9 @@ const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
+  mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
   entry: path.resolve(__dirname, './src/index.tsx'),
+  devtool: 'inline-source-map',
   output: {
     path: path.join(__dirname, "/build"),
     filename: "bundle.js",
@@ -15,13 +17,13 @@ module.exports = {
       template: "public/index.html",
       filename: 'index.html',
       favicon: 'public/favicon.ico',
-      manifest: "public/manifest.json"
     }),
   ],
   stats: 'errors-only',
   devServer: {
-    static: path.join(__dirname, "build"),
+    static: [ {directory: path.join(__dirname, "build")}, {directory: path.join(__dirname, "public")}],
     compress: true,
+    historyApiFallback: true,
     port: 3030, // you can change the port
   },
   module: {
