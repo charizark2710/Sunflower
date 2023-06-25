@@ -57,7 +57,7 @@ const ListDevices: React.FC<ListDevicesProps> = ({ dispatch }) => {
 
   const headCells: HeadCell[] = [
     {
-      numeric: undefined,
+      numeric: false,
       label: 'STT',
     },
     {
@@ -67,27 +67,27 @@ const ListDevices: React.FC<ListDevicesProps> = ({ dispatch }) => {
     },
     {
       id: 'firmware_ver',
-      numeric: undefined,
+      numeric: false,
       label: 'Firmware version',
     },
     {
       id: 'app_ver',
-      numeric: undefined,
+      numeric: false,
       label: 'App version',
     },
     {
       id: 'type',
-      numeric: undefined,
+      numeric: false,
       label: 'Type',
     },
     {
       id: 'status',
-      numeric: undefined,
+      numeric: false,
       label: 'Status',
     },
     {
       id: 'lifetime',
-      numeric: undefined,
+      numeric: false,
       label: 'Lifetime',
     },
   ];

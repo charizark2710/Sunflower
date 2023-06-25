@@ -1,11 +1,18 @@
+import { useEffect } from 'react';
 import { HeadCell, TypeUserEnum, UserData } from '../../../../utils/interface';
 import TableAtom from '../../../atoms/table/Table.atom';
 import './Campaign.scss';
+import { setPage } from '../../../../redux/actions/page';
+import { connect } from 'react-redux';
 
-const Campaign = () => {
+const Campaign = ({dispatch} : any) => {
   function navigateToDetailPage(detail: any) {
     return;
   }
+
+  useEffect(() => {
+    dispatch(setPage('Campaign'));
+  }, [dispatch]);
 
   const userListData = [
     createData('U001', 'Ly Nguyen', '123 Thien Duong', '09876543212', 'thienduong@gmail.com', TypeUserEnum.Regular),
@@ -82,4 +89,4 @@ const Campaign = () => {
   );
 };
 
-export default Campaign;
+export default connect()(Campaign);
