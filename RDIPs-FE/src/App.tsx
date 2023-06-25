@@ -1,5 +1,5 @@
 import { BrowserRouter } from 'react-router-dom';
-import './App.css';
+import './App.scss';
 import AdminPage from './components/pages/admin/AdminPage';
 import { AdminRoute } from './routes';
 import { Provider } from 'react-redux';

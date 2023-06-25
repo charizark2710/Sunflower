@@ -27,7 +27,7 @@ const topLabelStyle = {
   marginBottom: '20px',
 };
 
-const straight = <StraightAtom width='100%' thick='0.1px' color='#8C8C8C' />;
+const straight = <StraightAtom width='100%' thick='0.1px' color='#e4e4e4' />;
 
 function SidebarOrganism({ onClick, size }: { onClick: (args: any) => void; size: string }) {
   return (

@@ -56,7 +56,7 @@ const footerRightLinks = [
 function FooterOrganism() {
   return (
     <div className='footer-container'>
-      <Grid container className='deep-background'>
+      <Grid container>
         <Grid item xs={5} sx={{ paddingLeft: '30px' }}>
           <NavbarMolecules links={footerLeftLinks} />
         </Grid>

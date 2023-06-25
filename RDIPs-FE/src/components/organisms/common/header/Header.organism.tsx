@@ -22,6 +22,8 @@ function HeaderOrganism() {
     bgcolor: 'white',
     color: '#000000',
     padding: '5px 24px 0px 10px',
+    borderBottom: '1px solid #e4e4e4',  
+    boxShadow: 'unset'
   };
 
   const leftSideStyle = {
