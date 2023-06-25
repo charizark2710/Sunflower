@@ -20,7 +20,7 @@ function AdminPage(props: AdminPageProps) {
 
   return (
     <>
-      <Grid container className='admin-container deep-background'>
+      <Grid container className='admin-container'>
         <Grid item xs={collapse ? 0.7 : 2}>
           <SidebarOrganism onClick={toggleCollapse} size={collapse ? 'sm' : 'md'} />
         </Grid>
