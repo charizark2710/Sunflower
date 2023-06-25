@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
 import { Grid } from '@mui/material';
+import React, { useState } from 'react';
+import { connect } from 'react-redux';
 import FooterOrganism from '../../organisms/common/footer/Footer.organism';
 import HeaderOrganism from '../../organisms/common/header/Header.organism';
 import SidebarOrganism from '../../organisms/common/sidebar/Sidebar.organism';
@@ -33,4 +34,4 @@ function AdminPage(props: AdminPageProps) {
   );
 }
 
-export default AdminPage;
+export default connect()(AdminPage);
