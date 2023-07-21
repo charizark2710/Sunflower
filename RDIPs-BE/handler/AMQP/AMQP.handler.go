@@ -62,9 +62,10 @@ func ReceiveService(deliveries <-chan amqp091.Delivery) {
 				},
 			},
 		}
-		c.Body = delivery.Body
+		copy(c.Body, delivery.Body)
 		c.InitParamsAndQueries()
 		c.SetQuery("amqp", "true")
+		setQueryAndParam(&c, delivery.Body)
 		routingKeyArr := strings.Split(delivery.RoutingKey, ".")
 		fn := ServiceConst.ServicesMap[routingKeyArr[len(routingKeyArr)-1]]
 		result, err := fn(&c)
@@ -81,6 +82,29 @@ func ReceiveService(deliveries <-chan amqp091.Delivery) {
 		utils.Log(LogConstant.Info, "Finish Exchange: "+delivery.Exchange+" With key: "+delivery.RoutingKey)
 	}
 	utils.Log(LogConstant.Info, "Done")
+}
+
+func setQueryAndParam(c *commonModel.ServiceContext, body []byte) {
+	res := make(map[string]interface{})
+	err := json.Unmarshal(body, &res)
+	utils.Log(LogConstant.Info, err)
+	if err != nil && res["param"] != nil {
+		params, ok := res["param"].(map[string]string)
+		if ok {
+			for key, value := range params {
+				c.SetParam(key, value)
+			}
+		}
+	}
+
+	if err != nil && res["query"] != nil {
+		querys, ok := res["query"].(map[string]string)
+		if ok {
+			for key, value := range querys {
+				c.SetQuery(key, value)
+			}
+		}
+	}
 }
 
 func generateRoutingKey(args ...string) string {
