@@ -23,4 +23,4 @@ USER rabbitmq
 # Copy rabbitmq.conf
 COPY --chown=rabbitmq:rdips rabbitmq.conf /etc/rabbitmq/rabbitmq.conf
 
-RUN rabbitmq-plugins enable --offline rabbitmq_mqtt rabbitmq_management
+RUN rabbitmq-plugins enable --offline rabbitmq_mqtt rabbitmq_management && rabbitmq-plugins enable rabbitmq_mqtt

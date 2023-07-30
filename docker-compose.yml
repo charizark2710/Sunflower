@@ -76,12 +76,15 @@ services:
           - sunflower
   api:
     container_name: sunflower_api
+    env_file:
+      - .env
     build:
       context: ./RDIPs-BE
       dockerfile: Dockerfile
       target: production
     depends_on:
       - db
+      - rabbitmq
     ports:
       - '8080:8080'
     volumes:
