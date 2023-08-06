@@ -9,6 +9,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -16,9 +17,29 @@ import (
 	"github.com/rabbitmq/amqp091-go"
 )
 
+func initializeAMQP() (commonModel.BaseAmqpConn, error) {
+	conn, err := amqp091.Dial(
+		"amqp://" +
+			os.Getenv("BROKER_USER") +
+			":" + os.Getenv("BROKER_PASSWORD") +
+			"@" + os.Getenv("BROKER_HOST") +
+			":" + os.Getenv("BROKER_PORT") + "/")
+	if err != nil {
+		return nil, err
+	}
+
+	return conn, err
+
+	// // Declare exchange
+	// for _, exchange := range AMQPconst.ExhangeArr {
+	// 	ch.ExchangeDeclare(exchange, "topic", true, false, false, false, nil)
+	// }
+}
+
 func Send(exchange string, routingKeyArgs []string, body []byte) error {
 	routingKey := generateRoutingKey(routingKeyArgs...)
-	channel, err := commonModel.Helper.GetAMQPConnection().Channel()
+	conn := commonModel.Helper.GetAMQPConnection()
+	channel, err := (*conn).Channel()
 	if err != nil {
 		utils.Log(LogConstant.Error, err)
 	} else {
