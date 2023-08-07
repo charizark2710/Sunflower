@@ -19,31 +19,36 @@ services:
       - '5672:5672'
       - '15672:15672'
       - '1883:1883'
+    healthcheck:
+          test: rabbitmq-diagnostics -q ping
+          interval: 30s
+          timeout: 30s
+          retries: 3
     networks:
       pi4:
         aliases:
           - sfBroker
-  gateway:
-    container_name: "gateway"
-    # Maybe there some memory leak that prevent docker to excute command so this is good for now
-    # entrypoint: ["./bin/RDIPs-Gateway"]
-    entrypoint: ["tail", "-f", "/dev/null"]
-    build:
-      context: ./RDIPs-Gateway
-      dockerfile: Gateway.Dockerfile
-    env_file:
-      - .env
-    ports:
-      - '8080:8080'
-    depends_on:
-      - rabbitmq
-    volumes:
-      - './RDIPs-Gateway:/var/lib/gateway'
-    # command: ["/bin/sh", "-c", "tail -F /dev/null"]
-    networks:
-      pi4:
-        aliases:
-          - sfBroker
+  # gateway:
+  #   container_name: "gateway"
+  #   # Maybe there some memory leak that prevent docker to excute command so this is good for now
+  #   # entrypoint: ["./bin/RDIPs-Gateway"]
+  #   entrypoint: ["tail", "-f", "/dev/null"]
+  #   build:
+  #     context: ./RDIPs-Gateway
+  #     dockerfile: Gateway.Dockerfile
+  #   env_file:
+  #     - .env
+  #   ports:
+  #     - '8080:8080'
+  #   depends_on:
+  #     - rabbitmq
+  #   volumes:
+  #     - './RDIPs-Gateway:/var/lib/gateway'
+  #   # command: ["/bin/sh", "-c", "tail -F /dev/null"]
+  #   networks:
+  #     pi4:
+  #       aliases:
+  #         - sfBroker
   db:
     container_name: postgres
     env_file:
@@ -52,6 +57,12 @@ services:
     restart: unless-stopped
     ports:
       - '${POSTGRES_PORT}:${POSTGRES_PORT}'
+    healthcheck:
+      test: ["CMD-SHELL", "sh -c 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}'"]
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 80s  
     volumes:
       - db:/var/lib/postgresql/data
     networks:
@@ -83,8 +94,11 @@ services:
       dockerfile: Dockerfile
       target: production
     depends_on:
-      - db
-      - rabbitmq
+        db:
+          condition: service_healthy
+        rabbitmq:
+          condition: service_healthy
+
     ports:
       - '8080:8080'
     volumes:

@@ -22,10 +22,12 @@ func main() {
 	db, err := config.DbConfig()
 	if err != nil {
 		utils.Log(LogConstant.Fatal, err)
+		panic(err)
 	}
 	conn, ch, err := config.RabbitMqConfig()
 	if err != nil {
 		utils.Log(LogConstant.Fatal, err)
+		panic(err)
 	}
 	commonModel.Helper.SetDb(db)
 	commonModel.Helper.SetAMQP(conn)
