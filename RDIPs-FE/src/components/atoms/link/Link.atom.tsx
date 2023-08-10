@@ -8,6 +8,7 @@ export interface LinkAtomProps {
   className?: string;
   children: React.ReactNode;
 }
+
 export const LinkAtom: React.FC<LinkAtomProps> = ({ onClick, to, children, className = '' }) => {
   return (
     <Link underline='none' href={to} onClick={onClick} className={className}>

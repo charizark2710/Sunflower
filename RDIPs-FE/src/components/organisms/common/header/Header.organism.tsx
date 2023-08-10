@@ -19,9 +19,11 @@ function HeaderOrganism() {
   const isLogin = true;
 
   const appBarStyle = {
-    bgcolor: '#F3EDB5',
+    bgcolor: 'white',
     color: '#000000',
-    padding: '5px 70px 0px 10px',
+    padding: '5px 24px 0px 10px',
+    borderBottom: '1px solid #e4e4e4',  
+    boxShadow: 'unset'
   };
 
   const leftSideStyle = {
@@ -33,17 +35,17 @@ function HeaderOrganism() {
   return (
     <AppBar position='static' sx={appBarStyle}>
       {isLogin ? (
-        <Grid container sx={{ pb: '5px', minHeight: '64px', alignItems: 'center', pl: '70px' }}>
+        <Grid container sx={{ pb: '5px', height: '64px', alignItems: 'center', pl: '70px' }}>
           <Grid item xs={5} fontWeight='bold'>
             {navbarTitle ? navbarTitle : ''}
           </Grid>
           <Grid item xs={7} sx={{ ...leftSideStyle, alignItems: 'center' }}>
-            <div style={{ paddingRight: '15px', fontWeight: 'bold' }}>
+            {/* <div style={{ paddingRight: '15px', fontWeight: 'bold' }}>
               <div>Admin: PBTAnh</div>
               <div>#696969</div>
             </div>
             <Box>
-              <Image url={avatar} w={'60px'} />
+              <Image url={avatar} w={'40px'} />
               <IconButton sx={{ transform: 'translate(-50%, -50%)', ml: '20px' }}>
                 <Badge badgeContent={100} color='secondary'>
                   <NotificationsIcon />
@@ -52,6 +54,9 @@ function HeaderOrganism() {
               <IconButton sx={{ transform: 'translate(-50%, -50%)', ml: '5px' }}>
                 <Image url={gear} w={'30px'} />
               </IconButton>
+            </Box> */}
+            <Box>
+              <Image url={avatar} w={'40px'} />
             </Box>
           </Grid>
         </Grid>

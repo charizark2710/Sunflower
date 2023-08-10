@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
 import { Grid } from '@mui/material';
+import React, { useState } from 'react';
+import { connect } from 'react-redux';
 import FooterOrganism from '../../organisms/common/footer/Footer.organism';
 import HeaderOrganism from '../../organisms/common/header/Header.organism';
 import SidebarOrganism from '../../organisms/common/sidebar/Sidebar.organism';
@@ -19,7 +20,7 @@ function AdminPage(props: AdminPageProps) {
 
   return (
     <>
-      <Grid container className='admin-container deep-background'>
+      <Grid container className='admin-container'>
         <Grid item xs={collapse ? 0.7 : 2}>
           <SidebarOrganism onClick={toggleCollapse} size={collapse ? 'sm' : 'md'} />
         </Grid>
@@ -33,4 +34,4 @@ function AdminPage(props: AdminPageProps) {
   );
 }
 
-export default AdminPage;
+export default connect()(AdminPage);
