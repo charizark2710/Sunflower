@@ -1,13 +1,14 @@
 package AMQP_handler
 
 import (
-	AMQPconst "RDIPs-BE/constant/AMQP_Const"
 	LogConstant "RDIPs-BE/constant/LogConst"
 	"RDIPs-BE/constant/ServiceConst"
+	"RDIPs-BE/handler"
 	commonModel "RDIPs-BE/model/common"
 	"RDIPs-BE/utils"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"strings"
@@ -17,38 +18,96 @@ import (
 	"github.com/rabbitmq/amqp091-go"
 )
 
-func initializeAMQP() (commonModel.BaseAmqpConn, error) {
-	conn, err := amqp091.Dial(
+var rabbitPool handler.Pool
+
+func InitializeAMQP() error {
+	conn, err := commonModel.Dial(
 		"amqp://" +
 			os.Getenv("BROKER_USER") +
 			":" + os.Getenv("BROKER_PASSWORD") +
 			"@" + os.Getenv("BROKER_HOST") +
 			":" + os.Getenv("BROKER_PORT") + "/")
 	if err != nil {
-		return nil, err
+		utils.Log(LogConstant.Fatal, err)
+	}
+	factoryFn := func() (interface{}, error) {
+		amqpCh, err := conn.Channel()
+		return amqpCh, err
 	}
 
-	return conn, err
+	closeFn := func(conn interface{}) error {
+		ch, ok := conn.(commonModel.BaseAmqpChannel)
+		if !ok {
+			return fmt.Errorf("%v", "wrong amqp connection format")
+		}
+		err := ch.Close()
+		return err
+	}
 
-	// // Declare exchange
-	// for _, exchange := range AMQPconst.ExhangeArr {
-	// 	ch.ExchangeDeclare(exchange, "topic", true, false, false, false, nil)
-	// }
+	pingFn := func(conn interface{}) chan interface{} {
+		pingChan := make(chan interface{}, 1)
+		ch, ok := conn.(commonModel.BaseAmqpChannel)
+		if !ok {
+			pingChan <- fmt.Errorf("%v", "wrong amqp connection format")
+			return pingChan
+		}
+
+		if err != nil {
+			pingChan <- err
+			return pingChan
+		}
+
+		amqpErr := ch.NotifyClose(make(chan *amqp091.Error))
+
+		go func() {
+			pingChan <- amqpErr
+		}()
+
+		confirmCh := ch.NotifyPublish(make(chan amqp091.Confirmation))
+
+		go func() {
+			for {
+				pingChan <- confirmCh
+			}
+		}()
+
+		return pingChan
+	}
+
+	poolData := handler.PoolData{
+		FactoryFn: factoryFn,
+		CloseFn:   closeFn,
+		PingFn:    pingFn,
+	}
+
+	err = rabbitPool.FillPool(poolData)
+
+	return err
+}
+
+func GetPool() handler.Pool {
+	return rabbitPool
 }
 
 func Send(exchange string, routingKeyArgs []string, body []byte) error {
 	routingKey := generateRoutingKey(routingKeyArgs...)
-	conn := commonModel.Helper.GetAMQPConnection()
-	channel, err := (*conn).Channel()
+	utils.Log(LogConstant.Info, "Sending message to %v with %v", exchange, routingKey)
+	conn, err := rabbitPool.Get()
 	if err != nil {
 		utils.Log(LogConstant.Error, err)
 	} else {
+		defer rabbitPool.Release(conn)
+		channel, ok := conn.(commonModel.BaseAmqpChannel)
+		if !ok {
+			return fmt.Errorf("wrong channel format")
+		}
 		err = channel.PublishWithContext(context.Background(), exchange, routingKey, true, false, amqp091.Publishing{
 			DeliveryMode: amqp091.Persistent,
 			ContentType:  "text/plain",
 			Body:         body,
 		})
-		channel.Close()
+		utils.Log(LogConstant.Info, "Finish sending message to %v with %v", exchange, routingKey)
+
 	}
 	return err
 }
@@ -97,7 +156,7 @@ func ReceiveService(deliveries <-chan amqp091.Delivery) {
 		}
 		response, _ := json.Marshal(result)
 		// if result.
-		Send(AMQPconst.DATA_EXCHANGE, []string{"*"}, response)
+		Send(delivery.Exchange, []string{"*"}, response)
 
 		go ack(&delivery)
 		utils.Log(LogConstant.Info, "Finish Exchange: "+delivery.Exchange+" With key: "+delivery.RoutingKey)

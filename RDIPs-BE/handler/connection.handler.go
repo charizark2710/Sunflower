@@ -10,8 +10,10 @@ import (
 )
 
 const (
-	defaultRetry   = 30
-	defautWaitTime = 30 * time.Second
+	defaultRetry     = 30
+	defautWaitTime   = 30 * time.Second
+	defaultIndleTime = 10 * time.Second
+	defaultPoolSize  = 5
 )
 
 type PoolData struct {
@@ -19,16 +21,19 @@ type PoolData struct {
 	WaitTimeout  time.Duration
 	Size         int
 	Max          int
-	FactoryFn    func() (interface{}, error) // Handle data before add to pool
-	CloseFn      func(interface{}) error     // Close data before return back to pool
+	FactoryFn    func() (interface{}, error)        // Handle data before add to pool
+	CloseFn      func(interface{}) error            // Close data before return back to pool
+	PingFn       func(interface{}) chan interface{} // Control signal data in pool
+	ForceClose   bool
+	ping         chan interface{}
 }
 
 type Pool struct {
-	p       *PoolData
-	mu      *sync.Mutex
-	conn    chan interface{}
-	err     chan error
-	connNum int
+	p          *PoolData
+	mu         *sync.Mutex
+	conn       chan interface{}
+	availConn  int
+	forceClose bool
 }
 
 func (p *Pool) FillPool(data PoolData) error {
@@ -41,14 +46,21 @@ func (p *Pool) FillPool(data PoolData) error {
 	if data.WaitTimeout == 0 {
 		data.WaitTimeout = defautWaitTime
 	}
+	if data.IndleTimeout == 0 {
+		data.IndleTimeout = defaultIndleTime
+	}
 	if data.Max == 0 {
 		data.Max = int(math.MaxInt)
 	}
-	p.conn = make(chan interface{}, 1)
-	p.err = make(chan error, 1)
+	if data.Size == 0 {
+		data.Size = defaultPoolSize
+	}
+	p.forceClose = data.ForceClose
+	p.conn = make(chan interface{}, data.Size)
+	p.mu = &sync.Mutex{}
 	p.p = &data
 	start := time.Now()
-	for i := 0; i <= data.Size; i-- {
+	for i := 0; i < data.Size; i++ {
 		currentTime := time.Since(start).Seconds()
 		if currentTime >= data.WaitTimeout.Seconds() {
 			return fmt.Errorf("timeout after: %v seconds", currentTime)
@@ -58,22 +70,26 @@ func (p *Pool) FillPool(data PoolData) error {
 			utils.Log(LogConstant.Error, err)
 			continue
 		}
+
+		if data.PingFn != nil {
+			data.ping = data.PingFn(val)
+		}
 		p.conn <- val
-		p.connNum++
+		p.availConn++
 	}
 	return nil
 }
 
 func (p *Pool) Get(retry ...int) (interface{}, error) {
-	retryTimes := retry[0]
-	if retryTimes == 0 {
+	retryTimes := 0
+	if retry == nil {
 		retryTimes = defaultRetry
 	}
 	if p.conn == nil {
 		return nil, fmt.Errorf("connection is not initialize")
 	}
 
-	for i := 0; i <= retryTimes; i += 1 {
+	for i := 0; i < retryTimes; i += 1 {
 		select {
 		case conn, ok := <-p.conn:
 			p.mu.Lock()
@@ -81,34 +97,42 @@ func (p *Pool) Get(retry ...int) (interface{}, error) {
 				return nil, fmt.Errorf("channel is closed")
 			}
 			defer p.mu.Unlock()
+			p.availConn--
 			return conn, nil
 		case time := <-time.After(p.p.WaitTimeout):
 			timeoutErr := fmt.Errorf("timeout after: %v seconds", time.Second())
 			return nil, timeoutErr
 		default:
-			// If there are no data in pool
-			if p.connNum < p.p.Max {
+			// If there are no data in pool and haven't reach max
+			// Then create new connection
+			if p.availConn < p.p.Max {
 				res, err := p.p.FactoryFn()
 				if err == nil {
-					p.connNum++
+					p.availConn++
 				}
 				return res, err
 			}
-			return nil, fmt.Errorf("exceed max connection pool")
+			time.Sleep(p.p.IndleTimeout)
 		}
 	}
-	return nil, nil
+	return nil, fmt.Errorf("exceed max connection pool")
 }
 
 func (p *Pool) Release(data interface{}) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	err := p.p.CloseFn(data)
-	if err != nil {
-		p.connNum--
+	if p.forceClose {
+		err := p.p.CloseFn(data)
+		if err == nil {
+			p.availConn++
+			p.conn <- data
+		}
+		return err
+	} else {
+		p.availConn++
 		p.conn <- data
 	}
-	return err
+	return nil
 }
 
 func (p *Pool) Close() {
@@ -123,6 +147,7 @@ Loop:
 			if err != nil {
 				utils.Log(LogConstant.Error, err)
 			}
+			close(p.p.ping)
 		default: //all other case not-ready: means nothing in ch for now
 			break Loop
 		}

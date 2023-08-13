@@ -2,24 +2,17 @@ package model
 
 import (
 	"context"
-	"crypto/tls"
-	"net"
-	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-type BaseAmqpConn interface {
-	Channel() (*amqp.Channel, error)
+type baseAmqpConn interface {
+	Channel() (amqpChannelWrapper, error)
 	Close() error
-	CloseDeadline(deadline time.Time) error
-	ConnectionState() tls.ConnectionState
-	IsClosed() bool
-	LocalAddr() net.Addr
-	NotifyBlocked(receiver chan amqp.Blocking) chan amqp.Blocking
-	NotifyClose(receiver chan *amqp.Error) chan *amqp.Error
-	RemoteAddr() net.Addr
-	UpdateSecret(newSecret string, reason string) error
+}
+
+type amqpWrapper struct {
+	conn *amqp.Connection
 }
 
 type BaseAmqpChannel interface {
@@ -58,12 +51,22 @@ type BaseAmqpChannel interface {
 	QueueUnbind(name string, key string, exchange string, args amqp.Table) error
 	Recover(requeue bool) error
 	Reject(tag uint64, requeue bool) error
-	Tx() error
-	TxCommit() error
-	TxRollback() error
 }
 
-type AmqpModel struct {
-	conn    *amqp.Connection
-	channel *amqp.Channel
+type amqpChannelWrapper struct {
+	*amqp.Channel
+}
+
+var Dial = func(url string) (baseAmqpConn, error) {
+	conn, err := amqp.Dial(url)
+	return amqpWrapper{conn}, err
+}
+
+func (w amqpWrapper) Channel() (amqpChannelWrapper, error) {
+	ch, err := w.conn.Channel()
+	return amqpChannelWrapper{ch}, err
+}
+
+func (w amqpWrapper) Close() error {
+	return w.conn.Close()
 }
