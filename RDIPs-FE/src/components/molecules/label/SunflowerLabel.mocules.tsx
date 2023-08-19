@@ -60,8 +60,8 @@ const SunflowerLabel: React.FC<SunLabelProps> = ({
         <div className='side-bar-item' style={{ height: height }}>
           <div>
             {size === 'md' ? (
-              <div className='flex-align-center flex-justify-center'>
-                <div className='flex-align-center flex-justify-center' style={{ height: '30px', width: 'fix-content' }}>
+              <div className='flex-align-center'>
+                <div className='flex-align-center' style={{ height: '30px', width: 'fix-content', paddingLeft: iconPos !== 0 ? '20px': '10px' }}>
                   {iconPos === 0 ? iconItem() : ''}{' '}
                 </div>
                 <LinkAtom to={link.to} className={link.className}>

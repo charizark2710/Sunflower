@@ -1,4 +1,4 @@
-import { Grid } from '@mui/material';
+import { Box, Grid } from '@mui/material';
 import { StraightAtom } from '../../../atoms/straight/Straight.atom';
 import { NavbarMolecules } from '../../../molecules/navbar-molecules/Navbar.molecules';
 import './Footer.organism.scss';
@@ -55,14 +55,14 @@ const footerRightLinks = [
 
 function FooterOrganism() {
   return (
-    <div className='footer-container'>
+    <footer className='footer-container'>
       <Grid container>
         <Grid item xs={5} sx={{ paddingLeft: '30px' }}>
           <NavbarMolecules links={footerLeftLinks} />
         </Grid>
       </Grid>
       <StraightAtom color='#9F9F9F' />
-      <Grid container sx={{ padding: '10px 20px' }} className='flex-align-center'>
+      <Grid container sx={{ padding: '10px 0px' }} className='flex-align-center'>
         <Grid item xs={11} sx={{ paddingLeft: '40px' }}>
           {dataFooterRender.copyRight}
         </Grid>
@@ -70,7 +70,7 @@ function FooterOrganism() {
           <NavbarMolecules links={footerRightLinks} />
         </Grid>
       </Grid>
-    </div>
+    </footer>
   );
 }
 

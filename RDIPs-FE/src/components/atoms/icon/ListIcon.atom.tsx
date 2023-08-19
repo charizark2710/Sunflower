@@ -6,7 +6,7 @@ import CampaignIcon from '@mui/icons-material/Campaign';
 const DeviceListIcon = ({ fontSize = 16 }) => {
   return (
     <>
-      <DevicesOtherIcon style={{ fontSize: fontSize }} />
+      <DevicesOtherIcon style={{ fontSize: fontSize, verticalAlign: 'middle' }} />
     </>
   );
 };
@@ -14,7 +14,7 @@ const DeviceListIcon = ({ fontSize = 16 }) => {
 const UserListIcon = ({ fontSize = 16 }) => {
   return (
     <>
-      <InsertEmoticonIcon style={{ fontSize: fontSize }} />
+      <InsertEmoticonIcon style={{ fontSize: fontSize, verticalAlign: 'middle'  }} />
     </>
   );
 };
@@ -22,7 +22,7 @@ const UserListIcon = ({ fontSize = 16 }) => {
 const AdminListIcon = ({ fontSize = 16 }) => {
   return (
     <>
-      <AdminPanelSettingsIcon style={{ fontSize: fontSize }} />
+      <AdminPanelSettingsIcon style={{ fontSize: fontSize, verticalAlign: 'middle'  }} />
     </>
   );
 };
@@ -31,7 +31,7 @@ const AdminListIcon = ({ fontSize = 16 }) => {
 const Campaign = ({ fontSize = 16 }) => {
   return (
     <>
-      <CampaignIcon style={{ fontSize: fontSize }} />
+      <CampaignIcon style={{ fontSize: fontSize, verticalAlign: 'middle'  }} />
     </>
   );
 };

@@ -5,6 +5,8 @@ import { HeadCell, TypeUserEnum, UserData } from '../../../../utils/interface';
 import { useEffect } from 'react';
 import { setPage } from '../../../../redux/actions/page';
 import { connect } from 'react-redux';
+import BreakcrumbMocules from '../../../molecules/breakcrumb/Breakcrumb.mocules';
+import { UserListIcon } from '../../../atoms/icon/ListIcon.atom';
 
 const ListUsers = ({dispatch} : any) => {
   const navigate = useNavigate();
@@ -80,6 +82,7 @@ const ListUsers = ({dispatch} : any) => {
 
   return (
     <div className='list-container'>
+      <BreakcrumbMocules title='Users' icon={<UserListIcon />}/>
       <TableAtom
         onRowClick={navigateToDetailPage}
         rows={userListData}

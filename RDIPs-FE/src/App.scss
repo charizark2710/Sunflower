@@ -1,3 +1,8 @@
+body {
+  margin: 0;
+  padding: 0;
+}
+
 .App {
   text-align: center;
 }
@@ -29,7 +34,7 @@
 }
 
 .list-container {
-  padding: 70px;
+  padding: 24px 10%;
 }
 
 /* flex area */
@@ -46,6 +51,11 @@
 .flex-justify-start {
   display: flex;
   justify-content: flex-start;
+}
+
+.flex-justify-space-between {
+  display: flex;
+  justify-content: space-between;
 }
 
 .flex-align-start {

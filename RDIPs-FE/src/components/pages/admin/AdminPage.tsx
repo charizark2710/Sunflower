@@ -1,4 +1,4 @@
-import { Grid } from '@mui/material';
+import { Box, Grid } from '@mui/material';
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import FooterOrganism from '../../organisms/common/footer/Footer.organism';
@@ -14,18 +14,23 @@ interface AdminPageProps {
 function AdminPage(props: AdminPageProps) {
   const [collapse, setCollapse] = useState(false);
 
-  function toggleCollapse() {
-    setCollapse(!collapse);
-  }
+  // function toggleCollapse() {
+  //   setCollapse(!collapse);
+  // }
 
   return (
     <>
       <Grid container className='admin-container'>
-        <Grid item xs={collapse ? 0.7 : 2}>
-          <SidebarOrganism onClick={toggleCollapse} size={collapse ? 'sm' : 'md'} />
-        </Grid>
-        <Grid item xs={collapse ? 11.3 : 10} className='right-side'>
+        <Grid item xs={12} display={{ xs: "block", md: "none" }} >
           <HeaderTemplate header={<HeaderOrganism />} />
+        </Grid>
+        <Grid item xs={12} md={1.4} display={{ xs: "none", md: "block" }} >
+          <SidebarOrganism size={collapse ? 'sm' : 'md'} />
+        </Grid>
+        <Grid item xs={12} md={10.6} className='right-side'>
+          <Grid display={{ xs: "none", md: "block" }} >
+            <HeaderTemplate header={<HeaderOrganism />} />
+          </Grid>
           <div className='body-container'>{props.children}</div>
           <FooterOrganism />
         </Grid>

@@ -1,0 +1,22 @@
+.breakcrumb-container {
+  padding-bottom: 24px;;
+  .breakcrumb-big {
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 160%;
+    letter-spacing: 0.15px;
+  }
+
+  .breakcrumb-small {
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 150%; /* 24px */
+    letter-spacing: 0.15px;
+  }
+
+  .font-grey {
+    color: var(--light-text-secondary, rgba(0, 0, 0, 0.6));
+  }
+}
