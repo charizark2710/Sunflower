@@ -1,4 +1,5 @@
 import { AdminListIcon, Campaign, DeviceListIcon, UserListIcon } from '../../../atoms/icon/ListIcon.atom';
+import SearchAtom from '../../../atoms/search/Search.atom';
 import { StraightAtom } from '../../../atoms/straight/Straight.atom';
 import SunflowerLabel from '../../../molecules/label/SunflowerLabel.mocules';
 // import Image from '../../../atoms/image/Image';
@@ -29,7 +30,7 @@ const topLabelStyle = {
 
 const straight = <StraightAtom width='100%' thick='0.1px' color='#e4e4e4' />;
 
-function SidebarOrganism({ onClick, size }: { onClick: (args: any) => void; size: string }) {
+function SidebarOrganism({ onClick, size }: { onClick?: (args: any) => void; size: string }) {
   return (
     <div className='sidebar'>
       {sideBarItems.map((item, i) => {
@@ -45,8 +46,8 @@ function SidebarOrganism({ onClick, size }: { onClick: (args: any) => void; size
               onClick={onClick}
               size={size}
             />
-            <div className = 'flex-justify-center' style={{marginBottom: '10px', height: '90px'}}> 
-
+            <div className = 'search-area'> 
+              <SearchAtom/>
               {/* <Image url={sunflower} w ='50%' /> */}
             </div>
             {size === 'md' ? straight : ''}

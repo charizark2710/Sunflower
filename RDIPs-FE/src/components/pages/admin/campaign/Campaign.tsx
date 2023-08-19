@@ -1,9 +1,11 @@
 import { useEffect } from 'react';
-import { HeadCell, TypeUserEnum, UserData } from '../../../../utils/interface';
-import TableAtom from '../../../atoms/table/Table.atom';
-import './Campaign.scss';
-import { setPage } from '../../../../redux/actions/page';
 import { connect } from 'react-redux';
+import { setPage } from '../../../../redux/actions/page';
+import { HeadCell, TypeUserEnum, UserData } from '../../../../utils/interface';
+import { Campaign as CampainIcon } from '../../../atoms/icon/ListIcon.atom';
+import TableAtom from '../../../atoms/table/Table.atom';
+import BreakcrumbMocules from '../../../molecules/breakcrumb/Breakcrumb.mocules';
+import './Campaign.scss';
 
 const Campaign = ({dispatch} : any) => {
   function navigateToDetailPage(detail: any) {
@@ -78,6 +80,7 @@ const Campaign = ({dispatch} : any) => {
 
   return (
     <div className='list-container'>
+      <BreakcrumbMocules title='Campains' icon={<CampainIcon />}/>
       <TableAtom
         onRowClick={navigateToDetailPage}
         rows={userListData}

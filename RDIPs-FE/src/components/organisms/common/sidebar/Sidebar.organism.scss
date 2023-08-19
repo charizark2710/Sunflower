@@ -1,6 +1,9 @@
 .sidebar {
     padding-top: 30px;
     background: white;
-    border-right: 1px solid #e4e4e4;
-    height: 100%;
+
+    .search-area{
+        height: 90px;
+        margin: 12px 10px;
+    }
 }

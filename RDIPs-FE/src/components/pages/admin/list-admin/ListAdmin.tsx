@@ -4,6 +4,8 @@ import TableAtom from '../../../atoms/table/Table.atom';
 import './ListAdmin.scss';
 import { setPage } from '../../../../redux/actions/page';
 import { connect } from 'react-redux';
+import { AdminListIcon } from '../../../atoms/icon/ListIcon.atom';
+import BreakcrumbMocules from '../../../molecules/breakcrumb/Breakcrumb.mocules';
 
 const ListAdmin = ({dispatch} : any) => {
   function navigateToDetailPage(detail: any) {
@@ -61,6 +63,7 @@ const ListAdmin = ({dispatch} : any) => {
 
   return (
     <div className='list-container'>
+      <BreakcrumbMocules title='Admin' icon={<AdminListIcon />}/>
       <TableAtom
         onRowClick={navigateToDetailPage}
         rows={userListData}

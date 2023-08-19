@@ -5,6 +5,8 @@ import './ListDevices.scss';
 import { connect } from 'react-redux';
 import { useEffect } from 'react';
 import { setPage } from '../../../../redux/actions/page';
+import BreakcrumbMocules from '../../../molecules/breakcrumb/Breakcrumb.mocules';
+import { DeviceListIcon } from '../../../atoms/icon/ListIcon.atom';
 
 interface ListDevicesProps {
   dispatch: any;
@@ -100,6 +102,7 @@ const ListDevices: React.FC<ListDevicesProps> = ({ dispatch }) => {
 
   return (
     <div className='list-container'>
+      <BreakcrumbMocules title='Devices' icon={<DeviceListIcon />}/>
       <TableAtom
         onRowClick={navigateToDetailPage}
         rows={deviceListData}
