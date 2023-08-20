@@ -8,7 +8,6 @@ import (
 )
 
 type HistoryValidator struct {
-	Validator
 }
 
 func (HistoryValidator) Post(body []byte) error {

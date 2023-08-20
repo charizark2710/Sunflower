@@ -1,5 +1,9 @@
+import { AdminListIcon, Campaign, DeviceListIcon, UserListIcon } from '../../../atoms/icon/ListIcon.atom';
+import SearchAtom from '../../../atoms/search/Search.atom';
 import { StraightAtom } from '../../../atoms/straight/Straight.atom';
 import SunflowerLabel from '../../../molecules/label/SunflowerLabel.mocules';
+// import Image from '../../../atoms/image/Image';
+// import sunflower from '../../../../assets/Sunflower.png';
 import './Sidebar.organism.scss';
 
 const sideBarItems = [
@@ -12,40 +16,44 @@ const sideBarItems = [
       </span>
     ),
   },
-  { to: '/list-devices', className: 'link-item', children: 'List Devices' },
-  { to: '/list-users', className: 'link-item', children: 'List Users' },
-  { to: '/list-admin', className: 'link-item', children: 'List Admin' },
-  { to: '/campaign', className: 'link-item', children: 'Campaign' },
+  { to: '/list-devices', className: 'link-item', children: 'List Devices', icon: <DeviceListIcon /> },
+  { to: '/list-users', className: 'link-item', children: 'List Users', icon: <UserListIcon /> },
+  { to: '/list-admin', className: 'link-item', children: 'List Admin', icon: <AdminListIcon /> },
+  { to: '/campaign', className: 'link-item', children: 'Campaign', icon: <Campaign />},
 ];
 
 const topLabelStyle = {
   fontSize: '16px',
   lineHeight: '19px',
-  marginBottom: '90px'
+  marginBottom: '20px',
 };
 
-const straight = <StraightAtom width='100%' thick='0.1px' color='#8C8C8C' />;
+const straight = <StraightAtom width='100%' thick='0.1px' color='#e4e4e4' />;
 
-function SidebarOrganism({ onClick, size }: { onClick: (args: any) => void; size: string }) {
+function SidebarOrganism({ onClick, size }: { onClick?: (args: any) => void; size: string }) {
   return (
     <div className='sidebar'>
       {sideBarItems.map((item, i) => {
         return i === 0 ? (
           <div key={i}>
             <SunflowerLabel
-              
+              key={item.to + i}
               link={item}
               iconPos={1}
-              height='62px'
+              height='10px'
               style={topLabelStyle}
               icon='toggle'
               onClick={onClick}
               size={size}
             />
-            {straight}
+            <div className = 'search-area'> 
+              <SearchAtom/>
+              {/* <Image url={sunflower} w ='50%' /> */}
+            </div>
+            {size === 'md' ? straight : ''}
           </div>
         ) : (
-          <SunflowerLabel key={i} link={item} size={size} children={straight} />
+          <SunflowerLabel key={item.to + i} link={item} size={size} children={straight} specialIcon={item.icon} />
         );
       })}
     </div>

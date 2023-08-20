@@ -2,12 +2,21 @@ import { useNavigate } from 'react-router-dom';
 import './ListUsers.scss';
 import TableAtom from '../../../atoms/table/Table.atom';
 import { HeadCell, TypeUserEnum, UserData } from '../../../../utils/interface';
+import { useEffect } from 'react';
+import { setPage } from '../../../../redux/actions/page';
+import { connect } from 'react-redux';
+import BreakcrumbMocules from '../../../molecules/breakcrumb/Breakcrumb.mocules';
+import { UserListIcon } from '../../../atoms/icon/ListIcon.atom';
 
-const ListUsers = () => {
+const ListUsers = ({dispatch} : any) => {
   const navigate = useNavigate();
   function navigateToDetailPage(detail: any) {
     navigate('/detail-user', { replace: false, state: detail });
   }
+
+  useEffect(() => {
+    dispatch(setPage('List Users'));
+  }, [dispatch]);
 
   const userListData = [
     createData('U001', 'Ly Nguyen', '123 Thien Duong', '09876543212', 'thienduong@gmail.com', TypeUserEnum.Regular),
@@ -73,6 +82,7 @@ const ListUsers = () => {
 
   return (
     <div className='list-container'>
+      <BreakcrumbMocules title='Users' icon={<UserListIcon />}/>
       <TableAtom
         onRowClick={navigateToDetailPage}
         rows={userListData}
@@ -84,4 +94,4 @@ const ListUsers = () => {
   );
 };
 
-export default ListUsers;
+export default connect()(ListUsers);

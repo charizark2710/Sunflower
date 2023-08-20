@@ -8,7 +8,6 @@ import (
 )
 
 type DeviceValidator struct {
-	Validator
 }
 
 func (DeviceValidator) Post(body []byte) error {

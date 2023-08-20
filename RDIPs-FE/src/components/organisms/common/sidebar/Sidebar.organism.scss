@@ -1,5 +1,9 @@
 .sidebar {
-    background: #E6E6E6;
-    border-radius: 0px 10px 10px 0px;
-    height: 100%;
+    padding-top: 30px;
+    background: white;
+
+    .search-area{
+        height: 90px;
+        margin: 12px 10px;
+    }
 }

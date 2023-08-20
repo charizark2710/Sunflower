@@ -1,7 +1,6 @@
 package validators
 
 type BaseValidator struct {
-	Validator
 }
 type Validator interface {
 	Post([]byte) error
