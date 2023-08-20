@@ -147,7 +147,10 @@ func ReceiveService(deliveries <-chan amqp091.Delivery) {
 		c.SetQuery("amqp", "true")
 		setQueryAndParam(&c, delivery.Body)
 		routingKeyArr := strings.Split(delivery.RoutingKey, ".")
-		fn := ServiceConst.ServicesMap[routingKeyArr[len(routingKeyArr)-1]]
+		fn, ok := ServiceConst.ServicesMap[routingKeyArr[len(routingKeyArr)-1]]
+		if !ok {
+			utils.Log(LogConstant.Error, "Service", routingKeyArr[len(routingKeyArr)-1], "is not exist")
+		}
 		result, err := fn(&c)
 		if err != nil {
 			utils.Log(LogConstant.Error, err)

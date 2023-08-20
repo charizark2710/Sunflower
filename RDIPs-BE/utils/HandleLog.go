@@ -19,9 +19,9 @@ func Log(id string, arg ...interface{}) {
 
 func PrepareLog() {
 	logList = map[string]string{
-		LogConstant.Info:    "[INFO] %s",
-		LogConstant.Warning: "[WARNING] %s",
-		LogConstant.Error:   "[ERROR] %s",
-		LogConstant.Debug:   "[DEBUG] %s",
+		LogConstant.Info:    "[INFO] %v",
+		LogConstant.Warning: "[WARNING] %v",
+		LogConstant.Error:   "[ERROR] %v",
+		LogConstant.Debug:   "[DEBUG] %v",
 	}
 }
