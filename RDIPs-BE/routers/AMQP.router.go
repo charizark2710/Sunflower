@@ -47,10 +47,21 @@ func InitAmqpRoutes() {
 	go func() {
 		AMQP_handler.ReceiveService(deliveries)
 	}()
-	for serviceName := range ServiceConst.ServicesMap {
+
+	for serviceName := range ServiceConst.ServiceMapMQTT {
 		err = channel.QueueBind(queue.Name, "gateway.*."+serviceName, "amq."+amqp091.ExchangeTopic, false, nil)
 		if err != nil {
 			utils.Log(LogConstant.Fatal, err)
 		}
+	}
+
+	// declare queue for server
+	queueServer, err := channel.QueueDeclare("SERVER", true, false, false, false, nil)
+	if err != nil {
+		utils.Log(LogConstant.Fatal, err)
+	}
+	err = channel.QueueBind(queueServer.Name, "server.*", "amq."+amqp091.ExchangeTopic, false, nil)
+	if err != nil {
+		utils.Log(LogConstant.Fatal, err)
 	}
 }

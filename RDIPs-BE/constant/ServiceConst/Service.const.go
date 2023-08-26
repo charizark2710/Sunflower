@@ -29,3 +29,22 @@ var ServicesMap = map[string]ServiceFn{
 	//Weather
 	"GET" + urlconst.GetWeatherForecast: services.GetWeatherForecast,
 }
+
+var ServiceMapMQTT = map[string]string{
+	"GetAllDevices":   "GET" + urlconst.GetAllDevices,
+	"PostDevice":      "POST" + urlconst.PostDevice,
+	"GetDetailDevice": "GET" + urlconst.GetDetailDevice,
+	"PutDetailDevice": "PUT" + urlconst.PutDetailDevice,
+	"DeleteDevice":    "DELETE" + urlconst.DeleteDevice,
+
+	//Performances
+	"GetAllPerformances":   "GET" + urlconst.GetAllPerformances,
+	"GetDetailPerformance": "GET" + urlconst.GetDetailPerformance,
+	"PutDetailPerformance": "PUT" + urlconst.PutDetailPerformance,
+
+	//History
+	"GetDetailHistory": "GET" + urlconst.GetDetailHistory,
+	"PutDetailHistory": "PUT" + urlconst.PutDetailHistory,
+	//Weather
+	"GetWeatherForecast": "GET" + urlconst.GetWeatherForecast,
+}

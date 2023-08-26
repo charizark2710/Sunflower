@@ -58,7 +58,9 @@ type amqpChannelWrapper struct {
 }
 
 var Dial = func(url string) (baseAmqpConn, error) {
-	conn, err := amqp.Dial(url)
+	conn, err := amqp.DialConfig(url, amqp.Config{
+		Heartbeat: 5000,
+	})
 	return amqpWrapper{conn}, err
 }
 

@@ -44,34 +44,19 @@ func InitializeAMQP() error {
 		return err
 	}
 
-	pingFn := func(conn interface{}) chan interface{} {
-		pingChan := make(chan interface{}, 1)
+	pingFn := func(conn interface{}) {
 		ch, ok := conn.(commonModel.BaseAmqpChannel)
 		if !ok {
-			pingChan <- fmt.Errorf("%v", "wrong amqp connection format")
-			return pingChan
+			return
 		}
 
-		if err != nil {
-			pingChan <- err
-			return pingChan
-		}
-
-		amqpErr := ch.NotifyClose(make(chan *amqp091.Error))
+		amqpClose := make(chan *amqp091.Error)
+		ch.NotifyClose(amqpClose)
 
 		go func() {
-			pingChan <- amqpErr
+			utils.Log(LogConstant.Error, <-amqpClose)
 		}()
 
-		confirmCh := ch.NotifyPublish(make(chan amqp091.Confirmation))
-
-		go func() {
-			for {
-				pingChan <- confirmCh
-			}
-		}()
-
-		return pingChan
 	}
 
 	poolData := handler.PoolData{
@@ -91,7 +76,7 @@ func GetPool() handler.Pool {
 
 func Send(exchange string, routingKeyArgs []string, body []byte) error {
 	routingKey := generateRoutingKey(routingKeyArgs...)
-	utils.Log(LogConstant.Info, "Sending message to %v with %v", exchange, routingKey)
+	utils.Log(LogConstant.Info, "Sending message to ", exchange, "with ", routingKey)
 	conn, err := rabbitPool.Get()
 	if err != nil {
 		utils.Log(LogConstant.Error, err)
@@ -106,7 +91,7 @@ func Send(exchange string, routingKeyArgs []string, body []byte) error {
 			ContentType:  "text/plain",
 			Body:         body,
 		})
-		utils.Log(LogConstant.Info, "Finish sending message to %v with %v", exchange, routingKey)
+		utils.Log(LogConstant.Info, "Finish sending message to ", exchange, "with ", routingKey)
 
 	}
 	return err
@@ -114,13 +99,10 @@ func Send(exchange string, routingKeyArgs []string, body []byte) error {
 
 func ReceiveService(deliveries <-chan amqp091.Delivery) {
 	utils.Log(LogConstant.Info, "Start Receiver")
-	cleanup := func() {
-		utils.Log(LogConstant.Info, "handle: deliveries channel closed")
-	}
 	var ack func(d *amqp091.Delivery)
 	ack = func(d *amqp091.Delivery) {
 		utils.Log(LogConstant.Info, "Start ACK Delivery: "+d.Exchange+" With key: "+d.RoutingKey)
-		err := d.Ack(true)
+		err := d.Ack(false)
 		if err != nil {
 			utils.Log(LogConstant.Error, err)
 			time.Sleep(10 * time.Second)
@@ -129,7 +111,9 @@ func ReceiveService(deliveries <-chan amqp091.Delivery) {
 			utils.Log(LogConstant.Info, "Finish ACK Delivery: "+d.Exchange+" With key: "+d.RoutingKey)
 		}
 	}
-	defer cleanup()
+	defer func() {
+		utils.Log(LogConstant.Info, "handle: deliveries channel closed")
+	}()
 	for delivery := range deliveries {
 		utils.Log(LogConstant.Info, "Start Exchange: "+delivery.Exchange+" With key: "+delivery.RoutingKey)
 		c := commonModel.ServiceContext{
@@ -142,24 +126,29 @@ func ReceiveService(deliveries <-chan amqp091.Delivery) {
 				},
 			},
 		}
-		copy(c.Body, delivery.Body)
 		c.InitParamsAndQueries()
 		c.SetQuery("amqp", "true")
-		setQueryAndParam(&c, delivery.Body)
+		setGinContext(&c, delivery.Body)
 		routingKeyArr := strings.Split(delivery.RoutingKey, ".")
-		fn, ok := ServiceConst.ServicesMap[routingKeyArr[len(routingKeyArr)-1]]
+		fn, ok := ServiceConst.ServicesMap[ServiceConst.ServiceMapMQTT[routingKeyArr[len(routingKeyArr)-1]]]
+		var response []byte
 		if !ok {
 			utils.Log(LogConstant.Error, "Service", routingKeyArr[len(routingKeyArr)-1], "is not exist")
+			response = []byte("Service" + routingKeyArr[len(routingKeyArr)-1] + "is not exist")
+		} else {
+			result, err := fn(&c)
+			if err != nil {
+				utils.Log(LogConstant.Error, err)
+				result.Error = err
+				result.SetMessage(err.Error())
+			}
+			response, err = json.Marshal(result)
+			if err != nil {
+				utils.Log(LogConstant.Error, err)
+			}
 		}
-		result, err := fn(&c)
-		if err != nil {
-			utils.Log(LogConstant.Error, err)
-			result.Error = err
-			result.SetMessage(err.Error())
-		}
-		response, _ := json.Marshal(result)
 		// if result.
-		Send(delivery.Exchange, []string{"*"}, response)
+		go Send(delivery.Exchange, []string{string(c.CorrelationID())}, response)
 
 		go ack(&delivery)
 		utils.Log(LogConstant.Info, "Finish Exchange: "+delivery.Exchange+" With key: "+delivery.RoutingKey)
@@ -167,11 +156,14 @@ func ReceiveService(deliveries <-chan amqp091.Delivery) {
 	utils.Log(LogConstant.Info, "Done")
 }
 
-func setQueryAndParam(c *commonModel.ServiceContext, body []byte) {
+func setGinContext(c *commonModel.ServiceContext, body []byte) {
 	res := make(map[string]interface{})
 	err := json.Unmarshal(body, &res)
-	utils.Log(LogConstant.Info, err)
-	if err != nil && res["param"] != nil {
+	if err != nil {
+		utils.Log(LogConstant.Info, err)
+		return
+	}
+	if res["param"] != nil {
 		params, ok := res["param"].(map[string]string)
 		if ok {
 			for key, value := range params {
@@ -180,12 +172,28 @@ func setQueryAndParam(c *commonModel.ServiceContext, body []byte) {
 		}
 	}
 
-	if err != nil && res["query"] != nil {
+	if res["correlationID"] != nil {
+		correlationID, ok := res["correlationID"].(string)
+		if ok {
+			c.SetCorrelationID(correlationID)
+		}
+	}
+
+	if res["query"] != nil {
 		querys, ok := res["query"].(map[string]string)
 		if ok {
 			for key, value := range querys {
 				c.SetQuery(key, value)
 			}
+		}
+	}
+
+	if res["body"] != nil {
+		body, marshalErr := json.Marshal(res["body"])
+		if marshalErr != nil {
+			utils.Log(LogConstant.Error, marshalErr)
+		} else {
+			c.Body = append(c.Body, body...)
 		}
 	}
 }
