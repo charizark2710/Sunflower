@@ -164,10 +164,11 @@ func setGinContext(c *commonModel.ServiceContext, body []byte) {
 		return
 	}
 	if res["param"] != nil {
-		params, ok := res["param"].(map[string]string)
+		params, ok := res["param"].(map[string]interface{})
 		if ok {
 			for key, value := range params {
-				c.SetParam(key, value)
+				v := fmt.Sprintf("%v", value)
+				c.SetParam(key, v)
 			}
 		}
 	}
@@ -180,10 +181,11 @@ func setGinContext(c *commonModel.ServiceContext, body []byte) {
 	}
 
 	if res["query"] != nil {
-		querys, ok := res["query"].(map[string]string)
+		querys, ok := res["query"].(map[string]interface{})
 		if ok {
 			for key, value := range querys {
-				c.SetQuery(key, value)
+				v := fmt.Sprintf("%v", value)
+				c.SetQuery(key, v)
 			}
 		}
 	}
