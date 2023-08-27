@@ -21,9 +21,9 @@ type PoolData struct {
 	WaitTimeout  time.Duration
 	Size         int
 	Max          int
-	FactoryFn    func() (interface{}, error)        // Handle data before add to pool
-	CloseFn      func(interface{}) error            // Close data before return back to pool
-	PingFn       func(interface{}) chan interface{} // Control signal data in pool
+	FactoryFn    func() (interface{}, error) // Handle data before add to pool
+	CloseFn      func(interface{}) error     // Close data before return back to pool
+	PingFn       func(interface{})           // Control signal data in pool
 	ForceClose   bool
 	ping         chan interface{}
 }
@@ -72,7 +72,7 @@ func (p *Pool) FillPool(data PoolData) error {
 		}
 
 		if data.PingFn != nil {
-			data.ping = data.PingFn(val)
+			data.PingFn(val)
 		}
 		p.conn <- val
 		p.availConn++
@@ -107,9 +107,12 @@ func (p *Pool) Get(retry ...int) (interface{}, error) {
 			// Then create new connection
 			if p.availConn < p.p.Max {
 				res, err := p.p.FactoryFn()
-				if err == nil {
-					p.availConn++
-				}
+				// The newly created connection should not be opened forever
+				// wait for indle time out before running close function
+				go func() {
+					time.Sleep(p.p.IndleTimeout)
+					p.p.CloseFn(res)
+				}()
 				return res, err
 			}
 			time.Sleep(p.p.IndleTimeout)

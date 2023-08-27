@@ -74,7 +74,7 @@ var PostDevice = func(c *commonModel.ServiceContext) (commonModel.ResponseTempla
 			utils.Log(LogConstant.Error, err)
 			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
 		}
-		return commonModel.ResponseTemplate{HttpCode: 200, Data: nil}, nil
+		return commonModel.ResponseTemplate{HttpCode: 200, Data: deviceObj}, nil
 	} else {
 		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
 	}
