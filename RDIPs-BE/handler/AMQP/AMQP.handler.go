@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -74,7 +75,7 @@ func GetPool() handler.Pool {
 	return rabbitPool
 }
 
-func Send(exchange string, routingKeyArgs []string, body []byte) error {
+func Send(exchange string, body interface{}, correlationID string, routingKeyArgs ...string) error {
 	routingKey := generateRoutingKey(routingKeyArgs...)
 	utils.Log(LogConstant.Info, "Sending message to ", exchange, "with ", routingKey)
 	conn, err := rabbitPool.Get()
@@ -84,12 +85,20 @@ func Send(exchange string, routingKeyArgs []string, body []byte) error {
 		defer rabbitPool.Release(conn)
 		channel, ok := conn.(commonModel.BaseAmqpChannel)
 		if !ok {
+			utils.Log(LogConstant.Error, "wrong channel format")
 			return fmt.Errorf("wrong channel format")
+		}
+		var message []byte
+		message, err = json.Marshal(body)
+		if err != nil {
+			utils.Log(LogConstant.Error, err)
+			return err
 		}
 		err = channel.PublishWithContext(context.Background(), exchange, routingKey, true, false, amqp091.Publishing{
 			DeliveryMode: amqp091.Persistent,
 			ContentType:  "text/plain",
-			Body:         body,
+			Body:         message,
+			Headers:      amqp091.Table{"Correlation-ID": correlationID},
 		})
 		utils.Log(LogConstant.Info, "Finish sending message to ", exchange, "with ", routingKey)
 
@@ -116,14 +125,15 @@ func ReceiveService(deliveries <-chan amqp091.Delivery) {
 	}()
 	for delivery := range deliveries {
 		utils.Log(LogConstant.Info, "Start Exchange: "+delivery.Exchange+" With key: "+delivery.RoutingKey)
+		header := tableToHttpHeader(delivery.Headers)
+		header["Content-Type"] = []string{"application/json"}
+		header["Request-Type"] = []string{"amqp"}
 		c := commonModel.ServiceContext{
 			Ctx: context.Background(),
 			Mu:  sync.Mutex{},
 			ServiceModel: commonModel.ServiceModel{
-				Body: []byte{},
-				Header: http.Header{
-					"Content-Type": {"application/json"}, "Request-Type": {"amqp"},
-				},
+				Body:   []byte{},
+				Header: header,
 			},
 		}
 		c.InitParamsAndQueries()
@@ -131,10 +141,10 @@ func ReceiveService(deliveries <-chan amqp091.Delivery) {
 		setGinContext(&c, delivery.Body)
 		routingKeyArr := strings.Split(delivery.RoutingKey, ".")
 		fn, ok := ServiceConst.ServicesMap[ServiceConst.ServiceMapMQTT[routingKeyArr[len(routingKeyArr)-1]]]
-		var response []byte
+		var response interface{}
 		if !ok {
-			utils.Log(LogConstant.Error, "Service", routingKeyArr[len(routingKeyArr)-1], "is not exist")
-			response = []byte("Service" + routingKeyArr[len(routingKeyArr)-1] + "is not exist")
+			utils.Log(LogConstant.Error, "Service"+routingKeyArr[len(routingKeyArr)-1]+"is not exist")
+			response = map[string]string{"ERROR": "Service" + routingKeyArr[len(routingKeyArr)-1] + "is not exist"}
 		} else {
 			result, err := fn(&c)
 			if err != nil {
@@ -142,18 +152,57 @@ func ReceiveService(deliveries <-chan amqp091.Delivery) {
 				result.Error = err
 				result.SetMessage(err.Error())
 			}
-			response, err = json.Marshal(result)
+			response = result
+		}
+
+		// TODO: Delete else after gateway is implemented
+		// After delete, optimize response
+		if header["Correlation-Id"] != nil && len(header["Correlation-Id"]) != 0 {
+			go Send(delivery.Exchange, response, header["Correlation-Id"][0], "*")
+		} else {
+			res, err := json.Marshal(response)
 			if err != nil {
 				utils.Log(LogConstant.Error, err)
 			}
+			body := make(map[string]interface{})
+			err = json.Unmarshal(delivery.Body, &body)
+			if err != nil {
+				utils.Log(LogConstant.Warning, "Cannot unmarshal delivery body: ", err)
+			}
+			resBody := make(map[string]interface{})
+			err = json.Unmarshal(res, &resBody)
+			if err != nil {
+				utils.Log(LogConstant.Warning, "Cannot unmarshal response body: ", err)
+			} else {
+				resBody["CorrelationId"] = body["CorrelationId"]
+			}
+			id, _ := body["CorrelationId"].(string)
+			go Send(delivery.Exchange, resBody, id, "*")
 		}
-		// if result.
-		go Send(delivery.Exchange, []string{string(c.CorrelationID())}, response)
 
 		go ack(&delivery)
 		utils.Log(LogConstant.Info, "Finish Exchange: "+delivery.Exchange+" With key: "+delivery.RoutingKey)
 	}
 	utils.Log(LogConstant.Info, "Done")
+}
+
+func tableToHttpHeader(table amqp091.Table) http.Header {
+	header := http.Header{}
+	for k, v := range table {
+		switch value := v.(type) {
+		case string:
+			header[k] = []string{value}
+		case []string:
+			header[k] = value
+		case bool:
+			header[k] = []string{strconv.FormatBool(value)}
+		case int64:
+			header[k] = []string{strconv.FormatInt(value, 10)}
+		case float64:
+			header[k] = []string{fmt.Sprintf("%f", value)}
+		}
+	}
+	return header
 }
 
 func setGinContext(c *commonModel.ServiceContext, body []byte) {
@@ -170,13 +219,6 @@ func setGinContext(c *commonModel.ServiceContext, body []byte) {
 				v := fmt.Sprintf("%v", value)
 				c.SetParam(key, v)
 			}
-		}
-	}
-
-	if res["correlationID"] != nil {
-		correlationID, ok := res["correlationID"].(string)
-		if ok {
-			c.SetCorrelationID(correlationID)
 		}
 	}
 

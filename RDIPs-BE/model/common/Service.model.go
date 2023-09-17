@@ -7,11 +7,10 @@ import (
 )
 
 type ServiceModel struct {
-	param         map[string]string
-	query         map[string]string
-	Body          []byte
-	Header        http.Header
-	correlationID string
+	param  map[string]string
+	query  map[string]string
+	Body   []byte
+	Header http.Header
 }
 
 type ServiceContext struct {
@@ -29,10 +28,6 @@ func (ctx *ServiceContext) SetParam(key string, value string) {
 	ctx.param[key] = value
 }
 
-func (ctx *ServiceContext) SetCorrelationID(id string) {
-	ctx.correlationID = id
-}
-
 func (ctx *ServiceContext) SetQuery(key string, value string) {
 	ctx.query[key] = value
 }
@@ -43,8 +38,4 @@ func (ctx *ServiceContext) Param(key string) string {
 
 func (ctx *ServiceContext) Query(key string) string {
 	return ctx.query[key]
-}
-
-func (ctx *ServiceContext) CorrelationID() string {
-	return ctx.correlationID
 }

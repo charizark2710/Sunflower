@@ -1,7 +1,8 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <PubSubClient.h>
-#include <ArduinoJson.h>
+#include <Arduino_JSON.h>
+#include <UUID.h>
 
 #define RELAY 12
 #define LED 2
@@ -21,8 +22,8 @@ unsigned long previousMillis = 0;
 unsigned long currentMillis;
 
 // Topic to receive messages from server
-const String correlationId = "392abe2a-33b3-4ec7-88e8-629c1c7efd7d"; //which is gen by uuid library
 const String exchangeReceived = "server.*";
+String correlationId;
 
 // Topic to send messages
 const String deviceName = "device_name";
@@ -33,7 +34,7 @@ const String getDetailDevice = ".GetDetailDevice";
 WiFiClient espClient;
 PubSubClient client(espClient);
 
-String receiveMessage;
+UUID uuid;
 
 void setupWifi()
 {
@@ -67,44 +68,38 @@ String getReceiveTopic()
 void parseStringToJson(String messageStr)
 {
   Serial.println("parseStringToJson");
-  DynamicJsonDocument doc(256);
-  DeserializationError error = deserializeJson(doc, messageStr.c_str());
+  JSONVar response;
+  response = JSON.parse(messageStr);
 
-  if (error)
+  // check response from server with my correlationId correctly
+  String correlationIdResponse = response["CorrelationId"];
+  if (correlationIdResponse == correlationId)
   {
-    Serial.print("Deserialization failed: ");
-    Serial.println(error.c_str());
-    return;
-  }
-
-  int httpCode = doc["httpCode"];
-  const char *message = doc["message"];
-
-  Serial.print("Canh ");
-  Serial.println(httpCode);
-  int success = 200;
-  if (httpCode == success)
-  {
-    Serial.println("Update Device successfully!");
-    // Discard the perious log
-    Serial.println("Discard the perious log");
-    Serial.println("Save new log");
-    // Save new log
-  }
-  else if ((String)message != "")
-  {
-    Serial.print("Update Device fail, with error ");
-    Serial.print(httpCode);
-    Serial.print(" , and cause is ");
-    Serial.println(message);
+    int httpCode = response["httpCode"];
+    String message = response["message"];
+    if (httpCode == 200)
+    {
+      Serial.println("Update Device successfully!");
+      // Discard the perious log, handle later
+      Serial.println("Discard the perious log");
+      // Save new log, handle later
+      Serial.println("Save new log");
+    }
+    else if (message != "")
+    {
+      Serial.print("Update Device fail, with error ");
+      Serial.print(httpCode);
+      Serial.print(" , and cause is ");
+      Serial.println(message);
+    }
   }
 }
 
 void handleMessage(char *topic, String receiveMessage)
 {
-  Serial.println("Handle message ");
+  Serial.print("Handle message with topic is ");
   Serial.println(topic);
-  String server = "server/";
+  String server = "server/+";
 
   if ((String)topic == server)
   {
@@ -118,7 +113,7 @@ void callback(char *topic, byte *payload, unsigned int length)
   Serial.print("Message arrived in topic: ");
   Serial.println(topic);
   Serial.print("Message:");
-  receiveMessage = "";
+  String receiveMessage = "";
   for (int i = 0; i < length; i++)
   {
     receiveMessage.concat((char)payload[i]);
@@ -150,29 +145,36 @@ void setupClient()
   }
 }
 
-String getSendMessage(String correlationId, String id, String status)
+void generateCorrelationId()
 {
-  StaticJsonDocument<256> doc;
-  doc["correlationId"] = correlationId;
+  uuid.setVariant4Mode();
+  uuid.generate();
+  correlationId = uuid.toCharArray();
+}
 
-  JsonObject param = doc.createNestedObject("param");
+String getSendMessage(String id, String status)
+{
+  JSONVar data;
+  JSONVar param;
+  JSONVar body;
+
   param["id"] = id;
-
-  JsonObject body = doc.createNestedObject("body");
   body["status"] = status;
 
-  String message;
-  serializeJson(doc, message);
-  return message;
+  data["CorrelationId"] = correlationId;
+  data["param"] = param;
+  data["body"] = body;
+
+  String request = JSON.stringify(data);
+  return request;
 }
 
 void setup()
 {
-  delay(3000);
   Serial.begin(115200);
   setupWifi();
   setupClient();
-
+  generateCorrelationId();
   client.subscribe(getReceiveTopic().c_str());
 
   client.subscribe(getSendTopic().c_str());
@@ -185,8 +187,8 @@ void loop()
   {
     if (WiFi.status() == WL_CONNECTED)
     {
-      //Send message with device id and status
-      String sendMessage = getSendMessage(correlationId, "e4264e43-01c9-49c9-adfa-0b524ea82a5f", "Sleep");
+      // Send message with device id and status
+      String sendMessage = getSendMessage("e4264e43-01c9-49c9-adfa-0b524ea82a5f", "Sleep");
       client.publish(getSendTopic().c_str(), sendMessage.c_str());
       previousMillis = currentMillis;
     }
