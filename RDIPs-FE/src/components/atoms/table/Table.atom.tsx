@@ -11,6 +11,7 @@ import TableSortLabel from '@mui/material/TableSortLabel';
 import { visuallyHidden } from '@mui/utils';
 import * as React from 'react';
 import { HeadCell } from '../../../utils/interface';
+import "./Table.atom.scss";
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
   if (b[orderBy] < a[orderBy]) {
@@ -187,7 +188,7 @@ const TableAtom = (props: {
                           return (
                             <TableCell
                               key={`${row.idDevice}${i}`}
-                              align={row.numeric === undefined ? 'center' : (!row.numeric ? 'left' : 'right')}
+                              align={row.numeric === undefined ? 'center' : (!row.numeric ? 'left' : 'center')}
                             >
                               {row[col]}
                             </TableCell>

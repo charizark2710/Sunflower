@@ -1,11 +1,20 @@
+import { useEffect } from 'react';
 import { AdminData, HeadCell } from '../../../../utils/interface';
 import TableAtom from '../../../atoms/table/Table.atom';
 import './ListAdmin.scss';
+import { setPage } from '../../../../redux/actions/page';
+import { connect } from 'react-redux';
+import { AdminListIcon } from '../../../atoms/icon/ListIcon.atom';
+import BreakcrumbMocules from '../../../molecules/breakcrumb/Breakcrumb.mocules';
 
-const ListAdmin = () => {
+const ListAdmin = ({dispatch} : any) => {
   function navigateToDetailPage(detail: any) {
     return;
   }
+
+  useEffect(() => {
+    dispatch(setPage('List Admin'));
+  }, [dispatch]);
 
   const userListData = [
     createData('AD001', 'Ly Nguyen', 'single', 'dev', 'authernication'),
@@ -54,6 +63,7 @@ const ListAdmin = () => {
 
   return (
     <div className='list-container'>
+      <BreakcrumbMocules title='Admin' icon={<AdminListIcon />}/>
       <TableAtom
         onRowClick={navigateToDetailPage}
         rows={userListData}
@@ -65,4 +75,4 @@ const ListAdmin = () => {
   );
 };
 
-export default ListAdmin;
+export default connect()(ListAdmin);
