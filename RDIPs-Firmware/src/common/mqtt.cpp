@@ -1,0 +1,130 @@
+#include <Arduino.h>
+#include <PubSubClient.h>
+#include <Arduino_JSON.h>
+#include "mqtt.h"
+#include "strings.h"
+
+//config mqtt
+const char *mqtt_server = MQTT_SERVER;
+const char *mqtt_username = MQTT_USERNAME;
+const char *mqtt_password = MQTT_PASSWORD;
+const int mqtt_port = MQTT_PORT;
+const int mqtt_buffer_size = MQTT_BUFFER_SIZE;
+
+// Topic to send messages
+const String exchange_send = "gateway.";
+const String device_name = "device_name";
+
+//Topic to receive from server
+const String exchange_received = "server.*";
+
+String correlationId = ""; //default value
+
+void setupMqtt()
+{
+  client.setServer(mqtt_server, mqtt_port);
+  client.setBufferSize(mqtt_buffer_size);
+  client.setCallback(callback);
+
+  while (!client.connected())
+  {
+    String client_id = "esp32-client-";
+    Serial.printf("The client %s connects to the public MQTT broker\n", client_id.c_str());
+    if (client.connect(getDeviceName().c_str(), mqtt_username, mqtt_password))
+    {
+      Serial.println("Connected to RabbitMQ");
+    }
+    else
+    {
+      Serial.printf("Connection failed, rc= %d\n", client.state());
+      delay(2000);
+    }
+  }
+}
+
+void callback(char *topic, byte *payload, unsigned int length)
+{
+  Serial.println("-----------------------");
+  Serial.printf("Message arrived in topic: %s\n", topic);
+  Serial.print("Message: ");
+  String receiveMessage = "";
+  for (int i = 0; i < length; i++)
+  {
+    receiveMessage.concat((char)payload[i]);
+  }
+  Serial.println(receiveMessage);
+  handleMessageReceived(topic, receiveMessage);
+}
+
+String getSendTopic(String functionName)
+{
+  return exchange_send + device_name + functionName;
+}
+
+String getSendMessageToPutDevice(String id, String status)
+{
+  JSONVar data;
+  JSONVar param;
+  JSONVar body;
+
+  param["id"] = id;
+  body["status"] = status;
+
+  data["CorrelationId"] = correlationId;
+  data["param"] = param;
+  data["body"] = body;
+
+  String request = JSON.stringify(data);
+  return request;
+}
+
+String getReceiveTopic()
+{
+  return exchange_received;
+}
+
+String getDeviceName(){
+    return device_name;
+}
+
+void generateCorrelationId()
+{
+  uuid.setVariant4Mode();
+  uuid.generate();
+  correlationId = uuid.toCharArray();
+}
+
+String getCorrelationId(){
+  return correlationId;
+}
+
+void handleMessageReceived(char *topic, String receiveMessage)
+{
+  Serial.printf("Handle message with topic is %s\n", topic);
+  if ((String)topic == "server/+")
+  {
+    //TOD0: handle other message arrived from server 
+    handlePutDeviceAfterReceived(receiveMessage);
+  }
+}
+
+void handlePutDeviceAfterReceived(String messageStr)
+{
+  Serial.println("handleReceivedMessage");
+  JSONVar response = parseStringToJson(messageStr);
+
+  // check response from server with my correlationId correctly
+  String correlationIdResponse = response["CorrelationId"];
+  if (correlationIdResponse == correlationId)
+  {
+    int httpCode = response["httpCode"];
+    String message = response["message"];
+    if (httpCode == 200){
+      Serial.println("Update Device successfully! - Discard the perious logs - Save new logs");
+    }
+    else {
+      Serial.printf("Update Device fail! With error %d\n", httpCode);
+      Serial.println("Cause is " + message);
+    }
+  }
+}
