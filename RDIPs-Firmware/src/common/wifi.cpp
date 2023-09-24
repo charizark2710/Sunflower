@@ -1,5 +1,4 @@
-#include <Arduino.h>
-#include <WiFi.h>
+#include "wifi.h"
 
 const char *ssid = WIFI_NAME_SSID;
 const char *password = WIFI_PASSWORD;

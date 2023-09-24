@@ -1,8 +1,4 @@
 #include <Arduino.h>
-#include <WiFi.h>
-#include <PubSubClient.h>
-#include <Arduino_JSON.h>
-#include <UUID.h>
 
 #include "common/mqtt.h"
 #include "common/strings.h"

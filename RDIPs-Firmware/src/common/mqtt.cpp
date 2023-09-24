@@ -1,5 +1,3 @@
-#include <Arduino.h>
-#include <PubSubClient.h>
 #include <Arduino_JSON.h>
 #include "mqtt.h"
 #include "strings.h"
