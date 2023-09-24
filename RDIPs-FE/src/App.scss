@@ -1,3 +1,8 @@
+body {
+  margin: 0;
+  padding: 0;
+}
+
 .App {
   text-align: center;
 }
@@ -29,7 +34,7 @@
 }
 
 .list-container {
-  padding: 70px;
+  padding: 24px 10%;
 }
 
 /* flex area */
@@ -48,6 +53,11 @@
   justify-content: flex-start;
 }
 
+.flex-justify-space-between {
+  display: flex;
+  justify-content: space-between;
+}
+
 .flex-align-start {
   display: flex;
   align-items: start;
@@ -61,11 +71,6 @@
 .flex-align-end {
   display: flex;
   align-items: end;
-}
-
-/* color */
-.deep-background {
-  background-color: #e9e5c9;
 }
 
 @keyframes App-logo-spin {

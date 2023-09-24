@@ -1,5 +1,13 @@
-.side-bar-item > * > * {
+.side-bar-item > * > * > * {
   &.MuiTypography-root {
     color: #000000;
   }
+
+  .active {
+    color: #008000;
+  }
+}
+
+.link-text {
+  font-weight: 700;
 }

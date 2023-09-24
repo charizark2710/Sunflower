@@ -8,7 +8,6 @@ import (
 )
 
 type PerformanceValidator struct {
-	Validator
 }
 
 func (PerformanceValidator) Post(body []byte) error {

@@ -1,9 +1,10 @@
 .admin-container {
-  min-height: 100vh;
-  
-  .right-side {
-    .body-container {
-      min-height: 75vh;
-    }
+  .body-container {
+    min-height: calc(100vh - 175px);
   }
+
+  .right-side {
+    border-left: 1px solid #e4e4e4;
+  }
+
 }
