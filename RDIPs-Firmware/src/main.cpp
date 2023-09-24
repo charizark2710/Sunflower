@@ -54,6 +54,24 @@ String getReceiveTopic()
   return exchangeReceived;
 }
 
+void subscribeServerMessage(bool isPublised)
+{
+  if (!isPublised)
+  {
+    Serial.println("Publish message failed");
+    return;
+  }
+
+  String receiveTopic = getReceiveTopic();
+  bool isSubscribe = client.subscribe(receiveTopic.c_str());
+  String result = isSubscribe ? "successfully" : "failed";
+
+  Serial.print("Subscribe topic: ");
+  Serial.print(receiveTopic);
+  Serial.print(" ");
+  Serial.println(result);
+}
+
 void postDeviceApi()
 {
   // Create request body
@@ -72,16 +90,12 @@ void postDeviceApi()
   // Convert JSON object to string
   String request = JSON.stringify(data);
 
-  // Publish devices.device1.POST/device
-  Serial.println("POST/device: " + request);
+  // Publish to topic: gateway.device_name.PostDevice
+  Serial.println("Publish message: " + request);
   bool isPublished = client.publish(getSendTopic(postDevice).c_str(), request.c_str());
-  if (isPublished)
-  {
-    String receiveTopic = getReceiveTopic();
-    client.subscribe(receiveTopic.c_str());
-    Serial.print("Subscribe topic: ");
-    Serial.println(receiveTopic);
-  }
+
+  // Subscribe messsage from server
+  subscribeServerMessage(isPublished);
 }
 
 void handlePostDeviceResponse(char *topic, String receiveMessage)
@@ -110,7 +124,7 @@ void handlePostDeviceResponse(char *topic, String receiveMessage)
       deviceId = id;
       Serial.print("Post device successed with id: ");
       Serial.println(deviceId);
-    } 
+    }
     else if (message != "")
     {
       Serial.print("Post device fail, with error ");
