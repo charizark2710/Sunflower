@@ -106,13 +106,15 @@ void handleMessageReceived(char *topic, String receiveMessage)
     String correlationIdResponse = response["CorrelationId"];
 
     // TOD0: handle other message arrived from server
-    if (strcmp(putCorrelationId.c_str(), correlationIdResponse.c_str()))
+    if (strcmp(putCorrelationId.c_str(), correlationIdResponse.c_str()) == 0)
     {
-      handlePutDeviceAfterReceived(receiveMessage);
+      Serial.println("Handle PUT device");
+      handlePutDeviceAfterReceived(response);
     }
-    else if (strcmp(postCorrelationId.c_str(), correlationIdResponse.c_str()))
+    if (strcmp(postCorrelationId.c_str(), correlationIdResponse.c_str()) == 0)
     {
-      handlePostDeviceResponse(receiveMessage);
+      Serial.println("Handle POST device");
+      handlePostDeviceResponse(response);
     }
   }
 }
