@@ -23,18 +23,12 @@ func main() {
 	if err != nil {
 		utils.Log(LogConstant.Fatal, err)
 	}
-	conn, ch, err := config.RabbitMqConfig()
+	err = config.RabbitMqConfig()
 	if err != nil {
 		utils.Log(LogConstant.Fatal, err)
 	}
 	commonModel.Helper.SetDb(db)
-	commonModel.Helper.SetAMQP(conn)
-	commonModel.Helper.SetAMQPChannel(ch)
-	defer func() {
-		conn.Close()
-		ch.Close()
-	}()
 	routers.InitRouter(r)
-	go routers.InitAmqpRoutes()
+	routers.InitAmqpRoutes()
 	r.Run(":" + os.Getenv("PORT"))
 }
