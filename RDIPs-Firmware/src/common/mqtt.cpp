@@ -1,3 +1,4 @@
+#include <map>
 #include "mqtt.h"
 #include "strings.h"
 
@@ -14,10 +15,6 @@ const String device_name = "device_name";
 
 // Topic to receive from server
 const String exchange_received = "server.*";
-
-String putCorrelationId = ""; // default value
-String postCorrelationId = "";
-String deviceId = "";
 
 void setupMqtt()
 {
@@ -60,24 +57,6 @@ String getSendTopic(String functionName)
   return exchange_send + device_name + functionName;
 }
 
-String getSendMessageToPutDevice(String id, String status)
-{
-  JSONVar data;
-  JSONVar param;
-  JSONVar body;
-
-  param["id"] = id;
-  body["status"] = status;
-
-  putCorrelationId = generateCorrelationId();
-  data["CorrelationId"] = putCorrelationId;
-  data["param"] = param;
-  data["body"] = body;
-
-  String request = JSON.stringify(data);
-  return request;
-}
-
 String getReceiveTopic()
 {
   return exchange_received;
@@ -86,13 +65,6 @@ String getReceiveTopic()
 String getDeviceName()
 {
   return device_name;
-}
-
-String generateCorrelationId()
-{
-  uuid.setVariant4Mode();
-  uuid.generate();
-  return uuid.toCharArray();
 }
 
 void handleMessageReceived(char *topic, String receiveMessage)
@@ -104,78 +76,27 @@ void handleMessageReceived(char *topic, String receiveMessage)
     JSONVar response = parseStringToJson(receiveMessage);
     // check response from server with my correlationId correctly
     String correlationIdResponse = response["CorrelationId"];
+    String responseMethod = strchr(correlationIdResponse.c_str(), '-');
 
-    // TOD0: handle other message arrived from server
-    if (strcmp(putCorrelationId.c_str(), correlationIdResponse.c_str()) == 0)
+    std::map<std::string, int> methodMap;
+    methodMap["PostDevice"] = 1;
+    methodMap["PutDetailDevice"] = 2;
+
+    if (methodMap.find(responseMethod.c_str()) != methodMap.end())
     {
-      Serial.println("Handle PUT device");
-      handlePutDeviceAfterReceived(response);
+      int command = methodMap[responseMethod.c_str()];
+      switch (command)
+      {
+      case 1:
+        Serial.println("Handle POST device");
+        handlePostDeviceResponse(response);
+        break;
+      case 2:
+        Serial.println("Handle PUT device");
+        handlePutDeviceAfterReceived(response);
+        break;
+      }
+      removeMatchedCorrelationId(correlationIdResponse);
     }
-    if (strcmp(postCorrelationId.c_str(), correlationIdResponse.c_str()) == 0)
-    {
-      Serial.println("Handle POST device");
-      handlePostDeviceResponse(response);
-    }
-  }
-}
-
-void handlePutDeviceAfterReceived(JSONVar response)
-{
-  int httpCode = response["httpCode"];
-  String message = response["message"];
-  if (httpCode == 200)
-  {
-    Serial.println("Update Device successfully! - Discard the perious logs - Save new logs");
-  }
-  else
-  {
-    Serial.printf("Update Device fail! With error %d\n", httpCode);
-    Serial.println("Cause is " + message);
-  }
-}
-
-String getSendMessageToPostDevice(
-    String name,
-    String type,
-    String status,
-    int firmwareVer,
-    int appVer)
-{
-  // Create request body
-  JSONVar data;
-  JSONVar body;
-  body["name"] = name;
-  body["type"] = type;
-  body["status"] = status;
-  body["firmware_ver"] = firmwareVer;
-  body["app_ver"] = appVer;
-  postCorrelationId = generateCorrelationId();
-  data["CorrelationId"] = postCorrelationId;
-  data["body"] = body;
-
-  // Convert JSON object to string
-  String request = JSON.stringify(data);
-
-  return request;
-}
-
-void handlePostDeviceResponse(JSONVar response)
-{
-  int httpCode = response["httpCode"];
-  String message = response["message"];
-  if (httpCode == 200)
-  {
-    JSONVar data = response["data"];
-    String id = data["Id"];
-    deviceId = id;
-    Serial.print("Post device successed with deviceId: ");
-    Serial.println(deviceId);
-  }
-  else if (message != "")
-  {
-    Serial.print("Post device fail, with error ");
-    Serial.print(httpCode);
-    Serial.print(", cause is ");
-    Serial.println(message);
   }
 }

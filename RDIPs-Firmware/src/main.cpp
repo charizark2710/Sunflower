@@ -15,6 +15,9 @@ PubSubClient client(espClient);
 
 UUID uuid;
 
+String correlationIds[5];
+int correlationIdsSize = 0;
+
 void setup()
 {
   Serial.begin(115200);
@@ -46,12 +49,15 @@ void loop()
     if (WiFi.status() == WL_CONNECTED)
     {
       // Send message with device id and status
-      client.publish(
-          getSendTopic(putDetailDevice).c_str(),
-          getSendMessageToPutDevice(
-              "e4264e43-01c9-49c9-adfa-0b524ea82a5f",
-              "Sleep")
-              .c_str());
+      if (correlationIdsSize < 4)
+      {
+        client.publish(
+            getSendTopic(putDetailDevice).c_str(),
+            getSendMessageToPutDevice(
+                "e4264e43-01c9-49c9-adfa-0b524ea82a5f",
+                "Sleep")
+                .c_str());
+      }
 
       previousMillis = currentMillis;
     }
