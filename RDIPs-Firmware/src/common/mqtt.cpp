@@ -1,8 +1,11 @@
-#include <Arduino_JSON.h>
+#include <map>
 #include "mqtt.h"
 #include "strings.h"
+#include "handler/postDevice.h"
+#include "handler/putDetailDevice.h"
+#include "correlationId.h"
 
-//config mqtt
+// config mqtt
 const char *mqtt_server = MQTT_SERVER;
 const char *mqtt_username = MQTT_USERNAME;
 const char *mqtt_password = MQTT_PASSWORD;
@@ -13,10 +16,8 @@ const int mqtt_buffer_size = MQTT_BUFFER_SIZE;
 const String exchange_send = "gateway.";
 const String device_name = "device_name";
 
-//Topic to receive from server
+// Topic to receive from server
 const String exchange_received = "server.*";
-
-String correlationId = ""; //default value
 
 void setupMqtt()
 {
@@ -59,41 +60,19 @@ String getSendTopic(String functionName)
   return exchange_send + device_name + functionName;
 }
 
-String getSendMessageToPutDevice(String id, String status)
-{
-  JSONVar data;
-  JSONVar param;
-  JSONVar body;
-
-  param["id"] = id;
-  body["status"] = status;
-
-  data["CorrelationId"] = correlationId;
-  data["param"] = param;
-  data["body"] = body;
-
-  String request = JSON.stringify(data);
-  return request;
-}
-
 String getReceiveTopic()
 {
   return exchange_received;
 }
 
-String getDeviceName(){
-    return device_name;
-}
-
-void generateCorrelationId()
+String getDeviceName()
 {
-  uuid.setVariant4Mode();
-  uuid.generate();
-  correlationId = uuid.toCharArray();
+  return device_name;
 }
 
-String getCorrelationId(){
-  return correlationId;
+String getResponseMethod(String response)
+{
+  return strtok((char *)response.c_str(), "-");;
 }
 
 void handleMessageReceived(char *topic, String receiveMessage)
@@ -101,28 +80,31 @@ void handleMessageReceived(char *topic, String receiveMessage)
   Serial.printf("Handle message with topic is %s\n", topic);
   if ((String)topic == "server/+")
   {
-    //TOD0: handle other message arrived from server 
-    handlePutDeviceAfterReceived(receiveMessage);
-  }
-}
+    Serial.println("handleReceivedMessage");
+    JSONVar response = parseStringToJson(receiveMessage);
+    // check response from server with my correlationId correctly
+    String correlationIdResponse = response["CorrelationId"];
+    String responseMethod = getResponseMethod(correlationIdResponse);
 
-void handlePutDeviceAfterReceived(String messageStr)
-{
-  Serial.println("handleReceivedMessage");
-  JSONVar response = parseStringToJson(messageStr);
+    std::map<std::string, int> methodMap;
+    methodMap["PostDevice"] = 1;
+    methodMap["PutDetailDevice"] = 2;
 
-  // check response from server with my correlationId correctly
-  String correlationIdResponse = response["CorrelationId"];
-  if (correlationIdResponse == correlationId)
-  {
-    int httpCode = response["httpCode"];
-    String message = response["message"];
-    if (httpCode == 200){
-      Serial.println("Update Device successfully! - Discard the perious logs - Save new logs");
-    }
-    else {
-      Serial.printf("Update Device fail! With error %d\n", httpCode);
-      Serial.println("Cause is " + message);
+    if (methodMap.find(responseMethod.c_str()) != methodMap.end())
+    {
+      int command = methodMap[responseMethod.c_str()];
+      switch (command)
+      {
+      case 1:
+        Serial.println("Handle POST device");
+        handlePostDeviceResponse(response);
+        break;
+      case 2:
+        Serial.println("Handle PUT device");
+        handlePutDeviceAfterReceived(response);
+        break;
+      }
+      removeMatchedCorrelationId(correlationIdResponse);
     }
   }
 }
