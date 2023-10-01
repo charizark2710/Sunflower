@@ -70,17 +70,9 @@ String getDeviceName()
   return device_name;
 }
 
-String getResponseMethod(String response) {
-  String responseMethod = "";
-  char delimiter = '-';
-  int index = 0;
-
-  while (response[index] != delimiter)
-  {
-    responseMethod += response[index];
-    index++;
-  }
-  return responseMethod;
+String getResponseMethod(String response)
+{
+  return strtok((char *)response.c_str(), "-");;
 }
 
 void handleMessageReceived(char *topic, String receiveMessage)

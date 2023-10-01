@@ -23,7 +23,6 @@ void setup()
   Serial.begin(115200);
   setupWifi();
   setupMqtt();
-  setCorrelationIds();
   client.subscribe(getReceiveTopic().c_str());
   client.subscribe(getSendTopic(putDetailDevice).c_str());
   client.subscribe(getSendTopic(postDevice).c_str());
