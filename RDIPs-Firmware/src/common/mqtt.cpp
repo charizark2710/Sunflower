@@ -1,6 +1,9 @@
 #include <map>
 #include "mqtt.h"
 #include "strings.h"
+#include "handler/postDevice.h"
+#include "handler/putDetailDevice.h"
+#include "correlationId.h"
 
 // config mqtt
 const char *mqtt_server = MQTT_SERVER;
@@ -67,6 +70,19 @@ String getDeviceName()
   return device_name;
 }
 
+String getResponseMethod(String response) {
+  String responseMethod = "";
+  char delimiter = '-';
+  int index = 0;
+
+  while (response[index] != delimiter)
+  {
+    responseMethod += response[index];
+    index++;
+  }
+  return responseMethod;
+}
+
 void handleMessageReceived(char *topic, String receiveMessage)
 {
   Serial.printf("Handle message with topic is %s\n", topic);
@@ -76,7 +92,7 @@ void handleMessageReceived(char *topic, String receiveMessage)
     JSONVar response = parseStringToJson(receiveMessage);
     // check response from server with my correlationId correctly
     String correlationIdResponse = response["CorrelationId"];
-    String responseMethod = strchr(correlationIdResponse.c_str(), '-');
+    String responseMethod = getResponseMethod(correlationIdResponse);
 
     std::map<std::string, int> methodMap;
     methodMap["PostDevice"] = 1;

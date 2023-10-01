@@ -2,9 +2,14 @@
 
 extern UUID uuid;
 
-extern String correlationIds[5];
-extern int correlationIdsSize;
+void setCorrelationIds();
 
 String generateCorrelationId(String prefix);
+
+int getCorrelationIndex();
+
+void increaseCorrelationIndex();
+
+void decreaseCorrelationIndex();
 
 void removeMatchedCorrelationId(String correlationId);

@@ -2,6 +2,9 @@
 #include "common/mqtt.h"
 #include "common/strings.h"
 #include "common/wifi.h"
+#include "common/correlationId.h"
+#include "handler/postDevice.h"
+#include "handler/putDetailDevice.h"
 
 const unsigned long interval = 10000; // 10 seconds (in milliseconds)
 unsigned long previousMillis = 0;
@@ -15,14 +18,12 @@ PubSubClient client(espClient);
 
 UUID uuid;
 
-String correlationIds[5];
-int correlationIdsSize = 0;
-
 void setup()
 {
   Serial.begin(115200);
   setupWifi();
   setupMqtt();
+  setCorrelationIds();
   client.subscribe(getReceiveTopic().c_str());
   client.subscribe(getSendTopic(putDetailDevice).c_str());
   client.subscribe(getSendTopic(postDevice).c_str());
@@ -49,7 +50,7 @@ void loop()
     if (WiFi.status() == WL_CONNECTED)
     {
       // Send message with device id and status
-      if (correlationIdsSize < 4)
+      if (getCorrelationIndex() + 1 <= CORRELATION_ID_MAX_SIZE)
       {
         client.publish(
             getSendTopic(putDetailDevice).c_str(),

@@ -1,4 +1,5 @@
 #include "putDetailDevice.h"
+#include "./common/correlationId.h"
 
 String getSendMessageToPutDevice(String id, String status)
 {
@@ -31,5 +32,4 @@ void handlePutDeviceAfterReceived(JSONVar response)
     Serial.printf("Update Device fail! With error %d\n", httpCode);
     Serial.println("Cause is " + message);
   }
-  correlationIdsSize--;
 }

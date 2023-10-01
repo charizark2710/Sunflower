@@ -1,12 +1,7 @@
 #include <PubSubClient.h>
-#include <UUID.h>
 #include <Arduino_JSON.h>
-#include "handler/postDevice.h"
-#include "handler/putDetailDevice.h"
 
 extern PubSubClient client; // Declare the PubSubClient instance
-
-extern UUID uuid;
 
 void setupMqtt();
 
@@ -20,3 +15,4 @@ String getDeviceName();
 
 void handleMessageReceived(char *topic, String receiveMessage);
 
+String getResponseMethod(String response);

@@ -1,4 +1,5 @@
 #include "postDevice.h"
+#include "./common/correlationId.h"
 
 String deviceId = "";
 
@@ -23,7 +24,6 @@ String getSendMessageToPostDevice(
 
   // Convert JSON object to string
   String request = JSON.stringify(data);
-
   return request;
 }
 
@@ -46,5 +46,4 @@ void handlePostDeviceResponse(JSONVar response)
     Serial.print(", cause is ");
     Serial.println(message);
   }
-  correlationIdsSize--;
 }
