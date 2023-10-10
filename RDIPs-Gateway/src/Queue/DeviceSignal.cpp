@@ -1,27 +1,30 @@
-#include <Signal/TestSignal.h>
+#include "headers.h"
+#include <Signal/DeviceSignal.h>
+#include <cstring>
+#include <source_location>
+#include <string>
+#include <utils/Log.h>
 
 namespace Signal {
-TestSignal::TestSignal(AMQP::TcpChannel &channel, std::string exchange,
-                       std::string queue) {
+DeviceSignal::DeviceSignal(AMQP::TcpChannel &channel, std::string exchange,
+                           std::string queue) {
   this->channel = &channel;
-  this->initExchange(exchange);
-  this->initQueue(queue);
+  this->exchange = exchange;
+  this->queue = queue;
+
+  this->init();
 }
 
-TestSignal::~TestSignal() { channel->close(); }
+DeviceSignal::~DeviceSignal() { channel->close(); }
 
-void TestSignal::initQueue(std::string name) {
-  queue = name;
-  channel->declareQueue(name);
+void DeviceSignal::init() {
+  for (auto api : APIs) {
+    this->bind(GW_ROUTING_KEY + api);
+  }
   channel->setQos(QOS);
 }
 
-void TestSignal::initExchange(std::string name) {
-  exchange = name;
-  channel->declareExchange(name, AMQP::topic);
-}
-
-void TestSignal::listener(
+void DeviceSignal::listener(
     std::function<void(const AMQP::Message &message, uint64_t deliveryTag,
                        bool redelivered)>
         messageCb,
@@ -32,11 +35,11 @@ void TestSignal::listener(
       errorCb);
 }
 
-void TestSignal::bind(std::string routingKey) {
+void DeviceSignal::bind(std::string routingKey) {
   channel->bindQueue(exchange, queue, routingKey);
 }
 
-void TestSignal::Start() {
+void DeviceSignal::Start() {
 
   auto startCb = [](const std::string &consumertag) {
     std::cout << "consume operation started" << std::endl;
@@ -48,18 +51,14 @@ void TestSignal::Start() {
   // callback operation when a message was received
   auto messageCb = [&](const AMQP::Message &message, uint64_t deliveryTag,
                        bool redelivered) {
-    printf("parent message received %s \n", message.body());
+    TraceLog(std::source_location::current(), "parent message received",
+             message.body());
 
     // acknowledge the message
     channel->ack(deliveryTag);
     // channel->publish(EXCHANGE_NAME, "Test", "OK Confirm");
   };
 
-  // get everythings
-  this->bind("#");
-
   this->listener(messageCb, startCb, errorCb);
-
-  //   channel->publish(exchange, "Test", "TEEST");
 }
 } // namespace Signal

@@ -1,6 +1,9 @@
 {
     "C_Cpp.intelliSenseEngine": "disabled",
     "clangd.path": "clangd",
+    "search.exclude": {
+        "**/dependencies": true,
+    },
     "files.associations": {
         "*.ejs": "html",
         "array": "cpp",
