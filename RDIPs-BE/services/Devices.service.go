@@ -74,7 +74,7 @@ var PostDevice = func(c *commonModel.ServiceContext) (commonModel.ResponseTempla
 			utils.Log(LogConstant.Error, err)
 			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
 		}
-		return commonModel.ResponseTemplate{HttpCode: 200, Data: deviceObj}, nil
+		return commonModel.ResponseTemplate{HttpCode: 200, Data: map[string]interface{}{"Id": deviceObj.Id}}, nil
 	} else {
 		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
 	}
@@ -89,7 +89,8 @@ var GetDetailDevice = func(c *commonModel.ServiceContext) (commonModel.ResponseT
 	db := commonModel.Helper.GetDb()
 	var err error
 	if detail == "true" {
-		err = db.Where("id = ? AND status != ?", id, model.Disable).Preload("DeviceRel").Preload("DeviceRel.History").Preload("DeviceRel.Performance").First(&deviceBody).Error
+		err = db.Where("id = ? AND status != ?", id, model.Disable).Preload("DeviceRel").Preload("DeviceRel.History").
+			Preload("DeviceRel.Performance").First(&deviceBody).Error
 	} else {
 		err = db.Where("id = ? AND status != ?", id, model.Disable).Preload("DeviceRel").First(&deviceBody).Error
 	}
