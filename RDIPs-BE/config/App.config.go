@@ -9,9 +9,15 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 
+	LogConstant "RDIPs-BE/constant/LogConst"
 	AMQP_handler "RDIPs-BE/handler/AMQP"
 	"RDIPs-BE/model"
+	"RDIPs-BE/utils"
 )
+
+type objDB interface {
+	TableName() string
+}
 
 func DbConfig() (*gorm.DB, error) {
 	sql := &sql.DB{}
@@ -40,9 +46,12 @@ func DbConfig() (*gorm.DB, error) {
 	err = db.Exec("CREATE SCHEMA IF NOT EXISTS " + os.Getenv("POSTGRES_SCHEMA")).Error
 
 	if err == nil {
-		models := []interface{}{model.SysDevices{}, model.SysDeviceRel{}, model.SysHistory{}, model.SysPerformance{}}
-		for _, m := range models {
+
+		models := []objDB{model.SysDevices{}, model.SysHistory{}, model.SysPerformance{}}
+		relModels := []objDB{model.SysDeviceRel{}}
+		for _, m := range append(models, relModels...) {
 			if !db.Migrator().HasTable(m) {
+				utils.Log(LogConstant.Info, "Create table "+m.TableName())
 				err := db.Migrator().CreateTable(m)
 				if err != nil {
 					return nil, err

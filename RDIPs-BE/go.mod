@@ -1,6 +1,6 @@
 module RDIPs-BE
 
-go 1.17
+go 1.21.3
 
 require (
 	github.com/gin-gonic/gin v1.9.0
