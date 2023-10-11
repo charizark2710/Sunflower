@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"reflect"
 
 	commonModel "RDIPs-BE/model/common"
@@ -12,10 +13,7 @@ func getStructType(i interface{}, db *gorm.DB) error {
 	reflectModel := reflect.ValueOf(i)
 	m := reflectModel.Interface()
 	if !db.Migrator().HasTable(m) {
-		err := db.Migrator().CreateTable(m)
-		if err != nil {
-			return err
-		}
+		return errors.New("table is not exist")
 	}
 	return nil
 }
