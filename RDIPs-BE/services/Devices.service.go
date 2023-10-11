@@ -89,7 +89,8 @@ var GetDetailDevice = func(c *commonModel.ServiceContext) (commonModel.ResponseT
 	db := commonModel.Helper.GetDb()
 	var err error
 	if detail == "true" {
-		err = db.Where("id = ? AND status != ?", id, model.Disable).Preload("DeviceRel").Preload("DeviceRel.History").Preload("DeviceRel.Performance").First(&deviceBody).Error
+		err = db.Where("id = ? AND status != ?", id, model.Disable).Preload("DeviceRel").Preload("DeviceRel.History").
+			Preload("DeviceRel.Performance").First(&deviceBody).Error
 	} else {
 		err = db.Where("id = ? AND status != ?", id, model.Disable).Preload("DeviceRel").First(&deviceBody).Error
 	}
