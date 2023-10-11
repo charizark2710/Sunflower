@@ -10,6 +10,7 @@ import (
 	"gorm.io/gorm/schema"
 
 	AMQP_handler "RDIPs-BE/handler/AMQP"
+	"RDIPs-BE/model"
 )
 
 func DbConfig() (*gorm.DB, error) {
@@ -37,6 +38,18 @@ func DbConfig() (*gorm.DB, error) {
 	}
 
 	err = db.Exec("CREATE SCHEMA IF NOT EXISTS " + os.Getenv("POSTGRES_SCHEMA")).Error
+
+	if err == nil {
+		models := []interface{}{model.SysDevices{}, model.SysDeviceRel{}, model.SysHistory{}, model.SysPerformance{}}
+		for _, m := range models {
+			if !db.Migrator().HasTable(m) {
+				err := db.Migrator().CreateTable(m)
+				if err != nil {
+					return nil, err
+				}
+			}
+		}
+	}
 	return db, err
 }
 

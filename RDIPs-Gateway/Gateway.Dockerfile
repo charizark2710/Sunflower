@@ -1,4 +1,4 @@
-FROM gcc:9.4.0
+FROM gcc:13.2.0
 
 WORKDIR /RDIPs-Gateway
 

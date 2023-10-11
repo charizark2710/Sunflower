@@ -1,4 +1,4 @@
--std=c++17
+-std=c++20
 -xc++
 -Wunused-parameter
 -I
@@ -7,5 +7,9 @@
 ./dependencies/AMQP-CPP/include/
 -I
 ./dependencies/AMQP-CPP/include/amqpcpp/
+-I
+./dependencies/json/include/
+-I
+./dependencies/json/single_include/
 -I
 ./dependencies/AMQP-CPP/src/
