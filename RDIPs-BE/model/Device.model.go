@@ -31,6 +31,7 @@ type Devices struct {
 	ParentID       string       `json:"parentID"`
 	Parent         *Devices     `json:"parent,omitempty"`
 	Name           string       `json:"name" validate:"required"`
+	Region         string       `json:"region"`
 	HistoryID      string       `json:"historyID,omitempty"`
 	History        *History     `json:"history,omitempty"`
 	PerformanceID  string       `json:"performanceID,omitempty"`
@@ -40,9 +41,9 @@ type Devices struct {
 type SysDevices struct {
 	// User      SysUser    `gorm:"column:user;type:uuid"`
 	Id             string       `gorm:"default:gen_random_uuid();primaryKey;column:id;type:uuid"`
-	CreatedAt      time.Time    `gorm:"column:created_at;"`
-	UpdatedAt      time.Time    `gorm:"column:updated_at;"`
-	Type           deviceType   `gorm:"column:type;"`
+	CreatedAt      time.Time    `gorm:"column:created_at"`
+	UpdatedAt      time.Time    `gorm:"column:updated_at"`
+	Type           deviceType   `gorm:"column:type"`
 	Status         statusEnum   `gorm:"column:status;default:active"`
 	LifeTime       time.Time    `gorm:"column:life_time"`
 	FirwareVersion int          `gorm:"column:firmware_ver;type:integer"`
@@ -50,6 +51,7 @@ type SysDevices struct {
 	ParentID       string       `gorm:"column:parent;uniqueIndex;default:NULL"`
 	Parent         *SysDevices  `gorm:"foreignKey:ParentID"`
 	Name           string       `gorm:"column:name;unique"`
+	Region         string       `gorm:"column:region"`
 	DeviceRel      SysDeviceRel `gorm:"foreignKey:DeviceID"`
 }
 
@@ -72,6 +74,7 @@ func (in SysDevices) ConvertToJson(out *Devices) {
 		in.Parent.ConvertToJson(out.Parent)
 	}
 	out.Name = in.Name
+	out.Region = in.Region
 	if in.DeviceRel.HistoryID != "" {
 		if in.DeviceRel.History.Id == "" {
 			out.HistoryID = in.DeviceRel.HistoryID
@@ -107,4 +110,5 @@ func (in Devices) ConvertToDB(out *SysDevices) {
 		in.Parent.ConvertToDB(out.Parent)
 	}
 	out.Name = in.Name
+	out.Region = in.Region
 }
