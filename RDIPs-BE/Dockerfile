@@ -1,4 +1,4 @@
-FROM golang:1.18 as base
+FROM golang:1.21.3 as base
 
 WORKDIR /sunflower
 
