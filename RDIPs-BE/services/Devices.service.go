@@ -8,13 +8,20 @@ import (
 	"RDIPs-BE/utils"
 	"encoding/json"
 
+	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
 var GetAllDevices = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
 	utils.Log(LogConstant.Info, "GetAllDevices Start")
 	var deviceModel []model.SysDevices
-	db := commonModel.Helper.GetDb()
+	var db *gorm.DB
+	context, ok := c.Ctx.(*gin.Context)
+	if ok {
+		db = handler.GetDbFromContext(context)
+	} else {
+		db = commonModel.Helper.GetDb()
+	}
 	err := db.Where("status != ?", model.Disable).Preload("Parent").Find(&deviceModel).Error
 	if err != nil {
 		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err

@@ -6,6 +6,7 @@ import (
 
 	commonModel "RDIPs-BE/model/common"
 
+	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
@@ -54,4 +55,15 @@ func CreateWithTx(i interface{}, tx *gorm.DB) error {
 		return err
 	}
 	return tx.Create(i).Error
+}
+
+func GetDbFromContext(c *gin.Context) *gorm.DB {
+	val, _ := c.Get("DB")
+	if val != nil {
+		res, ok := val.(*gorm.DB)
+		if ok {
+			return res
+		}
+	}
+	return commonModel.Helper.GetDb()
 }
