@@ -7,22 +7,12 @@ import (
 	commonModel "RDIPs-BE/model/common"
 	"RDIPs-BE/utils"
 	"encoding/json"
-
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 var GetAllDevices = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
 	utils.Log(LogConstant.Info, "GetAllDevices Start")
 	var deviceModel []model.SysDevices
-	var db *gorm.DB
-	context, ok := c.Ctx.(*gin.Context)
-	if ok {
-		db = handler.GetDbFromContext(context)
-	} else {
-		db = commonModel.Helper.GetDb()
-	}
-	err := db.Where("status != ?", model.Disable).Preload("Parent").Find(&deviceModel).Error
+	err := handler.NewDeviceHandler(c.Ctx, nil).Read(&deviceModel)
 	if err != nil {
 		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
 	}
@@ -41,42 +31,7 @@ var PostDevice = func(c *commonModel.ServiceContext) (commonModel.ResponseTempla
 	if err := json.Unmarshal(c.Body, &deviceBody); err == nil {
 		deviceObj := model.SysDevices{}
 		deviceBody.ConvertToDB(&deviceObj)
-
-		db := commonModel.Helper.GetDb()
-		err := db.Transaction(func(tx *gorm.DB) error {
-			utils.Log(LogConstant.Info, "Create Device Start")
-			if err = handler.CreateWithTx(&deviceObj, tx); err != nil {
-				return err
-			}
-
-			historyObj := model.SysHistory{
-				LogPath: deviceObj.Name + "/",
-			}
-			utils.Log(LogConstant.Info, "Create History Start")
-			if err := handler.CreateWithTx(&historyObj, tx); err != nil {
-				return err
-			}
-
-			performanceObj := model.SysPerformance{
-				DocumentName: deviceObj.Name,
-			}
-			utils.Log(LogConstant.Info, "Create Performance Start")
-			if err := handler.CreateWithTx(&performanceObj, tx); err != nil {
-				return err
-			}
-
-			deviceRelObj := model.SysDeviceRel{
-				DeviceID:      deviceObj.Id,
-				PerformanceID: performanceObj.Id,
-				HistoryID:     historyObj.Id,
-			}
-			utils.Log(LogConstant.Info, "Create device_rel Start")
-			if err := handler.CreateWithTx(&deviceRelObj, tx); err != nil {
-				return err
-			}
-			return nil
-		})
-
+		err := handler.NewDeviceHandler(c.Ctx, &deviceObj).Create()
 		if err != nil {
 			utils.Log(LogConstant.Error, err)
 			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
@@ -93,19 +48,10 @@ var GetDetailDevice = func(c *commonModel.ServiceContext) (commonModel.ResponseT
 	id := c.Param("id")
 	detail := c.Query("detail")
 	deviceBody := model.SysDevices{}
-	db := commonModel.Helper.GetDb()
-	var err error
-	if detail == "true" {
-		err = db.Where("id = ? AND status != ?", id, model.Disable).Preload("DeviceRel").Preload("DeviceRel.History").
-			Preload("DeviceRel.Performance").First(&deviceBody).Error
-	} else {
-		err = db.Where("id = ? AND status != ?", id, model.Disable).Preload("DeviceRel").First(&deviceBody).Error
-	}
-
+	err := handler.NewDeviceHandler(c.Ctx, &deviceBody).ReadDetail(detail == "true", id)
 	if err != nil {
 		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
 	}
-
 	resData := model.Devices{}
 	deviceBody.ConvertToJson(&resData)
 	return commonModel.ResponseTemplate{HttpCode: 200, Data: resData}, nil
@@ -117,8 +63,10 @@ var UpdateDevice = func(c *commonModel.ServiceContext) (commonModel.ResponseTemp
 	id := c.Param("id")
 	deviceBody := model.Devices{}
 	if err := json.Unmarshal(c.Body, &deviceBody); err == nil {
-		deviceModel := model.SysDevices{Id: id}
-		err := handler.Update(&deviceModel, deviceBody)
+		deviceBody.Id = id
+		deviceModel := model.SysDevices{}
+		deviceBody.ConvertToDB(&deviceModel)
+		err := handler.NewDeviceHandler(c.Ctx, &deviceModel).Update()
 		if err != nil {
 			utils.Log(LogConstant.Error, err)
 			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
@@ -133,7 +81,7 @@ var DeleteDevice = func(c *commonModel.ServiceContext) (commonModel.ResponseTemp
 	utils.Log(LogConstant.Info, "DeleteDevice Start")
 	defer utils.Log(LogConstant.Info, "DeleteDevice End")
 	id := c.Param("id")
-	err := handler.Update(&model.SysDevices{Id: id}, model.SysDevices{Status: model.Disable})
+	err := handler.NewDeviceHandler(c.Ctx, &model.SysDevices{Id: id, Status: model.Disable}).Update()
 	if err != nil {
 		utils.Log(LogConstant.Error, err)
 		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err

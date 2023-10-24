@@ -16,6 +16,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/rabbitmq/amqp091-go"
 )
 
@@ -129,7 +130,7 @@ func ReceiveService(deliveries <-chan amqp091.Delivery) {
 		header["Content-Type"] = []string{"application/json"}
 		header["Request-Type"] = []string{"amqp"}
 		c := commonModel.ServiceContext{
-			Ctx: context.Background(),
+			Ctx: &gin.Context{},
 			Mu:  sync.Mutex{},
 			ServiceModel: commonModel.ServiceModel{
 				Body:   []byte{},

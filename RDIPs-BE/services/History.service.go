@@ -18,11 +18,11 @@ var PostHistory = func(c *commonModel.ServiceContext) (commonModel.ResponseTempl
 	if err := json.Unmarshal(c.Body, &historyBody); err == nil {
 		historyObj := model.SysHistory{}
 		historyBody.ConvertToDB(&historyObj)
-		err := handler.Create(&historyObj)
-		if err != nil {
-			utils.Log(LogConstant.Error, err)
-			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
-		}
+		// err := handler.Create(&historyObj)
+		// if err != nil {
+		// 	utils.Log(LogConstant.Error, err)
+		// 	return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+		// }
 		return commonModel.ResponseTemplate{HttpCode: 200, Data: nil}, nil
 	} else {
 		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
@@ -49,7 +49,7 @@ var UpdateHistory = func(c *commonModel.ServiceContext) (commonModel.ResponseTem
 	amqp := c.Query("amqp")
 	db := commonModel.Helper.GetDb()
 	rel := model.DeviceRel{DeviceID: deviceId}
-	historyModel := model.SysHistory{}
+	// historyModel := model.SysHistory{}
 	db.First(&rel).Preload("sys_history", func(db *gorm.DB) *gorm.DB {
 		return db.Order("sunflower.sys_history.log_path Desc").Limit(1)
 	})
@@ -61,12 +61,12 @@ var UpdateHistory = func(c *commonModel.ServiceContext) (commonModel.ResponseTem
 				fileIO.Write(time.Now(), []byte(historyBody.Payload))
 			}()
 		}
-		historyModel = model.SysHistory{Id: rel.HistoryID}
-		err := handler.Update(&historyModel, historyBody)
-		if err != nil {
-			utils.Log(LogConstant.Error, err)
-			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
-		}
+		// historyModel = model.SysHistory{Id: rel.HistoryID}
+		// err := handler.Update(&historyModel, historyBody)
+		// if err != nil {
+		// 	utils.Log(LogConstant.Error, err)
+		// 	return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+		// }
 		return commonModel.ResponseTemplate{HttpCode: 200, Data: nil}, nil
 	} else {
 		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err

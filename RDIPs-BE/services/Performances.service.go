@@ -2,7 +2,6 @@ package services
 
 import (
 	LogConstant "RDIPs-BE/constant/LogConst"
-	"RDIPs-BE/handler"
 	"RDIPs-BE/model"
 	commonModel "RDIPs-BE/model/common"
 	"RDIPs-BE/utils"
@@ -31,13 +30,13 @@ var PostPerformance = func(c *commonModel.ServiceContext) (commonModel.ResponseT
 	utils.Log(LogConstant.Info, "PostPerformance Start")
 	performanceBody := model.Performance{}
 	if err := json.Unmarshal(c.Body, &performanceBody); err == nil {
-		performanceObj := model.SysPerformance{}
-		performanceBody.ConvertToDB(&performanceObj)
-		err := handler.Create(&performanceObj)
-		if err != nil {
-			utils.Log(LogConstant.Error, err)
-			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
-		}
+		// performanceObj := model.SysPerformance{}
+		// performanceBody.ConvertToDB(&performanceObj)
+		// err := handler.Create(&performanceObj)
+		// if err != nil {
+		// 	utils.Log(LogConstant.Error, err)
+		// 	return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+		// }
 		return commonModel.ResponseTemplate{HttpCode: 200, Data: nil}, nil
 	} else {
 		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
@@ -69,12 +68,12 @@ var PutPerformance = func(c *commonModel.ServiceContext) (commonModel.ResponseTe
 		return db.Order("sunflower.sys_history.log_path Desc").Limit(1)
 	})
 	if err := json.Unmarshal(c.Body, &performanceBody); err == nil {
-		performanceModel := model.SysPerformance{Id: rel.PerformanceID}
-		err := handler.Update(&performanceModel, performanceBody)
-		if err != nil {
-			utils.Log(LogConstant.Error, err)
-			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
-		}
+		// performanceModel := model.SysPerformance{Id: rel.PerformanceID}
+		// err := handler.Update(&performanceModel, performanceBody)
+		// if err != nil {
+		// 	utils.Log(LogConstant.Error, err)
+		// 	return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+		// }
 		return commonModel.ResponseTemplate{HttpCode: 200, Data: nil}, nil
 	} else {
 		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
