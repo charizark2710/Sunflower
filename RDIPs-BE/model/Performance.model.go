@@ -14,8 +14,8 @@ type Performance struct {
 
 type SysPerformance struct {
 	Id           string    `gorm:"default:gen_random_uuid();primaryKey;column:id;type:uuid"`
-	CreatedAt    time.Time `gorm:"column:created_at;"`
-	UpdatedAt    time.Time `gorm:"column:updated_at;"`
+	CreatedAt    time.Time `gorm:"column:created_at"`
+	UpdatedAt    time.Time `gorm:"column:updated_at"`
 	DocumentName string    `gorm:"column:document_name"`
 }
 

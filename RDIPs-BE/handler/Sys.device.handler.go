@@ -84,7 +84,7 @@ func (d *deviceHandler) GetById(id string, response interface{}) error {
 func (d *deviceHandler) Update() error {
 	err := d.GetById(d.deviceBody.Id, &model.SysDevices{})
 	if err != nil {
-		utils.Log(LogConstant.Error, "cannot find device with ID = "+d.deviceBody.Id, err)
+		utils.Log(LogConstant.Error, "Cannot find device with ID = "+d.deviceBody.Id, err)
 		return err
 	}
 	return d.db.Updates(d.deviceBody).Error
