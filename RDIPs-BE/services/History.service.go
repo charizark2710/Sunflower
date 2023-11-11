@@ -46,8 +46,8 @@ var UpdateHistory = func(c *commonModel.ServiceContext) (commonModel.ResponseTem
 	utils.Log(LogConstant.Info, "UpdateHistory Start")
 	deviceId := c.Param("deviceId")
 	amqp := c.Query("amqp")
-	rel := model.SysDeviceRel{DeviceID: deviceId}
-	err := handler.NewDeviceRelHandler(c.Ctx, &rel).GetDeviceRelByDeviceId()
+	rel := model.SysDeviceRel{}
+	err := handler.NewDeviceRelHandler(c.Ctx, nil).GetById(deviceId, &rel)
 	if err != nil {
 		utils.Log(LogConstant.Error, err)
 		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err

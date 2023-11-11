@@ -58,9 +58,8 @@ var GetDetailPerformance = func(c *commonModel.ServiceContext) (commonModel.Resp
 var PutPerformance = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
 	utils.Log(LogConstant.Info, "UpdatePerformance Start")
 	deviceId := c.Param("deviceId")
-
-	rel := model.SysDeviceRel{DeviceID: deviceId}
-	err := handler.NewDeviceRelHandler(c.Ctx, &rel).GetDeviceRelByDeviceId()
+	rel := model.SysDeviceRel{}
+	err := handler.NewDeviceRelHandler(c.Ctx, nil).GetById(deviceId, &rel)
 	if err != nil {
 		utils.Log(LogConstant.Error, err)
 		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err

@@ -57,12 +57,3 @@ func GetDbFromContext(c *gin.Context) *gorm.DB {
 	}
 	return commonModel.Helper.GetDb()
 }
-
-// func getStructType(i interface{}, db *gorm.DB) error {
-// 	reflectModel := reflect.ValueOf(i)
-// 	m := reflectModel.Interface()
-// 	if !db.Migrator().HasTable(m) {
-// 		return errors.New("table is not exist")
-// 	}
-// 	return nil
-// }
