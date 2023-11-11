@@ -1,9 +1,10 @@
 package model
 
 import (
-	"context"
 	"net/http"
 	"sync"
+
+	"github.com/gin-gonic/gin"
 )
 
 type ServiceModel struct {
@@ -14,7 +15,7 @@ type ServiceModel struct {
 }
 
 type ServiceContext struct {
-	Ctx context.Context
+	Ctx *gin.Context
 	Mu  sync.Mutex
 	ServiceModel
 }

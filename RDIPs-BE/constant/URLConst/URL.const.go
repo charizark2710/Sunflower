@@ -10,12 +10,12 @@ const (
 	//Performances
 	GetAllPerformances = "/performances"
 	// PostPerformance      = "/performances"
-	GetDetailPerformance = "/performances/:deviceId"
+	GetDetailPerformance = "/performances/:id"
 	PutDetailPerformance = "/performances/:deviceId"
 
 	//History
 	// PostHistory      = "/history"
-	GetDetailHistory = "/history/:deviceId"
+	GetDetailHistory = "/history/:id"
 	PutDetailHistory = "/history/:deviceId"
 
 	//Weather

@@ -8,8 +8,6 @@ import (
 	"RDIPs-BE/utils"
 	"encoding/json"
 	"time"
-
-	"gorm.io/gorm"
 )
 
 var PostHistory = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
@@ -18,11 +16,12 @@ var PostHistory = func(c *commonModel.ServiceContext) (commonModel.ResponseTempl
 	if err := json.Unmarshal(c.Body, &historyBody); err == nil {
 		historyObj := model.SysHistory{}
 		historyBody.ConvertToDB(&historyObj)
-		err := handler.Create(&historyObj)
+		err := handler.NewHistoryHandler(c.Ctx, &historyObj).Create()
 		if err != nil {
 			utils.Log(LogConstant.Error, err)
 			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
 		}
+
 		return commonModel.ResponseTemplate{HttpCode: 200, Data: nil}, nil
 	} else {
 		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
@@ -31,10 +30,9 @@ var PostHistory = func(c *commonModel.ServiceContext) (commonModel.ResponseTempl
 
 var GetDetailHistory = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
 	utils.Log(LogConstant.Info, "GetDetailHistory Start")
-	id := c.Param("deviceId")
+	id := c.Param("id")
 	historyBody := model.SysHistory{}
-	db := commonModel.Helper.GetDb()
-	err := db.Where("id = ?", id).First(&historyBody).Error
+	err := handler.NewHistoryHandler(c.Ctx, nil).GetById(id, &historyBody)
 	if err != nil {
 		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
 	}
@@ -45,14 +43,16 @@ var GetDetailHistory = func(c *commonModel.ServiceContext) (commonModel.Response
 }
 
 var UpdateHistory = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
+	utils.Log(LogConstant.Info, "UpdateHistory Start")
 	deviceId := c.Param("deviceId")
 	amqp := c.Query("amqp")
-	db := commonModel.Helper.GetDb()
-	rel := model.DeviceRel{DeviceID: deviceId}
-	historyModel := model.SysHistory{}
-	db.First(&rel).Preload("sys_history", func(db *gorm.DB) *gorm.DB {
-		return db.Order("sunflower.sys_history.log_path Desc").Limit(1)
-	})
+	rel := model.SysDeviceRel{}
+	err := handler.NewDeviceRelHandler(c.Ctx, nil).GetById(deviceId, &rel)
+	if err != nil {
+		utils.Log(LogConstant.Error, err)
+		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+	}
+
 	historyBody := model.History{}
 	if err := json.Unmarshal(c.Body, &historyBody); err == nil {
 		if amqp == "true" {
@@ -61,12 +61,16 @@ var UpdateHistory = func(c *commonModel.ServiceContext) (commonModel.ResponseTem
 				fileIO.Write(time.Now(), []byte(historyBody.Payload))
 			}()
 		}
-		historyModel = model.SysHistory{Id: rel.HistoryID}
-		err := handler.Update(&historyModel, historyBody)
+
+		historyBody.Id = rel.HistoryID
+		historyModel := model.SysHistory{}
+		historyBody.ConvertToDB(&historyModel)
+		err := handler.NewHistoryHandler(c.Ctx, &historyModel).Update()
 		if err != nil {
 			utils.Log(LogConstant.Error, err)
 			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
 		}
+		utils.Log(LogConstant.Info, "UpdateHistory End")
 		return commonModel.ResponseTemplate{HttpCode: 200, Data: nil}, nil
 	} else {
 		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
