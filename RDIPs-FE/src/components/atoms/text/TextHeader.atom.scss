@@ -1,0 +1,16 @@
+.header-text {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.text-detail {
+  line-height: 25px;
+  width: 100%;
+  min-width: 200px;
+  display: flex;
+  justify-content: space-between;
+
+  span {
+    font-weight: 500;
+  }
+}

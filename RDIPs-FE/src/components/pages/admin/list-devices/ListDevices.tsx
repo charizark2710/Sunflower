@@ -1,61 +1,66 @@
-import { useNavigate } from 'react-router-dom';
-import { DeviceData, HeadCell } from '../../../../utils/interface';
-import TableAtom from '../../../atoms/table/Table.atom';
-import './ListDevices.scss';
+import { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
-import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { getAllDevices } from '../../../../axios/api';
 import { setPage } from '../../../../redux/actions/page';
-import BreakcrumbMocules from '../../../molecules/breakcrumb/Breakcrumb.mocules';
+import { DeviceData, HeadCell } from '../../../../utils/interface';
 import { DeviceListIcon } from '../../../atoms/icon/ListIcon.atom';
+import TableAtom from '../../../atoms/table/Table.atom';
+import BreakcrumbMocules from '../../../molecules/breakcrumb/Breakcrumb.mocules';
+import { FormCreateDeviceMolecules } from '../../../molecules/form/device-create/FormCreateDevice.molecules';
+import config from '../../../../utils/en.json';
+import './ListDevices.scss';
 
 interface ListDevicesProps {
   dispatch: any;
 }
 
+interface DeviceResponse {
+  id: string;
+  name: string;
+  firmware_ver: number;
+  app_ver: number;
+  type: string;
+  status: string;
+  life_time: string;
+}
+
+export function createData(data: DeviceResponse): DeviceData {
+  const { id, name, firmware_ver, app_ver, type, status, life_time } = data;
+  return {
+    device_id: id,
+    device_name: name,
+    firmware_ver,
+    app_ver,
+    type,
+    status,
+    lifetime: life_time,
+  };
+}
+
 const ListDevices: React.FC<ListDevicesProps> = ({ dispatch }) => {
+  const [deviceListData, setDeviceListData] = useState([]);
+  const [popupStatus, setPopupStatus] = useState('');
+
   const navigate = useNavigate();
   useEffect(() => {
-    dispatch(setPage('List Devices'));
+    dispatch(setPage(config['deviceList.title']));
   }, [dispatch]);
 
-  const deviceListData = [
-    createData('D001', 'Device01', 1, 1, 'ABC', 'XYZ', 'lifetime'),
-    createData('D002', 'Device02', 1, 1, 'ABC', 'XYZ', 'lifetime'),
-    createData('D003', 'Device03', 1, 1, 'ABC', 'XYZ', 'lifetime'),
-    createData('D004', 'Device04', 1, 1, 'ABC', 'XYZ', 'lifetime'),
-    createData('D005', 'Device05', 1, 1, 'ABC', 'XYZ', 'lifetime'),
-    createData('D006', 'Device06', 1, 1, 'ABC', 'XYZ', 'lifetime'),
-    createData('D007', 'Device07', 1, 1, 'ABC', 'XYZ', 'lifetime'),
-    createData('D008', 'Device08', 1, 1, 'ABC', 'XYZ', 'lifetime'),
-    createData('D009', 'Device09', 1, 1, 'ABC', 'XYZ', 'lifetime'),
-    createData('D0010', 'Device021', 1, 1, 'ABC', 'XYZ', 'lifetime'),
-    createData('D0011', 'Device013', 1, 1, 'ABC', 'XYZ', 'lifetime'),
-    createData('D0012', 'Device014', 1, 1, 'ABC', 'XYZ', 'lifetime'),
-    createData('D0013', 'Device015', 1, 1, 'ABC', 'XYZ', 'lifetime'),
-    createData('D0014', 'Device016', 1, 1, 'ABC', 'XYZ', 'lifetime'),
-    createData('D0015', 'Device017', 1, 1, 'ABC', 'XYZ', 'lifetime'),
-    createData('D0016', 'Device018', 1, 1, 'ABC', 'XYZ', 'lifetime'),
-  ];
+  useEffect(() => {
+    getListDevice();
+  }, []);
 
-  function createData(
-    device_id: string,
-    device_name: string,
-    firmware_ver: number,
-    app_ver: number,
-    type: string,
-    status: string,
-    lifetime: string
-  ): DeviceData {
-    return {
-      device_id,
-      device_name,
-      firmware_ver,
-      app_ver,
-      type,
-      status,
-      lifetime,
-    };
-  }
+  const getListDevice = () => {
+    getAllDevices()
+      .then((data) => {
+        let devices = data.data;
+        setDeviceListData(devices.reverse().map((device: DeviceResponse) => createData(device)));
+      })
+      .catch(() => {
+        setDeviceListData([]);
+      });
+  };
 
   const headCells: HeadCell[] = [
     {
@@ -65,36 +70,41 @@ const ListDevices: React.FC<ListDevicesProps> = ({ dispatch }) => {
     {
       id: 'device_name',
       numeric: false,
-      label: 'Device Name',
+      label: config['deviceDetail.device.name'],
     },
     {
       id: 'firmware_ver',
       numeric: false,
-      label: 'Firmware version',
+      label: config['deviceDetail.device.firm'],
     },
     {
       id: 'app_ver',
       numeric: false,
-      label: 'App version',
+      label: config['deviceDetail.device.app'],
     },
     {
       id: 'type',
       numeric: false,
-      label: 'Type',
+      label: config['deviceDetail.device.type'],
     },
     {
       id: 'status',
       numeric: false,
-      label: 'Status',
+      label: config['deviceDetail.device.status'],
     },
     {
       id: 'lifetime',
       numeric: false,
-      label: 'Lifetime',
+      label: config['deviceDetail.device.lifetime'],
     },
   ];
 
   const deviceColumns = ['device_name', 'firmware_ver', 'app_ver', 'type', 'status', 'lifetime'];
+
+  function onClosePopUp() {
+    getListDevice();
+    setPopupStatus('closed');
+  }
 
   function navigateToDetailPage(detail: any) {
     navigate('/detail-device', { replace: false, state: detail });
@@ -102,14 +112,21 @@ const ListDevices: React.FC<ListDevicesProps> = ({ dispatch }) => {
 
   return (
     <div className='list-container'>
-      <BreakcrumbMocules title='Devices' icon={<DeviceListIcon />}/>
-      <TableAtom
-        onRowClick={navigateToDetailPage}
-        rows={deviceListData}
-        deviceColumns={deviceColumns}
-        title='List Devices'
-        headCells={headCells}
-      />
+      <div className='card-container'>
+        <BreakcrumbMocules
+          title={config['deviceList.name']}
+          icon={<DeviceListIcon />}
+          modal={<FormCreateDeviceMolecules onClosePopUp={onClosePopUp} />}
+          status={popupStatus}
+        />
+        <TableAtom
+          onRowClick={navigateToDetailPage}
+          rows={deviceListData}
+          deviceColumns={deviceColumns}
+          title={config['deviceList.title']}
+          headCells={headCells}
+        />
+      </div>
     </div>
   );
 };

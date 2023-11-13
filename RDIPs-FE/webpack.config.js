@@ -1,5 +1,6 @@
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const webpack = require('webpack');
 
 module.exports = {
   mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
@@ -18,10 +19,25 @@ module.exports = {
       filename: 'index.html',
       favicon: 'public/favicon.ico',
     }),
+    new webpack.DefinePlugin({
+      "process.env.REACT_APP_API_URL": JSON.stringify(process.env.REACT_APP_API_URL)
+    })
   ],
   stats: 'errors-only',
   devServer: {
-    static: [ {directory: path.join(__dirname, "build")}, {directory: path.join(__dirname, "public")}],
+    static: [{ directory: path.join(__dirname, "build") }, { directory: path.join(__dirname, "public") }],
+    proxy: {
+      '/api': {
+         target: {
+            host: "localhost",
+            protocol: 'http:',
+            port: 8080
+         },
+         pathRewrite: {
+            '^/api': ''
+         }
+      }
+    },
     compress: true,
     historyApiFallback: true,
     port: 3030, // you can change the port

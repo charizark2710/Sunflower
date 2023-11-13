@@ -1,5 +1,5 @@
 import { Box } from '@mui/material';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import chartData from '../../../../../lib/chartData.json';
 import { HighChartCustom } from '../../../../../lib/highchart/HighChartCustom';
@@ -7,6 +7,12 @@ import { TypeChart } from '../../../../../utils/enum';
 import { DeviceChangeHistoryData, DeviceLogHistoryData, HeadCell, StatusEnum } from '../../../../../utils/interface';
 import CollapseAtom from '../../../../atoms/collapse/Collapse';
 import TableAtom from '../../../../atoms/table/Table.atom';
+import TextAtomDetail from '../../../../atoms/text/TextDetail.atom';
+import CardMocules from '../../../../molecules/card/Card.mocules';
+import { FormCreateDeviceMolecules } from '../../../../molecules/form/device-create/FormCreateDevice.molecules';
+import config from '../../../../../utils/en.json';
+import { getAllDevices } from '../../../../../axios/api';
+import { createData } from '../ListDevices';
 // import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 // import dayjs, { Dayjs } from 'dayjs';
 
@@ -175,28 +181,45 @@ export const HistoryChangeTableInDevice = () => {
 
 const DetailDevice = () => {
   let { state } = useLocation();
-  const detailDevice: any = state;
+  const [detailDevice, setDetailDevice]: any = useState(state);
+  const [popupStatus, setPopupStatus] = useState("");
+
+  useEffect(() => {
+    getDeviceById();
+  }, [popupStatus]);
+
+  const getDeviceById = () => {
+    console.log("calling me twice");
+    
+    let id = (state as any).device_id as string;
+    getAllDevices(id)
+    .then((data) => {
+      setDetailDevice(createData(data.data));
+    })
+    .catch(() => {
+      setDetailDevice(state);
+    });
+  }
 
   return (
-    <div style={{ padding: '0 30px', backgroundColor: 'white', minHeight: '80vh' }}>
-      <section>
-        <h3>Device information</h3>
-        <div>DeviceId: {detailDevice.device_id}</div>
-        <div>Device Name: {detailDevice.device_name}</div>
-        <div>Firmware version: {detailDevice.firmware_ver}</div>
-        <div>App version: {detailDevice.app_ver}</div>
-        <div>Type: {detailDevice.type}</div>
-        <div>Status: {detailDevice.status}</div>
-        <div>Life time: {detailDevice.lifetime}</div>
-      </section>
+    <div className='list-container'>
+      <CardMocules title={config['deviceDetail.infoTitle']} status={popupStatus} modal={<FormCreateDeviceMolecules state="update" onClosePopUp={()=> setPopupStatus("closed")} data={detailDevice}/>}>
+        <TextAtomDetail title={config['deviceDetail.device.name']}> {detailDevice.device_name} </TextAtomDetail>
+        <TextAtomDetail title= {config['deviceDetail.device.id']}> {detailDevice.device_id} </TextAtomDetail>
+        <TextAtomDetail title= {config['deviceDetail.device.firm']}> {detailDevice.firmware_ver} </TextAtomDetail>
+        <TextAtomDetail title={config['deviceDetail.device.app']}> {detailDevice.app_ver} </TextAtomDetail>
+        <TextAtomDetail title={config['deviceDetail.device.type']}> {detailDevice.type} </TextAtomDetail>
+        <TextAtomDetail title={config['deviceDetail.device.status']} > {detailDevice.status} </TextAtomDetail>
+        <TextAtomDetail title={config['deviceDetail.device.lifetime']}> {detailDevice.life_time} </TextAtomDetail>
+      </CardMocules>
       <section className='performance-statistics'>
-        <CollapseAtom buttonTitle='Performance statistics' children={<HighChartInDevice />} />
+        <CollapseAtom buttonTitle={config['deviceDetail.performance.buttonTitle']} children={<HighChartInDevice />} />
       </section>
       <section className='log-history'>
-        <CollapseAtom buttonTitle='Log history' children={<HistoryLogTableInDevice />} />
+        <CollapseAtom buttonTitle={config['deviceDetail.logHistory.buttonTitle']} children={<HistoryLogTableInDevice />} />
       </section>
       <section className='change-history'>
-        <CollapseAtom buttonTitle='Change history' children={<HistoryChangeTableInDevice />} />
+        <CollapseAtom buttonTitle={config['deviceDetail.changeHistory.buttonTitle']} children={<HistoryChangeTableInDevice />} />
       </section>
     </div>
   );

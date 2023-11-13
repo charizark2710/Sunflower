@@ -1,53 +1,69 @@
-import { useRoutes, RouteObject } from 'react-router-dom';
-import HomePage from './components/pages/admin/home/Home.page';
-import TempPage from './components/pages/Temp.page';
+import { RouteObject, useRoutes } from 'react-router-dom';
+import AdminPage from './components/pages/admin/AdminPage';
+import Campaign from './components/pages/admin/campaign/Campaign';
+import ListAdmin from './components/pages/admin/list-admin/ListAdmin';
 import ListDevices from './components/pages/admin/list-devices/ListDevices';
 import DetailDevice from './components/pages/admin/list-devices/detail-device/DetailDevice';
 import DetailHistoryLog from './components/pages/admin/list-devices/detail-device/DetailHistoryLog';
 import ListUsers from './components/pages/admin/list-users/ListUsers';
 import DetailUser from './components/pages/admin/list-users/detail-user/DetailUser';
-import Campaign from './components/pages/admin/campaign/Campaign';
-import ListAdmin from './components/pages/admin/list-admin/ListAdmin';
+import LoginPage from './components/pages/authentication/LoginPage.page';
+import Register from './components/pages/authentication/Register.page';
+import LandingPage from './components/pages/landing/Landing.page';
 
-export function AdminRoute(): ReturnType<typeof useRoutes> {
+export function CommonRoute(): ReturnType<typeof useRoutes> {
   const routes: RouteObject[] = [
     {
       path: '/',
-      element: <TempPage />,
+      element: <LandingPage />,
     },
     {
-      path: '/admin',
-      element: <HomePage />,
+      path: '/login',
+      element: <LoginPage />,
+    },
+    {
+      path: '/register',
+      element: <Register />,
+    },
+    {
+      path: 'admin',
+      element: <AdminPage />,
     },
     {
       path: '/list-devices',
-      element: <ListDevices />,
+      element: <AdminPage children={<ListDevices />} />
     },
     {
       path: '/list-users',
-      element: <ListUsers />,
+      element:  <AdminPage children={<ListUsers />} />,
     },
     {
       path: '/list-admin',
-      element: <ListAdmin />,
+      element:  <AdminPage children={<ListAdmin />} />,
     },
     {
       path: '/campaign',
-      element: <Campaign />,
+      element:  <AdminPage children={<Campaign />} />,
     },
     {
       path: '/detail-user',
-      element: <DetailUser />,
+      element: <AdminPage children={<DetailUser />} />,
     },
     {
       path: 'detail-history-log',
-      element: <DetailHistoryLog />,
+      element: <AdminPage children={<DetailHistoryLog />} />,
     },
     {
       path: '/detail-device',
-      element: <DetailDevice />,
+      element: <AdminPage children={<DetailDevice />} />,
     },
   ];
+
+  return useRoutes(routes);
+}
+
+export function AdminRoute(): ReturnType<typeof useRoutes> {
+  const routes: RouteObject[] = [];
 
   return useRoutes(routes);
 }

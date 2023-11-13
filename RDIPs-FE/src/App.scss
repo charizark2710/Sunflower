@@ -19,7 +19,6 @@ body {
 }
 
 .App-header {
-  background-color: #282c34;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -34,7 +33,13 @@ body {
 }
 
 .list-container {
-  padding: 24px 10%;
+  padding: 24px 5%;
+}
+
+.card-container {
+  padding: 24px 24px;
+  border-radius: 10px;
+  background-color: white;
 }
 
 /* flex area */
