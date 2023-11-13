@@ -5,7 +5,6 @@ import (
 	"RDIPs-BE/constant/ServiceConst"
 	commonModel "RDIPs-BE/model/common"
 	"RDIPs-BE/utils"
-	"context"
 	"io"
 	"sync"
 
@@ -20,7 +19,7 @@ func Controller(c *gin.Context) {
 		utils.Log(LogConstant.Error, err)
 		c.JSON(500, err)
 	}
-	serviceCtx := commonModel.ServiceContext{Ctx: context.Background(), Mu: sync.Mutex{}, ServiceModel: commonModel.ServiceModel{
+	serviceCtx := commonModel.ServiceContext{Ctx: c, Mu: sync.Mutex{}, ServiceModel: commonModel.ServiceModel{
 		Body: bodyAsByteArray,
 	}}
 	setQueryAndParam(c, &serviceCtx)

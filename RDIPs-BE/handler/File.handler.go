@@ -18,14 +18,14 @@ type FileIO struct {
 	rFile    *os.File
 	wFile    *os.File
 	isClosed bool
+	m        sync.Mutex
 }
 
 var fileStreamArr = make(map[string]*FileIO, 0)
-var m sync.Mutex
 
 func (f *FileIO) open(IOtype string, date time.Time) error {
-	m.Lock()
-	defer m.Unlock()
+	f.m.Lock()
+	defer f.m.Unlock()
 	utils.Log(LogConstant.Info, "Start open "+f.Name)
 
 	if fileStreamArr[f.Name] == nil ||
@@ -61,8 +61,8 @@ func (f *FileIO) open(IOtype string, date time.Time) error {
 			go func() {
 				// time.Sleep(10 * time.Second)
 				time.Sleep(1 * time.Hour)
-				m.Lock()
-				defer m.Unlock()
+				f.m.Lock()
+				defer f.m.Unlock()
 				i := 0
 				for !f.isClosed {
 					f.close()

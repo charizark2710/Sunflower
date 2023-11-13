@@ -7,15 +7,12 @@ import (
 	commonModel "RDIPs-BE/model/common"
 	"RDIPs-BE/utils"
 	"encoding/json"
-
-	"gorm.io/gorm"
 )
 
 var GetAllPerformances = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
 	utils.Log(LogConstant.Info, "GetAllPerformances Start")
 	var performanceModel []model.SysPerformance
-	db := commonModel.Helper.GetDb()
-	err := db.Find(&performanceModel).Error
+	err := handler.NewPerformanceHandler(c.Ctx, nil).Read(&performanceModel)
 	if err != nil {
 		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
 	}
@@ -33,7 +30,7 @@ var PostPerformance = func(c *commonModel.ServiceContext) (commonModel.ResponseT
 	if err := json.Unmarshal(c.Body, &performanceBody); err == nil {
 		performanceObj := model.SysPerformance{}
 		performanceBody.ConvertToDB(&performanceObj)
-		err := handler.Create(&performanceObj)
+		err := handler.NewPerformanceHandler(c.Ctx, &performanceObj).Create()
 		if err != nil {
 			utils.Log(LogConstant.Error, err)
 			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
@@ -48,8 +45,7 @@ var GetDetailPerformance = func(c *commonModel.ServiceContext) (commonModel.Resp
 	utils.Log(LogConstant.Info, "GetDetailPerformance Start")
 	id := c.Param("id")
 	performanceBody := model.SysPerformance{}
-	db := commonModel.Helper.GetDb()
-	err := db.Where("id = ?", id).First(&performanceBody).Error
+	err := handler.NewPerformanceHandler(c.Ctx, nil).GetById(id, &performanceBody)
 	if err != nil {
 		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
 	}
@@ -62,19 +58,24 @@ var GetDetailPerformance = func(c *commonModel.ServiceContext) (commonModel.Resp
 var PutPerformance = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
 	utils.Log(LogConstant.Info, "UpdatePerformance Start")
 	deviceId := c.Param("deviceId")
-	db := commonModel.Helper.GetDb()
-	rel := model.DeviceRel{DeviceID: deviceId}
+	rel := model.SysDeviceRel{}
+	err := handler.NewDeviceRelHandler(c.Ctx, nil).GetById(deviceId, &rel)
+	if err != nil {
+		utils.Log(LogConstant.Error, err)
+		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+	}
+
 	performanceBody := model.Performance{}
-	db.First(&rel).Preload("sys_history", func(db *gorm.DB) *gorm.DB {
-		return db.Order("sunflower.sys_history.log_path Desc").Limit(1)
-	})
 	if err := json.Unmarshal(c.Body, &performanceBody); err == nil {
-		performanceModel := model.SysPerformance{Id: rel.PerformanceID}
-		err := handler.Update(&performanceModel, performanceBody)
+		performanceBody.Id = rel.PerformanceID
+		performanceModel := model.SysPerformance{}
+		performanceBody.ConvertToDB(&performanceModel)
+		err := handler.NewPerformanceHandler(c.Ctx, &performanceModel).Update()
 		if err != nil {
 			utils.Log(LogConstant.Error, err)
 			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
 		}
+		utils.Log(LogConstant.Info, "UpdatePerformance End")
 		return commonModel.ResponseTemplate{HttpCode: 200, Data: nil}, nil
 	} else {
 		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err

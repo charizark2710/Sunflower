@@ -13,6 +13,7 @@ func InitRouter(router *gin.Engine) {
 		})
 	})
 	router.Use(middleware.ValidatorMiddleware())
+	router.Use(middleware.SetFilter())
 	DevicesRouter(router)
 	PerformanceRouter(router)
 	HistoryRouter(router)
