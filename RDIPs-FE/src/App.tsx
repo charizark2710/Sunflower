@@ -1,17 +1,16 @@
+import { Provider } from 'react-redux';
 import { BrowserRouter } from 'react-router-dom';
 import './App.scss';
-import AdminPage from './components/pages/admin/AdminPage';
-import { AdminRoute } from './routes';
-import { Provider } from 'react-redux';
 import { store } from './redux/store';
+import { CommonRoute } from './routes';
 
 function App() {
   return (
-  <Provider store={store}>
-    <BrowserRouter>
-      <AdminPage children= {<AdminRoute />} />
-    </BrowserRouter>
-  </Provider>
+    <Provider store={store}>
+      <BrowserRouter>
+        <CommonRoute />
+      </BrowserRouter>
+    </Provider>
   );
 }
 

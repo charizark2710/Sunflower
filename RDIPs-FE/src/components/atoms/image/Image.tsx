@@ -1,7 +1,8 @@
 export interface ImageAtomProps {
   url: string,
   w: string,
-  sx?: any
+  sx?: any,
+  alt?: string
 }
 
 const Image : React.FC<ImageAtomProps> = ({ url, w }) => {

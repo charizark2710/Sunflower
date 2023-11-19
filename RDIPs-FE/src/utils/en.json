@@ -1,0 +1,17 @@
+{
+  "landingPage.title": "Welcome to Sunflower", 
+  "landingPage.description": "Bring you to a green journeys start from small changes",
+  "deviceList.title": "List Devices",
+  "deviceList.name": "Devices",
+  "deviceDetail.infoTitle": "Device Information",
+  "deviceDetail.device.id": "Device Id",
+  "deviceDetail.device.name": "Device Name",
+  "deviceDetail.device.firm": "Firmware version",
+  "deviceDetail.device.app": "App version",
+  "deviceDetail.device.type": "Type",
+  "deviceDetail.device.status": "Status",
+  "deviceDetail.device.lifetime": "Life time",
+  "deviceDetail.performance.buttonTitle": "Performance statistics",
+  "deviceDetail.logHistory.buttonTitle": "Log history",
+  "deviceDetail.changeHistory.buttonTitle": "Change history"
+}

@@ -1,4 +1,4 @@
-import { FETCH_POST_ERROR, FETCH_POST_REQUEST, FETCH_POST_SUCCESS } from '../constants/post';
+import { FETCH_POST_ERROR, FETCH_POST_REQUEST, FETCH_POST_SUCCESS } from '../constants/constant';
 
 
 export const loadPosts = () => async (dispatch : any) => {

@@ -47,7 +47,7 @@ function SidebarOrganism({ onClick, size }: { onClick?: (args: any) => void; siz
               size={size}
             />
             <div className = 'search-area'> 
-              <SearchAtom/>
+              {/* <SearchAtom/> */}
               {/* <Image url={sunflower} w ='50%' /> */}
             </div>
             {size === 'md' ? straight : ''}
