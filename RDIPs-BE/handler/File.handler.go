@@ -15,8 +15,8 @@ import (
 
 type FileIO struct {
 	Name     string
-	rFile    *os.File
-	wFile    *os.File
+	RFile    *os.File
+	WFile    *os.File
 	isClosed bool
 	m        sync.Mutex
 }
@@ -29,7 +29,7 @@ func (f *FileIO) open(IOtype string, date time.Time) error {
 	utils.Log(LogConstant.Info, "Start open "+f.Name)
 
 	if fileStreamArr[f.Name] == nil ||
-		fileStreamArr[f.Name].wFile == nil ||
+		fileStreamArr[f.Name].WFile == nil ||
 		IOtype == "read" {
 		Y, M, D := date.Date()
 		YMD := fmt.Sprint(Y) + "-" + fmt.Sprint(M) + "-" + fmt.Sprint(D)
@@ -42,12 +42,12 @@ func (f *FileIO) open(IOtype string, date time.Time) error {
 		if err != nil {
 			if errors.Is(err, os.ErrNotExist) {
 				os.MkdirAll(path, 0777)
-				newFile, newErr := os.Create(path + "/" + hour + ".log")
+				neWFile, newErr := os.Create(path + "/" + hour + ".log")
 				if newErr != nil {
 					utils.Log(LogConstant.Error, newErr)
 					return newErr
 				}
-				file = newFile
+				file = neWFile
 			} else {
 				utils.Log(LogConstant.Error, err)
 				return err
@@ -55,9 +55,9 @@ func (f *FileIO) open(IOtype string, date time.Time) error {
 		}
 		switch IOtype {
 		case "read":
-			f.rFile = file
+			f.RFile = file
 		case "write":
-			f.wFile = file
+			f.WFile = file
 			go func() {
 				// time.Sleep(10 * time.Second)
 				time.Sleep(1 * time.Hour)
@@ -78,8 +78,8 @@ func (f *FileIO) open(IOtype string, date time.Time) error {
 		}
 		fileStreamArr[f.Name] = f
 	} else {
-		f.rFile = fileStreamArr[f.Name].rFile
-		f.wFile = fileStreamArr[f.Name].wFile
+		f.RFile = fileStreamArr[f.Name].RFile
+		f.WFile = fileStreamArr[f.Name].WFile
 	}
 
 	utils.Log(LogConstant.Info, "Open "+f.Name+" success")
@@ -93,14 +93,14 @@ func (f *FileIO) Read(date time.Time) ([]byte, error) {
 	// if file is not opened
 	err := f.open("read", date)
 	defer func() {
-		f.rFile.Close()
+		f.RFile.Close()
 	}()
 	if err != nil {
 		utils.Log(LogConstant.Error, err)
 		return []byte{}, err
 	}
 
-	bytes, readErr := io.ReadAll(f.rFile)
+	bytes, readErr := io.ReadAll(f.RFile)
 	if readErr != nil {
 		utils.Log(LogConstant.Error, readErr)
 		return []byte{}, readErr
@@ -119,7 +119,7 @@ func (f *FileIO) Write(date time.Time, bytes []byte) error {
 		utils.Log(LogConstant.Error, err)
 		return err
 	}
-	w := bufio.NewWriter(f.wFile)
+	w := bufio.NewWriter(f.WFile)
 	n, wErr := w.Write(bytes)
 	if wErr != nil {
 		utils.Log(LogConstant.Error, err)
@@ -140,8 +140,8 @@ func (f *FileIO) close() {
 	f.isClosed = true
 	utils.Log(LogConstant.Info, "Start closing "+f.Name)
 
-	// rFile is already close after reading process is done so this is just for safe
-	err := f.rFile.Close()
+	// RFile is already close after reading process is done so this is just for safe
+	err := f.RFile.Close()
 
 	if err != nil {
 		if !errors.Is(err, os.ErrClosed) {
@@ -152,7 +152,7 @@ func (f *FileIO) close() {
 	}
 
 	// only need to close write file
-	err = f.wFile.Close()
+	err = f.WFile.Close()
 	if err != nil {
 		if !errors.Is(err, os.ErrClosed) {
 			f.isClosed = false
