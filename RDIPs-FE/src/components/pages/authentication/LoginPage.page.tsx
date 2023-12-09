@@ -3,16 +3,15 @@ import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import CssBaseline from '@mui/material/CssBaseline';
 import Link from '@mui/material/Link';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
 import TextField from '@mui/material/TextField';
-import { Field } from 'formik';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { Field, Form, Formik } from 'formik';
 import { useState } from 'react';
 import { connect } from 'react-redux';
 import { useNavigate } from 'react-router';
 import * as Yup from 'yup';
 import { login } from '../../../redux/actions/authentication';
 import ErrorMessageAtom from '../../atoms/error-message/ErrorMessageAtom.atom';
-import { FormikAtom } from '../../atoms/formik/FormikAtom.atom';
 import SunFlowerLogo from '../../atoms/image/SunFlowerLogo.atom';
 import './LoginPage.page.scss';
 
@@ -33,7 +32,7 @@ const LoginPage = ({ dispatch }: any) => {
   };
 
   const LoginValidationSchema = Yup.object().shape({
-    email: Yup.string().email('Please enter the right email format').required('Email Required'),
+    email: Yup.string().email('Wrong email format').required('Email Required'),
     password: Yup.string().required('Password required'),
   });
 
@@ -52,59 +51,6 @@ const LoginPage = ({ dispatch }: any) => {
       alert('Wrong email or password');
     }
   };
-
-  const loginForm = (
-    <Box sx={{ mt: 1 }}>
-      <div className='flex-justify-start flex-align-center'>
-        <span className='input-title'>Email</span>
-        <span>
-          <Field
-            as={TextField}
-            required
-            fullWidth
-            id='email'
-            name='email'
-            placeholder='Your email'
-            autoComplete='email'
-            autoFocus
-            helperText={<ErrorMessageAtom name='email' />}
-          />
-        </span>
-      </div>
-      <div className='flex-justify-start flex-align-center'>
-        <span className='input-title'>Password</span>
-        <span>
-          <Field
-            as={TextField}
-            margin='normal'
-            variant='outlined'
-            fullWidth
-            name='password'
-            type={showPassword ? 'text' : 'password'}
-            placeholder='Your password'
-            id='password'
-            required={true}
-            autoComplete='current-password'
-            helperText={<ErrorMessageAtom name='password' />}
-          />
-        </span>
-        {!showPassword ? (
-          <Visibility onClick={handleClickShowPassword} className='ml-12' />
-        ) : (
-          <VisibilityOff onClick={handleClickShowPassword} className='ml-12' />
-        )}
-      </div>
-      <div className='group-button flex-justify-center'>
-        <button type='submit' className='login-button'>
-          Login
-        </button>
-        <Link href='#' variant='body2' className='forgot-pass'>
-          <span>Forgot your password?</span>
-        </Link>
-      </div>
-    </Box>
-  );
-
   return (
     <ThemeProvider theme={defaultTheme}>
       <Container component='main' maxWidth='xs'>
@@ -119,12 +65,71 @@ const LoginPage = ({ dispatch }: any) => {
         >
           <SunFlowerLogo />
           <div className='administrator-title'>Administrator</div>
-          <FormikAtom
+
+          <Formik
             initialValues={initialValues}
             validationSchema={LoginValidationSchema}
             onSubmit={handleLogin}
-            children={loginForm}
-          ></FormikAtom>
+          >
+            {({}) => (
+              <Form>
+                <Box sx={{ mt: 1 }}>
+                  <div className='flex-justify-start flex-align-center'>
+                    <span className='input-title'>Email</span>
+                    <span>
+                      <Field
+                        as={TextField}
+                        required
+                        fullWidth
+                        id='email'
+                        name='email'
+                        placeholder='Your email'
+                        autoComplete='email'
+                        helperText={<ErrorMessageAtom name='email' />}
+                      />
+                    </span>
+                  </div>
+                  <div className='flex-justify-start flex-align-center'>
+                    <span className='input-title'>Password</span>
+                    <span>
+                      <Field
+                        as={TextField}
+                        margin='normal'
+                        variant='outlined'
+                        fullWidth
+                        name='password'
+                        type={showPassword ? 'text' : 'password'}
+                        placeholder='Your password'
+                        id='password'
+                        required={true}
+                        autoComplete='current-password'
+                        helperText={<ErrorMessageAtom name='password' />}
+                      />
+                    </span>
+                    {!showPassword ? (
+                      <Visibility
+                        onClick={handleClickShowPassword}
+                        className='ml-12'
+                      />
+                    ) : (
+                      <VisibilityOff
+                        onClick={handleClickShowPassword}
+                        className='ml-12'
+                      />
+                    )}
+                  </div>
+                  <div className='group-button flex-justify-center'>
+                    <button type='submit' className='login-button'>
+                      Login
+                    </button>
+                    <Link href='#' variant='body2' className='forgot-pass'>
+                      <span>Forgot your password?</span>
+                    </Link>
+                  </div>
+                </Box>
+              </Form>
+            )}
+          </Formik>
         </Box>
       </Container>
     </ThemeProvider>

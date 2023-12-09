@@ -22,18 +22,14 @@
 .css-1t8l2tu-MuiInputBase-input-MuiOutlinedInput-input:-webkit-autofill{
   padding: 11.5px 14px !important;
 }
-.css-md26zr-MuiInputBase-root-MuiOutlinedInput-root,
-.css-md26zr-MuiInputBase-root-MuiOutlinedInput-root:hover,
-.css-md26zr-MuiInputBase-root-MuiOutlinedInput-root:active,
-.css-md26zr-MuiInputBase-root-MuiOutlinedInput-root.Mui-focused,
-.css-md26zr-MuiInputBase-root-MuiOutlinedInput-root.Mui-focused:hover {
+.MuiOutlinedInput-root {
   display: flex !important;
   width: 280px !important;
   height: 48px !important;
   margin: 0 5px !important;
   align-items: center !important;
   border-radius: 28px !important;
-  border: 1px solid var(--grey-d-8-d-8-d-8, #d8d8d8) !important;
+  border: 1px solid var(--grey-d-8-d-8-d-8, #D8D8D8) !important;
   background: #fff !important;
 
   input::placeholder,
@@ -44,9 +40,25 @@
     line-height: 24px;
   }
 
+  &:hover {
+    border: 1px solid var(--grey-bcbcbc, #BCBCBC) !important;
+  }
+
+  &:active {
+    border: 1px solid var(--grey-6-c-6-c-6-c, #6C6C6C) !important;
+  }
+
+  &:focus {
+    border: 1px solid var(--grey-6-c-6-c-6-c, #6C6C6C) !important;
+  }
+
   &.error {
     border: 1px solid var(--red-ff-0000, #f00) !important;
   }
+}
+
+.css-1t8l2tu-MuiInputBase-input-MuiOutlinedInput-input:focus{
+  border: unset !important;
 }
 
 .group-button {
@@ -82,4 +94,10 @@
 
 .ml-12 {
   margin-left: 12px;
+}
+
+.MuiFormHelperText-root {
+  position : relative;
+  top: 0rem;
+  right: -9rem;
 }
