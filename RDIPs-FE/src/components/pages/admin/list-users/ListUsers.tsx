@@ -82,7 +82,7 @@ const ListUsers = ({dispatch} : any) => {
 
   return (
     <div className='list-container'>
-      <BreakcrumbMocules title='Users' icon={<UserListIcon />}/>
+      <BreakcrumbMocules title="User's List" icon={<UserListIcon />}/>
       <TableAtom
         onRowClick={navigateToDetailPage}
         rows={userListData}

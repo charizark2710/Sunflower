@@ -118,6 +118,7 @@ const ListDevices: React.FC<ListDevicesProps> = ({ dispatch }) => {
           icon={<DeviceListIcon />}
           modal={<FormCreateDeviceMolecules onClosePopUp={onClosePopUp} />}
           status={popupStatus}
+          link={config['deviceList.pathLink']}
         />
         <TableAtom
           onRowClick={navigateToDetailPage}

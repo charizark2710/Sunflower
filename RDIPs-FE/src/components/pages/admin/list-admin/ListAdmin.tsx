@@ -63,7 +63,7 @@ const ListAdmin = ({dispatch} : any) => {
 
   return (
     <div className='list-container'>
-      <BreakcrumbMocules title='Admin' icon={<AdminListIcon />}/>
+      <BreakcrumbMocules title="Admin's List" icon={<AdminListIcon />}/>
       <TableAtom
         onRowClick={navigateToDetailPage}
         rows={userListData}

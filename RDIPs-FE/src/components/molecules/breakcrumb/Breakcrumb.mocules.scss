@@ -1,19 +1,22 @@
 .breakcrumb-container {
   padding-bottom: 24px;;
   .breakcrumb-big {
-    font-size: 20px;
-    font-style: normal;
-    font-weight: 500;
-    line-height: 160%;
-    letter-spacing: 0.15px;
+    color: var(--blue-25205-b, #25205B);
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 32px; 
   }
 
   .breakcrumb-small {
+    color: #000;
     font-size: 16px;
-    font-style: normal;
     font-weight: 400;
-    line-height: 150%; /* 24px */
-    letter-spacing: 0.15px;
+    line-height: 24px;
+
+    .underline:hover {
+      text-decoration: underline;
+      cursor: pointer;
+    }
   }
 
   .font-grey {

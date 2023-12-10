@@ -80,7 +80,7 @@ const Campaign = ({dispatch} : any) => {
 
   return (
     <div className='list-container'>
-      <BreakcrumbMocules title='Campains' icon={<CampainIcon />}/>
+      <BreakcrumbMocules title="Campaign's List" icon={<CampainIcon />}/>
       <TableAtom
         onRowClick={navigateToDetailPage}
         rows={userListData}

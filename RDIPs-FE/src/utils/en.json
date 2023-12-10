@@ -1,8 +1,9 @@
 {
   "landingPage.title": "Welcome to Sunflower", 
   "landingPage.description": "Bring you to a green journeys start from small changes",
-  "deviceList.title": "List Devices",
-  "deviceList.name": "Devices",
+  "deviceList.title": "Device's List",
+  "deviceList.name": "Device's List",
+  "deviceList.pathLink": "/list-devices",
   "deviceDetail.infoTitle": "Device Information",
   "deviceDetail.device.id": "Device Id",
   "deviceDetail.device.name": "Device Name",
