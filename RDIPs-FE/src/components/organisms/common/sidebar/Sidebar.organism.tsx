@@ -1,5 +1,4 @@
 import { AdminListIcon, Campaign, DeviceListIcon, UserListIcon } from '../../../atoms/icon/ListIcon.atom';
-import SearchAtom from '../../../atoms/search/Search.atom';
 import { StraightAtom } from '../../../atoms/straight/Straight.atom';
 import SunflowerLabel from '../../../molecules/label/SunflowerLabel.mocules';
 // import Image from '../../../atoms/image/Image';
@@ -16,10 +15,10 @@ const sideBarItems = [
       </span>
     ),
   },
-  { to: '/list-devices', className: 'link-item', children: 'List Devices', icon: <DeviceListIcon /> },
-  { to: '/list-users', className: 'link-item', children: 'List Users', icon: <UserListIcon /> },
-  { to: '/list-admin', className: 'link-item', children: 'List Admin', icon: <AdminListIcon /> },
-  { to: '/campaign', className: 'link-item', children: 'Campaign', icon: <Campaign />},
+  { to: '/list-devices', className: 'link-item', children: "Device's List", icon: <DeviceListIcon /> },
+  { to: '/list-users', className: 'link-item', children: "User's List", icon: <UserListIcon /> },
+  { to: '/list-admin', className: 'link-item', children: "Admin's List", icon: <AdminListIcon /> },
+  { to: '/campaign', className: 'link-item', children: "Campaign's List", icon: <Campaign />},
 ];
 
 const topLabelStyle = {

@@ -1,11 +1,18 @@
 .admin-container {
+  width: 100vw;
+  min-height: 100vh;
   background-color: #f4f5f7;
   color: #4a5157;
-  .body-container {
-    min-height: calc(100vh - 175px);
+  .left-side {
+    width: 252px;
   }
-
   .right-side {
     border-left: 1px solid #e4e4e4;
+    width: calc(100% - 255px);
+
+    .body-container {
+      background: var(--grey-d-8-d-8-d-8, #d8d8d8);
+      padding: 32px 32px 32px 28px;
+    }
   }
 }

@@ -71,7 +71,7 @@ const LoginPage = ({ dispatch }: any) => {
             validationSchema={LoginValidationSchema}
             onSubmit={handleLogin}
           >
-            {({}) => (
+            {({errors, isValid}) => (
               <Form>
                 <Box sx={{ mt: 1 }}>
                   <div className='flex-justify-start flex-align-center'>
@@ -85,6 +85,7 @@ const LoginPage = ({ dispatch }: any) => {
                         name='email'
                         placeholder='Your email'
                         autoComplete='email'
+                        className={errors.email ? 'error' : ''}
                         helperText={<ErrorMessageAtom name='email' />}
                       />
                     </span>
@@ -101,6 +102,7 @@ const LoginPage = ({ dispatch }: any) => {
                         type={showPassword ? 'text' : 'password'}
                         placeholder='Your password'
                         id='password'
+                        className={errors.password ? 'error' : ''}
                         required={true}
                         autoComplete='current-password'
                         helperText={<ErrorMessageAtom name='password' />}
@@ -119,7 +121,7 @@ const LoginPage = ({ dispatch }: any) => {
                     )}
                   </div>
                   <div className='group-button flex-justify-center'>
-                    <button type='submit' className='login-button'>
+                    <button type='submit' className={ isValid ? 'enabled login-button': 'login-button'}>
                       Login
                     </button>
                     <Link href='#' variant='body2' className='forgot-pass'>

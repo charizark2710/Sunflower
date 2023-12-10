@@ -1,5 +1,5 @@
 .css-binzgt {
-  margin-top: 120px !important;
+  margin-top: 30% !important;
 }
 
 .administrator-title {
@@ -19,7 +19,7 @@
   margin-top: 12px !important;
   margin-bottom: 0 !important;
 }
-.css-1t8l2tu-MuiInputBase-input-MuiOutlinedInput-input:-webkit-autofill{
+.css-1t8l2tu-MuiInputBase-input-MuiOutlinedInput-input:-webkit-autofill {
   padding: 11.5px 14px !important;
 }
 .MuiOutlinedInput-root {
@@ -29,7 +29,7 @@
   margin: 0 5px !important;
   align-items: center !important;
   border-radius: 28px !important;
-  border: 1px solid var(--grey-d-8-d-8-d-8, #D8D8D8) !important;
+  border: 1px solid var(--grey-d-8-d-8-d-8, #d8d8d8) !important;
   background: #fff !important;
 
   input::placeholder,
@@ -41,24 +41,32 @@
   }
 
   &:hover {
-    border: 1px solid var(--grey-bcbcbc, #BCBCBC) !important;
+    border: 1px solid var(--grey-bcbcbc, #bcbcbc) !important;
   }
 
-  &:active {
-    border: 1px solid var(--grey-6-c-6-c-6-c, #6C6C6C) !important;
+  &:focus,
+  &:focus-within {
+    border: 1px solid var(--grey-6-c-6-c-6-c, #6c6c6c) !important;
   }
+}
 
-  &:focus {
-    border: 1px solid var(--grey-6-c-6-c-6-c, #6C6C6C) !important;
-  }
-
-  &.error {
+.error {
+  .MuiOutlinedInput-root {
     border: 1px solid var(--red-ff-0000, #f00) !important;
   }
 }
 
-.css-1t8l2tu-MuiInputBase-input-MuiOutlinedInput-input:focus{
+fieldset {
+  border: none !important;
+  outline: none !important;
+}
+
+.css-1t8l2tu-MuiInputBase-input-MuiOutlinedInput-input {
   border: unset !important;
+
+  &:focus {
+    border: unset !important;
+  }
 }
 
 .group-button {
@@ -82,6 +90,11 @@
     font-weight: 400;
     line-height: 24px;
     color: var(--grey-6-c-6-c-6-c, #6c6c6c);
+
+    &.enabled {
+      background: var(--blue-25205-b, #25205b);
+      color: var(--white-ffffff, #fff);
+    }
   }
 
   .forgot-pass {
@@ -97,7 +110,7 @@
 }
 
 .MuiFormHelperText-root {
-  position : relative;
+  position: relative;
   top: 0rem;
   right: -9rem;
 }
