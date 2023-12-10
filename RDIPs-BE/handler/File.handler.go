@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"bufio"
 	"errors"
 	"fmt"
 	"io"
@@ -21,16 +20,16 @@ type FileIO struct {
 	m        sync.Mutex
 }
 
-var fileStreamArr = make(map[string]*FileIO, 0)
+var fileStreamCache sync.Map
 
 func (f *FileIO) open(IOtype string, date time.Time) error {
 	f.m.Lock()
 	defer f.m.Unlock()
 	utils.Log(LogConstant.Info, "Start open "+f.Name)
 
-	if fileStreamArr[f.Name] == nil ||
-		fileStreamArr[f.Name].WFile == nil ||
-		IOtype == "read" {
+	fileCache, ok := fileStreamCache.Load(f.Name)
+
+	if fileCache == nil || !ok {
 		Y, M, D := date.Date()
 		YMD := fmt.Sprint(Y) + "-" + fmt.Sprint(M) + "-" + fmt.Sprint(D)
 		hour := fmt.Sprint(date.Hour())
@@ -53,33 +52,31 @@ func (f *FileIO) open(IOtype string, date time.Time) error {
 				return err
 			}
 		}
-		switch IOtype {
-		case "read":
-			f.RFile = file
-		case "write":
-			f.WFile = file
-			go func() {
-				// time.Sleep(10 * time.Second)
-				time.Sleep(1 * time.Hour)
-				f.m.Lock()
-				defer f.m.Unlock()
-				i := 0
-				for !f.isClosed {
-					f.close()
-					if !f.isClosed {
-						time.Sleep(10 * time.Second)
-						i++
-					}
-					if i > 3 {
-						break
-					}
+		f.RFile = file
+		f.WFile = file
+		go func() {
+			time.Sleep(10 * time.Second)
+			// time.Sleep(1 * time.Hour)
+			f.m.Lock()
+			defer f.m.Unlock()
+			i := 0
+			for !f.isClosed {
+				f.close()
+				if !f.isClosed {
+					time.Sleep(10 * time.Second)
+					i++
 				}
-			}()
-		}
-		fileStreamArr[f.Name] = f
+				if i > 3 {
+					break
+				}
+			}
+		}()
+
+		fileStreamCache.Store(f.Name, f)
 	} else {
-		f.RFile = fileStreamArr[f.Name].RFile
-		f.WFile = fileStreamArr[f.Name].WFile
+
+		f.RFile = fileCache.(*FileIO).RFile
+		f.WFile = fileCache.(*FileIO).WFile
 	}
 
 	utils.Log(LogConstant.Info, "Open "+f.Name+" success")
@@ -92,14 +89,11 @@ func (f *FileIO) Read(date time.Time) ([]byte, error) {
 
 	// if file is not opened
 	err := f.open("read", date)
-	defer func() {
-		f.RFile.Close()
-	}()
 	if err != nil {
 		utils.Log(LogConstant.Error, err)
 		return []byte{}, err
 	}
-
+	f.RFile.Seek(0, io.SeekStart)
 	bytes, readErr := io.ReadAll(f.RFile)
 	if readErr != nil {
 		utils.Log(LogConstant.Error, readErr)
@@ -110,7 +104,7 @@ func (f *FileIO) Read(date time.Time) ([]byte, error) {
 	return bytes, nil
 }
 
-func (f *FileIO) Write(date time.Time, bytes []byte) error {
+func (f *FileIO) Write(date time.Time, value string) error {
 	utils.Log(LogConstant.Info, "Start writing operation to "+f.Name+" log")
 
 	// if file is not opened
@@ -119,19 +113,14 @@ func (f *FileIO) Write(date time.Time, bytes []byte) error {
 		utils.Log(LogConstant.Error, err)
 		return err
 	}
-	w := bufio.NewWriter(f.WFile)
-	n, wErr := w.Write(bytes)
+	f.m.Lock()
+	defer f.m.Unlock()
+	n, wErr := fmt.Fprintln(f.WFile, value)
 	if wErr != nil {
 		utils.Log(LogConstant.Error, err)
 		return err
 	}
-	err = w.Flush()
-	if err != nil {
-		utils.Log(LogConstant.Error, err)
-		return err
-	}
 	utils.Log(LogConstant.Info, "Finish writing operation to "+f.Name+" log: ", n, "byte")
-
 	return nil
 }
 
@@ -140,30 +129,33 @@ func (f *FileIO) close() {
 	f.isClosed = true
 	utils.Log(LogConstant.Info, "Start closing "+f.Name)
 
-	// RFile is already close after reading process is done so this is just for safe
 	err := f.RFile.Close()
 
 	if err != nil {
 		if !errors.Is(err, os.ErrClosed) {
 			f.isClosed = false
+			utils.Log(LogConstant.Error, err)
+			return
 		}
 		utils.Log(LogConstant.Warning, "Close Read "+f.Name+" falied")
 		utils.Log(LogConstant.Warning, err)
 	}
 
-	// only need to close write file
 	err = f.WFile.Close()
 	if err != nil {
 		if !errors.Is(err, os.ErrClosed) {
 			f.isClosed = false
+			utils.Log(LogConstant.Error, err)
+			return
 		}
-		utils.Log(LogConstant.Warning, "Close Write"+f.Name+"falied")
+		utils.Log(LogConstant.Warning, "Close Write"+f.Name+" falied")
 		utils.Log(LogConstant.Warning, err)
 	}
-	if _, exist := fileStreamArr[f.Name]; exist {
-		fileStreamArr[f.Name] = nil
-		delete(fileStreamArr, f.Name)
+	if _, exist := fileStreamCache.Load(f.Name); exist {
+		fileStreamCache.Delete(f.Name)
 	}
 	utils.Log(LogConstant.Info, "Finish closing "+f.Name)
+	_, ok := fileStreamCache.Load(f.Name)
+	utils.Log(LogConstant.Info, f.Name, ok)
 
 }

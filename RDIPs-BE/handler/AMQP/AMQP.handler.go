@@ -8,6 +8,7 @@ import (
 	"RDIPs-BE/utils"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -46,10 +47,10 @@ func InitializeAMQP() error {
 		return err
 	}
 
-	pingFn := func(conn interface{}) {
+	pingFn := func(conn interface{}) error {
 		ch, ok := conn.(commonModel.BaseAmqpChannel)
 		if !ok {
-			return
+			return errors.New("wrong connection")
 		}
 
 		amqpClose := make(chan *amqp091.Error)
@@ -58,7 +59,7 @@ func InitializeAMQP() error {
 		go func() {
 			utils.Log(LogConstant.Error, <-amqpClose)
 		}()
-
+		return nil
 	}
 
 	poolData := handler.PoolData{

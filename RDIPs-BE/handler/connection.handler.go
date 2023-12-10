@@ -23,7 +23,7 @@ type PoolData struct {
 	Max          int
 	FactoryFn    func() (interface{}, error) // Handle data before add to pool
 	CloseFn      func(interface{}) error     // Close data before return back to pool
-	PingFn       func(interface{})           // Control signal data in pool
+	PingFn       func(interface{}) error     // Control signal data in pool
 	ForceClose   bool
 	ping         chan interface{}
 }
@@ -63,6 +63,7 @@ func (p *Pool) FillPool(data PoolData) error {
 	for i := 0; i < data.Size; i++ {
 		currentTime := time.Since(start).Seconds()
 		if currentTime >= data.WaitTimeout.Seconds() {
+			close(p.conn)
 			return fmt.Errorf("timeout after: %v seconds", currentTime)
 		}
 		val, err := data.FactoryFn()
@@ -72,7 +73,11 @@ func (p *Pool) FillPool(data PoolData) error {
 		}
 
 		if data.PingFn != nil {
-			data.PingFn(val)
+			err := data.PingFn(val)
+			if err != nil {
+				close(p.conn)
+				return err
+			}
 		}
 		p.conn <- val
 		p.availConn++

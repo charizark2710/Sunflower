@@ -7,7 +7,6 @@ import (
 	commonModel "RDIPs-BE/model/common"
 	"RDIPs-BE/utils"
 	"encoding/json"
-	"time"
 )
 
 var PostHistory = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
@@ -45,7 +44,6 @@ var GetDetailHistory = func(c *commonModel.ServiceContext) (commonModel.Response
 var UpdateHistory = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
 	utils.Log(LogConstant.Info, "UpdateHistory Start")
 	deviceId := c.Param("deviceId")
-	amqp := c.Query("amqp")
 	rel := model.SysDeviceRel{}
 	err := handler.NewDeviceRelHandler(c.Ctx, nil).GetById(deviceId, &rel)
 	if err != nil {
@@ -55,13 +53,6 @@ var UpdateHistory = func(c *commonModel.ServiceContext) (commonModel.ResponseTem
 
 	historyBody := model.History{}
 	if err := json.Unmarshal(c.Body, &historyBody); err == nil {
-		if amqp == "true" {
-			go func() {
-				fileIO := handler.FileIO{Name: rel.History.LogPath}
-				fileIO.Write(time.Now(), []byte(historyBody.Payload))
-			}()
-		}
-
 		historyBody.Id = rel.HistoryID
 		historyModel := model.SysHistory{}
 		historyBody.ConvertToDB(&historyModel)
