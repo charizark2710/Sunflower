@@ -22,4 +22,8 @@
   .font-grey {
     color: var(--light-text-secondary, rgba(0, 0, 0, 0.6));
   }
+
+  .w-max {
+    width: max-content;
+  }
 }
