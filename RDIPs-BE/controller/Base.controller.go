@@ -13,7 +13,11 @@ import (
 
 func Controller(c *gin.Context) {
 	// Prepare Services
-	fn := ServiceConst.ServicesMap[c.Request.Method+c.FullPath()]
+	fn, ok := ServiceConst.ServicesMap[c.Request.Method+c.FullPath()]
+	if !ok {
+		utils.Log(LogConstant.Error, "Service", c.Request.Method+c.FullPath(), "is not supported.")
+		c.JSON(501, nil)
+	}
 	bodyAsByteArray, err := io.ReadAll(c.Request.Body)
 	if err != nil {
 		utils.Log(LogConstant.Error, err)

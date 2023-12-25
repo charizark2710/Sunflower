@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -14,15 +15,15 @@ import (
 
 type FileIO struct {
 	Name     string
-	RFile    *os.File
-	WFile    *os.File
+	rFile    *os.File
+	wFile    *os.File
 	isClosed bool
 	m        sync.Mutex
 }
 
 var fileStreamCache sync.Map
 
-func (f *FileIO) open(IOtype string, date time.Time) error {
+func (f *FileIO) open(IOtype string, path string) error {
 	f.m.Lock()
 	defer f.m.Unlock()
 	utils.Log(LogConstant.Info, "Start open "+f.Name)
@@ -30,18 +31,17 @@ func (f *FileIO) open(IOtype string, date time.Time) error {
 	fileCache, ok := fileStreamCache.Load(f.Name)
 
 	if fileCache == nil || !ok {
-		Y, M, D := date.Date()
-		YMD := fmt.Sprint(Y) + "-" + fmt.Sprint(M) + "-" + fmt.Sprint(D)
-		hour := fmt.Sprint(date.Hour())
-		path := "logs/" + f.Name + "/" + YMD
-
 		// https://docs.nersc.gov/filesystems/unix-file-permissions/
 		// https://man7.org/linux/man-pages/man2/openat.2.html
-		file, err := os.OpenFile(path+"/"+hour+".log", os.O_APPEND|os.O_RDWR|os.O_CREATE, 0777)
+		file, err := os.OpenFile(path, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0777)
 		if err != nil {
 			if errors.Is(err, os.ErrNotExist) {
-				os.MkdirAll(path, 0777)
-				neWFile, newErr := os.Create(path + "/" + hour + ".log")
+				mkDirErr := os.MkdirAll(filepath.Dir(path), 0777)
+				if mkDirErr != nil {
+					utils.Log(LogConstant.Error, mkDirErr)
+					return mkDirErr
+				}
+				neWFile, newErr := os.Create(path)
 				if newErr != nil {
 					utils.Log(LogConstant.Error, newErr)
 					return newErr
@@ -52,10 +52,10 @@ func (f *FileIO) open(IOtype string, date time.Time) error {
 				return err
 			}
 		}
-		f.RFile = file
-		f.WFile = file
+		f.rFile = file
+		f.wFile = file
 		go func() {
-			time.Sleep(10 * time.Second)
+			time.Sleep(5 * time.Minute)
 			// time.Sleep(1 * time.Hour)
 			f.m.Lock()
 			defer f.m.Unlock()
@@ -71,12 +71,10 @@ func (f *FileIO) open(IOtype string, date time.Time) error {
 				}
 			}
 		}()
-
 		fileStreamCache.Store(f.Name, f)
 	} else {
-
-		f.RFile = fileCache.(*FileIO).RFile
-		f.WFile = fileCache.(*FileIO).WFile
+		f.rFile = fileCache.(*FileIO).rFile
+		f.wFile = fileCache.(*FileIO).wFile
 	}
 
 	utils.Log(LogConstant.Info, "Open "+f.Name+" success")
@@ -84,17 +82,17 @@ func (f *FileIO) open(IOtype string, date time.Time) error {
 	return nil
 }
 
-func (f *FileIO) Read(date time.Time) ([]byte, error) {
+func (f *FileIO) Read(path string) ([]byte, error) {
 	utils.Log(LogConstant.Info, "Start reading operation to "+f.Name+" log")
 
 	// if file is not opened
-	err := f.open("read", date)
+	err := f.open("read", path)
 	if err != nil {
 		utils.Log(LogConstant.Error, err)
 		return []byte{}, err
 	}
-	f.RFile.Seek(0, io.SeekStart)
-	bytes, readErr := io.ReadAll(f.RFile)
+	f.rFile.Seek(0, io.SeekStart)
+	bytes, readErr := io.ReadAll(f.rFile)
 	if readErr != nil {
 		utils.Log(LogConstant.Error, readErr)
 		return []byte{}, readErr
@@ -104,18 +102,18 @@ func (f *FileIO) Read(date time.Time) ([]byte, error) {
 	return bytes, nil
 }
 
-func (f *FileIO) Write(date time.Time, value string) error {
+func (f *FileIO) Write(path string, value string) error {
 	utils.Log(LogConstant.Info, "Start writing operation to "+f.Name+" log")
 
 	// if file is not opened
-	err := f.open("write", date)
+	err := f.open("write", path)
 	if err != nil {
 		utils.Log(LogConstant.Error, err)
 		return err
 	}
 	f.m.Lock()
 	defer f.m.Unlock()
-	n, wErr := fmt.Fprintln(f.WFile, value)
+	n, wErr := fmt.Fprintln(f.wFile, value)
 	if wErr != nil {
 		utils.Log(LogConstant.Error, err)
 		return err
@@ -129,7 +127,7 @@ func (f *FileIO) close() {
 	f.isClosed = true
 	utils.Log(LogConstant.Info, "Start closing "+f.Name)
 
-	err := f.RFile.Close()
+	err := f.rFile.Close()
 
 	if err != nil {
 		if !errors.Is(err, os.ErrClosed) {
@@ -141,7 +139,7 @@ func (f *FileIO) close() {
 		utils.Log(LogConstant.Warning, err)
 	}
 
-	err = f.WFile.Close()
+	err = f.wFile.Close()
 	if err != nil {
 		if !errors.Is(err, os.ErrClosed) {
 			f.isClosed = false

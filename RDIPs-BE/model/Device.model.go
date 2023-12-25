@@ -40,26 +40,26 @@ type Devices struct {
 
 type SysDevices struct {
 	// User      SysUser    `gorm:"column:user;type:uuid"`
-	Id             string       `gorm:"default:gen_random_uuid();primaryKey;column:id;type:uuid"`
-	CreatedAt      time.Time    `gorm:"column:created_at"`
-	UpdatedAt      time.Time    `gorm:"column:updated_at"`
-	Type           deviceType   `gorm:"column:type"`
-	Status         statusEnum   `gorm:"column:status;default:active"`
-	LifeTime       time.Time    `gorm:"column:life_time"`
-	FirwareVersion int          `gorm:"column:firmware_ver;type:integer"`
-	AppVersion     int          `gorm:"column:app_ver;type:integer"`
-	ParentID       string       `gorm:"column:parent;uniqueIndex;default:NULL"`
-	Parent         *SysDevices  `gorm:"foreignKey:ParentID"`
-	Name           string       `gorm:"column:name;unique"`
-	Region         string       `gorm:"column:region"`
-	DeviceRel      SysDeviceRel `gorm:"foreignKey:DeviceID"`
+	Id             string        `gorm:"default:gen_random_uuid();primaryKey;column:id;type:uuid"`
+	CreatedAt      time.Time     `gorm:"column:created_at"`
+	UpdatedAt      time.Time     `gorm:"column:updated_at"`
+	Type           deviceType    `gorm:"column:type"`
+	Status         statusEnum    `gorm:"column:status;default:active"`
+	LifeTime       time.Time     `gorm:"column:life_time"`
+	FirwareVersion int           `gorm:"column:firmware_ver;type:integer"`
+	AppVersion     int           `gorm:"column:app_ver;type:integer"`
+	ParentID       string        `gorm:"column:parent;uniqueIndex;default:NULL"`
+	Parent         *SysDevices   `gorm:"foreignKey:ParentID"`
+	Name           string        `gorm:"column:name;unique"`
+	Region         string        `gorm:"column:region"`
+	DeviceRel      *SysDeviceRel `gorm:"foreignKey:DeviceID"`
 }
 
 func (SysDevices) TableName() string {
 	return "sunflower.sys_devices"
 }
 
-func (in SysDevices) ConvertToJson(out *Devices) {
+func (in *SysDevices) ConvertToJson(out *Devices) {
 	out.Id = in.Id
 	out.CreatedAt = in.CreatedAt
 	out.UpdatedAt = in.UpdatedAt
@@ -75,27 +75,22 @@ func (in SysDevices) ConvertToJson(out *Devices) {
 	}
 	out.Name = in.Name
 	out.Region = in.Region
-	if in.DeviceRel.HistoryID != "" {
-		if in.DeviceRel.History.Id == "" {
-			out.HistoryID = in.DeviceRel.HistoryID
-		} else {
+	if in.DeviceRel != nil {
+		out.HistoryID = in.DeviceRel.HistoryID
+		if in.DeviceRel.History != nil {
 			out.History = &History{}
 			in.DeviceRel.History.ConvertToJson(out.History)
 		}
-	}
 
-	if in.DeviceRel.PerformanceID != "" {
-		if in.DeviceRel.Performance.Id == "" {
-			out.PerformanceID = in.DeviceRel.PerformanceID
-		} else {
+		out.PerformanceID = in.DeviceRel.PerformanceID
+		if in.DeviceRel.Performance != nil {
 			out.Performance = &Performance{}
 			in.DeviceRel.Performance.ConvertToJson(out.Performance)
 		}
 	}
-
 }
 
-func (in Devices) ConvertToDB(out *SysDevices) {
+func (in *Devices) ConvertToDB(out *SysDevices) {
 	out.Id = in.Id
 	out.CreatedAt = in.CreatedAt
 	out.UpdatedAt = in.UpdatedAt

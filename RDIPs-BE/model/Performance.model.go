@@ -23,14 +23,14 @@ func (SysPerformance) TableName() string {
 	return "sunflower.sys_performance"
 }
 
-func (in SysPerformance) ConvertToJson(out *Performance) {
+func (in *SysPerformance) ConvertToJson(out *Performance) {
 	out.Id = in.Id
 	out.CreatedAt = in.CreatedAt
 	out.UpdatedAt = in.UpdatedAt
 	out.DocumentName = in.DocumentName
 }
 
-func (in Performance) ConvertToDB(out *SysPerformance) {
+func (in *Performance) ConvertToDB(out *SysPerformance) {
 	out.Id = in.Id
 	out.CreatedAt = in.CreatedAt
 	out.UpdatedAt = in.UpdatedAt

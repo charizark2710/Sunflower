@@ -3,9 +3,11 @@ package urlconst
 const (
 	GetAllDevices   = "/devices"
 	PostDevice      = "/devices"
-	GetDetailDevice = "/devices/:id/"
+	GetDetailDevice = "/devices/:id"
 	PutDetailDevice = "/devices/:id"
 	DeleteDevice    = "/devices/:id"
+	GetLogOfDevice  = "/device/:deviceID/logs/:dateMilisec"
+	PostLogOfDevice = "/device/:deviceID/logs"
 
 	//Performances
 	GetAllPerformances = "/performances"

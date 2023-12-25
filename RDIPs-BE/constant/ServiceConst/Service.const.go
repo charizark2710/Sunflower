@@ -9,11 +9,13 @@ import (
 type ServiceFn func(*commonModel.ServiceContext) (commonModel.ResponseTemplate, error)
 
 var ServicesMap = map[string]ServiceFn{
-	"GET" + urlconst.GetAllDevices:   services.GetAllDevices,
-	"POST" + urlconst.PostDevice:     services.PostDevice,
-	"GET" + urlconst.GetDetailDevice: services.GetDetailDevice,
-	"PUT" + urlconst.PutDetailDevice: services.UpdateDevice,
-	"DELETE" + urlconst.DeleteDevice: services.DeleteDevice,
+	"GET" + urlconst.GetAllDevices:    services.GetAllDevices,
+	"POST" + urlconst.PostDevice:      services.PostDevice,
+	"GET" + urlconst.GetDetailDevice:  services.GetDetailDevice,
+	"PUT" + urlconst.PutDetailDevice:  services.UpdateDevice,
+	"DELETE" + urlconst.DeleteDevice:  services.DeleteDevice,
+	"GET" + urlconst.GetLogOfDevice:   services.GetLogOfDevice,
+	"POST" + urlconst.PostLogOfDevice: services.PostLogOfDevice,
 
 	//Performances
 	"GET" + urlconst.GetAllPerformances: services.GetAllPerformances,
@@ -31,19 +33,21 @@ var ServicesMap = map[string]ServiceFn{
 }
 
 var ServiceMapMQTT = map[string]string{
-	"GetAllDevices":   "GET" + urlconst.GetAllDevices,
-	"PostDevice":      "POST" + urlconst.PostDevice,
-	"GetDetailDevice": "GET" + urlconst.GetDetailDevice,
+	// "GetAllDevices":   "GET" + urlconst.GetAllDevices,
+	"PostDevice": "POST" + urlconst.PostDevice,
+	// "GetDetailDevice": "GET" + urlconst.GetDetailDevice,
 	"PutDetailDevice": "PUT" + urlconst.PutDetailDevice,
-	"DeleteDevice":    "DELETE" + urlconst.DeleteDevice,
+	// "DeleteDevice":    "DELETE" + urlconst.DeleteDevice,
+	// "GetLogOfDevice":  "GET" + urlconst.GetLogOfDevice,
+	"PostLogOfDevice": "POST" + urlconst.PostLogOfDevice,
 
 	//Performances
-	"GetAllPerformances":   "GET" + urlconst.GetAllPerformances,
-	"GetDetailPerformance": "GET" + urlconst.GetDetailPerformance,
+	// "GetAllPerformances":   "GET" + urlconst.GetAllPerformances,
+	// "GetDetailPerformance": "GET" + urlconst.GetDetailPerformance,
 	"PutDetailPerformance": "PUT" + urlconst.PutDetailPerformance,
 
 	//History
-	"GetDetailHistory": "GET" + urlconst.GetDetailHistory,
+	// "GetDetailHistory": "GET" + urlconst.GetDetailHistory,
 	"PutDetailHistory": "PUT" + urlconst.PutDetailHistory,
 	//Weather
 	"GetWeatherForecast": "GET" + urlconst.GetWeatherForecast,

@@ -18,12 +18,12 @@ var PostHistory = func(c *commonModel.ServiceContext) (commonModel.ResponseTempl
 		err := handler.NewHistoryHandler(c.Ctx, &historyObj).Create()
 		if err != nil {
 			utils.Log(LogConstant.Error, err)
-			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil, Message: err.Error()}, err
 		}
 
 		return commonModel.ResponseTemplate{HttpCode: 200, Data: nil}, nil
 	} else {
-		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil, Message: err.Error()}, err
 	}
 }
 
@@ -33,7 +33,7 @@ var GetDetailHistory = func(c *commonModel.ServiceContext) (commonModel.Response
 	historyBody := model.SysHistory{}
 	err := handler.NewHistoryHandler(c.Ctx, nil).GetById(id, &historyBody)
 	if err != nil {
-		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil, Message: err.Error()}, err
 	}
 	resData := model.History{}
 	historyBody.ConvertToJson(&resData)
@@ -48,7 +48,7 @@ var UpdateHistory = func(c *commonModel.ServiceContext) (commonModel.ResponseTem
 	err := handler.NewDeviceRelHandler(c.Ctx, nil).GetById(deviceId, &rel)
 	if err != nil {
 		utils.Log(LogConstant.Error, err)
-		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil, Message: err.Error()}, err
 	}
 
 	historyBody := model.History{}
@@ -59,11 +59,11 @@ var UpdateHistory = func(c *commonModel.ServiceContext) (commonModel.ResponseTem
 		err := handler.NewHistoryHandler(c.Ctx, &historyModel).Update()
 		if err != nil {
 			utils.Log(LogConstant.Error, err)
-			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil, Message: err.Error()}, err
 		}
 		utils.Log(LogConstant.Info, "UpdateHistory End")
 		return commonModel.ResponseTemplate{HttpCode: 200, Data: nil}, nil
 	} else {
-		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil, Message: err.Error()}, err
 	}
 }

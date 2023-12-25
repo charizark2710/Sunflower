@@ -37,9 +37,14 @@ func (d *deviceHandler) Create() error {
 			return err
 		}
 
-		historyObj := model.SysHistory{
+		historyObj := &model.SysHistory{
 			LogPath: deviceObj.Name + "/",
 		}
+
+		if deviceObj.DeviceRel != nil && deviceObj.DeviceRel.History != nil {
+			historyObj = deviceObj.DeviceRel.History
+		}
+
 		utils.Log(LogConstant.Info, "Create History Start")
 		if err := tx.Create(&historyObj).Error; err != nil {
 			return err

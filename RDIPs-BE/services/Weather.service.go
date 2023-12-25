@@ -29,7 +29,7 @@ var GetWeatherForecast = func(c *commonModel.ServiceContext) (commonModel.Respon
 			client := &http.Client{}
 			resp, err := client.Do(req)
 			if err != nil {
-				return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+				return commonModel.ResponseTemplate{HttpCode: 500, Data: nil, Message: err.Error()}, err
 			}
 			defer resp.Body.Close()
 
@@ -42,8 +42,8 @@ var GetWeatherForecast = func(c *commonModel.ServiceContext) (commonModel.Respon
 				}
 			}
 		}
-		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil, Message: err.Error()}, err
 	}
-	return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+	return commonModel.ResponseTemplate{HttpCode: 500, Data: nil, Message: err.Error()}, err
 
 }

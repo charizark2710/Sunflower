@@ -21,14 +21,14 @@ func (SysHistory) TableName() string {
 	return "sunflower.sys_history"
 }
 
-func (in SysHistory) ConvertToJson(out *History) {
+func (in *SysHistory) ConvertToJson(out *History) {
 	out.Id = in.Id
 	out.CreatedAt = in.CreatedAt
 	out.UpdatedAt = in.UpdatedAt
 	out.LogPath = in.LogPath
 }
 
-func (in History) ConvertToDB(out *SysHistory) {
+func (in *History) ConvertToDB(out *SysHistory) {
 	out.Id = in.Id
 	out.CreatedAt = in.CreatedAt
 	out.UpdatedAt = in.UpdatedAt

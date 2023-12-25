@@ -14,7 +14,7 @@ var GetAllPerformances = func(c *commonModel.ServiceContext) (commonModel.Respon
 	var performanceModel []model.SysPerformance
 	err := handler.NewPerformanceHandler(c.Ctx, nil).Read(&performanceModel)
 	if err != nil {
-		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil, Message: err.Error()}, err
 	}
 	resData := make([]model.Performance, len(performanceModel))
 	for i, performance := range performanceModel {
@@ -33,11 +33,11 @@ var PostPerformance = func(c *commonModel.ServiceContext) (commonModel.ResponseT
 		err := handler.NewPerformanceHandler(c.Ctx, &performanceObj).Create()
 		if err != nil {
 			utils.Log(LogConstant.Error, err)
-			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil, Message: err.Error()}, err
 		}
 		return commonModel.ResponseTemplate{HttpCode: 200, Data: nil}, nil
 	} else {
-		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil, Message: err.Error()}, err
 	}
 }
 
@@ -47,7 +47,7 @@ var GetDetailPerformance = func(c *commonModel.ServiceContext) (commonModel.Resp
 	performanceBody := model.SysPerformance{}
 	err := handler.NewPerformanceHandler(c.Ctx, nil).GetById(id, &performanceBody)
 	if err != nil {
-		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil, Message: err.Error()}, err
 	}
 	resData := model.Performance{}
 	performanceBody.ConvertToJson(&resData)
@@ -62,7 +62,7 @@ var PutPerformance = func(c *commonModel.ServiceContext) (commonModel.ResponseTe
 	err := handler.NewDeviceRelHandler(c.Ctx, nil).GetById(deviceId, &rel)
 	if err != nil {
 		utils.Log(LogConstant.Error, err)
-		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil, Message: err.Error()}, err
 	}
 
 	performanceBody := model.Performance{}
@@ -73,11 +73,11 @@ var PutPerformance = func(c *commonModel.ServiceContext) (commonModel.ResponseTe
 		err := handler.NewPerformanceHandler(c.Ctx, &performanceModel).Update()
 		if err != nil {
 			utils.Log(LogConstant.Error, err)
-			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil, Message: err.Error()}, err
 		}
 		utils.Log(LogConstant.Info, "UpdatePerformance End")
 		return commonModel.ResponseTemplate{HttpCode: 200, Data: nil}, nil
 	} else {
-		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil, Message: err.Error()}, err
 	}
 }

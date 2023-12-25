@@ -9,11 +9,11 @@ type DeviceRel struct {
 }
 
 type SysDeviceRel struct {
-	DeviceID      string         `gorm:"column:device_id;type:uuid"`
-	HistoryID     string         `gorm:"column:history_id;type:uuid"`
-	History       SysHistory     `gorm:"foreignKey:HistoryID"`
-	PerformanceID string         `gorm:"column:performance_id;type:uuid"`
-	Performance   SysPerformance `gorm:"foreignKey:PerformanceID"`
+	DeviceID      string          `gorm:"column:device_id;type:uuid"`
+	HistoryID     string          `gorm:"column:history_id;type:uuid"`
+	History       *SysHistory     `gorm:"foreignKey:HistoryID"`
+	PerformanceID string          `gorm:"column:performance_id;type:uuid"`
+	Performance   *SysPerformance `gorm:"foreignKey:PerformanceID"`
 }
 
 func (SysDeviceRel) TableName() string {

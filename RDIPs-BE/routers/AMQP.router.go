@@ -53,6 +53,7 @@ func InitAmqpRoutes() {
 		if err != nil {
 			utils.Log(LogConstant.Fatal, err)
 		}
+		utils.Log(LogConstant.Debug, "Start Binding "+serviceName)
 	}
 
 	// declare queue for server
