@@ -20,4 +20,9 @@ const (
 
 	//Weather
 	GetWeatherForecast = "/weather/forecast"
+
+	//Keycloak
+	PostLogin         = "/login"
+	PostKeycloakUsers = "/users"
+	GetKeycloakUsers  = "/users"
 )

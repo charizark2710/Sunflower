@@ -1,0 +1,17 @@
+package routers
+
+import (
+	urlconst "RDIPs-BE/constant/URLConst"
+	"RDIPs-BE/controller"
+	"RDIPs-BE/middleware"
+
+	"github.com/gin-gonic/gin"
+)
+
+func KeycloakRouter(router *gin.Engine) {
+	router.POST(urlconst.PostLogin, controller.Controller)
+
+	router.Use(middleware.CheckClientTokenValidation())
+	router.GET(urlconst.GetKeycloakUsers, controller.Controller)
+	router.POST(urlconst.PostKeycloakUsers, controller.Controller)
+}
