@@ -124,6 +124,22 @@ services:
       pi4:
         aliases:
           - sunflower
+  server:
+    container_name: sunflower_server
+    build: 
+      context: ./RDIPs-Server
+    depends_on:
+      - api
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - './RDIPs-Server/conf.d:/opt/nginx/conf.d'
+      - './RDIPs-Server/nginx.conf:/opt/nginx/conf'
+      - './RDIPs-Server/stream.conf.d:/opt/nginx/stream.conf.d'
+    networks:
+      pi4:
+
 volumes:
   db:
   pgadmin:
