@@ -12,37 +12,60 @@ import (
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/Nerzal/gocloak/v13"
 )
 
 var ADMIN_KEYCLOAK_HOST = os.Getenv("KEYCLOAK_BASE_URL") + "/admin/realms/master/"
+var ADMIN_KEYCLOAK_USER = os.Getenv("KEYCLOAK_USER")
+var ADMIN_KEYCLOAK_PASSWORD = os.Getenv("KEYCLOAK_PASSWORD")
+var ADMIN_KEYCLOAK_REALM_NAME = os.Getenv("KEYCLOAK_REALM_NAME")
+
+// var PostKeycloakUser = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
+// 	utils.Log(LogConstant.Info, "PostUser Start")
+// 	userBody := model.KeycloakUserRequest{}
+// 	err := json.Unmarshal(c.Body, &userBody)
+// 	if err == nil {
+// 		var buf bytes.Buffer
+// 		if err := json.NewEncoder(&buf).Encode(userBody); err == nil {
+// 			url := ADMIN_KEYCLOAK_HOST + "users"
+// 			req, _ := http.NewRequest(http.MethodPost, url, &buf)
+// 			req.Header.Set("Content-Type", "application/json")
+// 			req.Header.Set("Authorization", "Bearer "+c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY))
+
+// 			client := &http.Client{}
+// 			resp, err := client.Do(req)
+// 			if err != nil {
+// 				return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+// 			}
+// 			defer resp.Body.Close()
+
+// 			if resp.StatusCode == http.StatusCreated {
+// 				return commonModel.ResponseTemplate{HttpCode: 200, Data: nil}, nil
+// 			}
+// 		}
+// 		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+// 	}
+// 	return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+// }
 
 var PostKeycloakUser = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
-	utils.Log(LogConstant.Info, "PostUser Start")
-	userBody := model.KeycloakUserRequest{}
+	client := gocloak.NewClient(os.Getenv("KEYCLOAK_BASE_URL"))
+	ctx := c.Ctx.Request.Context()
+
+	userBody := gocloak.User{}
 	err := json.Unmarshal(c.Body, &userBody)
+
 	if err == nil {
-		var buf bytes.Buffer
-		if err := json.NewEncoder(&buf).Encode(userBody); err == nil {
-			url := ADMIN_KEYCLOAK_HOST + "users"
-			req, _ := http.NewRequest(http.MethodPost, url, &buf)
-			req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Authorization", "Bearer "+c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY))
-
-			client := &http.Client{}
-			resp, err := client.Do(req)
-			if err != nil {
-				return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
-			}
-			defer resp.Body.Close()
-
-			if resp.StatusCode == http.StatusCreated {
-				return commonModel.ResponseTemplate{HttpCode: 200, Data: nil}, nil
-			}
+		_, err := client.CreateUser(ctx,
+			c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY),
+			os.Getenv("KEYCLOAK_REALM_NAME"), userBody)
+		if err != nil {
+			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
 		}
-		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+		return commonModel.ResponseTemplate{HttpCode: 200, Data: nil}, nil
 	}
 	return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
-
 }
 
 var GetKeycloakUsers = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
