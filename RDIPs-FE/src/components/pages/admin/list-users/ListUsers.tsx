@@ -7,15 +7,16 @@ import { setPage } from '../../../../redux/actions/page';
 import { connect } from 'react-redux';
 import BreakcrumbMocules from '../../../molecules/breakcrumb/Breakcrumb.mocules';
 import { UserListIcon } from '../../../atoms/icon/ListIcon.atom';
+import config from '../../../../utils/en.json';
 
-const ListUsers = ({dispatch} : any) => {
+const ListUsers = ({ dispatch }: any) => {
   const navigate = useNavigate();
   function navigateToDetailPage(detail: any) {
     navigate('/detail-user', { replace: false, state: detail });
   }
 
   useEffect(() => {
-    dispatch(setPage('List Users'));
+    dispatch(setPage(config['usersList.title']));
   }, [dispatch]);
 
   const userListData = [
@@ -82,14 +83,16 @@ const ListUsers = ({dispatch} : any) => {
 
   return (
     <div className='list-container'>
-      <BreakcrumbMocules title="User's List" icon={<UserListIcon />}/>
-      <TableAtom
-        onRowClick={navigateToDetailPage}
-        rows={userListData}
-        deviceColumns={userColumns}
-        title='List Users'
-        headCells={headCells}
-      />
+      <div className='card-container'>
+        <BreakcrumbMocules title={config['usersList.name']} icon={''} link={config['usersList.pathLink']} />
+        <TableAtom
+          onRowClick={navigateToDetailPage}
+          rows={userListData}
+          deviceColumns={userColumns}
+          title={config['usersList.title']}
+          headCells={headCells}
+        />
+      </div>
     </div>
   );
 };

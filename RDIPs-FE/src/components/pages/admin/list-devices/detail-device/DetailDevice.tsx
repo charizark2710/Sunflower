@@ -204,7 +204,7 @@ const DetailDevice = () => {
   return (
     <div className='list-container'>
       <CardMocules title={config['deviceDetail.infoTitle']} status={popupStatus} modal={<FormCreateDeviceMolecules state="update" onClosePopUp={()=> setPopupStatus("closed")} data={detailDevice}/>}>
-        <TextAtomDetail title={config['deviceDetail.device.name']}> {detailDevice.device_name} </TextAtomDetail>
+        <TextAtomDetail title={config['deviceDetail.device.device_name']}> {detailDevice.device_name} </TextAtomDetail>
         <TextAtomDetail title= {config['deviceDetail.device.id']}> {detailDevice.device_id} </TextAtomDetail>
         <TextAtomDetail title= {config['deviceDetail.device.firm']}> {detailDevice.firmware_ver} </TextAtomDetail>
         <TextAtomDetail title={config['deviceDetail.device.app']}> {detailDevice.app_ver} </TextAtomDetail>

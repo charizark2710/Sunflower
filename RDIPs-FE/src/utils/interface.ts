@@ -6,6 +6,7 @@ export interface DeviceData {
   type: string;
   status: string;
   lifetime: string;
+  region: string;
 }
 
 export interface DeviceLogHistoryData {

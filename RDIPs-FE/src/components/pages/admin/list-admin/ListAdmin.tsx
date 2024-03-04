@@ -3,17 +3,18 @@ import { AdminData, HeadCell } from '../../../../utils/interface';
 import TableAtom from '../../../atoms/table/Table.atom';
 import './ListAdmin.scss';
 import { setPage } from '../../../../redux/actions/page';
+import config from '../../../../utils/en.json';
 import { connect } from 'react-redux';
 import { AdminListIcon } from '../../../atoms/icon/ListIcon.atom';
 import BreakcrumbMocules from '../../../molecules/breakcrumb/Breakcrumb.mocules';
 
-const ListAdmin = ({dispatch} : any) => {
+const ListAdmin = ({ dispatch }: any) => {
   function navigateToDetailPage(detail: any) {
     return;
   }
 
   useEffect(() => {
-    dispatch(setPage('List Admin'));
+    dispatch(setPage(config['adminList.title']));
   }, [dispatch]);
 
   const userListData = [
@@ -63,14 +64,18 @@ const ListAdmin = ({dispatch} : any) => {
 
   return (
     <div className='list-container'>
-      <BreakcrumbMocules title="Admin's List" icon={<AdminListIcon />}/>
-      <TableAtom
-        onRowClick={navigateToDetailPage}
-        rows={userListData}
-        deviceColumns={userColumns}
-        title='List Admin'
-        headCells={headCells}
-      />
+      <div className='card-container'>
+        <BreakcrumbMocules title={config['adminList.name']}
+         link={config['adminList.pathLink']}
+         icon={''} />
+        <TableAtom
+          onRowClick={navigateToDetailPage}
+          rows={userListData}
+          deviceColumns={userColumns}
+          title={config['adminList.title']}
+          headCells={headCells}
+        />
+      </div>
     </div>
   );
 };

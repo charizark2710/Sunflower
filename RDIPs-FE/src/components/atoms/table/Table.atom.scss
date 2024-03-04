@@ -1,7 +1,47 @@
+$base-border-line: 1px solid var(--blue-588-dca, #588DCA);
+
+@mixin font-formal {
+  color: var(--blue-25205-b, #25205B) !important;
+  font-size: 16px;
+  line-height: 24px;
+  line-height: 12px !important;
+}
+
 .table-atom-container .css-1mxz8qt-MuiPaper-root {
-  background-color: #FFFFFF;
+  background-color: #ffffff;
+  border-radius: 10px;
+  border: 1px solid var(--blue-25205-b, #25205b);
+
+  .MuiTableRow-root {
+    height: inherit !important;
+  }
+
+  .MuiTableCell-head {
+    @include font-formal;
+    font-weight: 700;
+    padding: 12px !important;
+    border-bottom: 2px solid var(--blue-25205-b, #25205B);
+  }
+
+  .css-1yhpg23-MuiTableCell-root {
+    @include font-formal;
+    padding: 12px !important;
+    font-weight: 400;
+    border-bottom: $base-border-line;
+  }
+
+  .css-1ex1afd-MuiTableCell-root {
+    border-bottom: unset !important
+  }
+
+  .MuiTablePagination-root {
+    @include font-formal;
+    font-weight: 400;
+    padding: 0px !important;
+  }
 }
 
 .MuiTable-root {
   min-width: unset !important;
 }
+

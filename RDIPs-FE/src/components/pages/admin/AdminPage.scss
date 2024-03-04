@@ -1,14 +1,16 @@
 .admin-container {
   width: 100vw;
   min-height: 100vh;
-  background-color: #f4f5f7;
+  background: var(--white-ffffff, #fff);
+  box-shadow: 4px 0px 4px 0px rgba(37, 32, 91, 0.5);
+  display: flex;
   color: #4a5157;
   .left-side {
-    width: 252px;
+    width: max-content;
   }
   .right-side {
     border-left: 1px solid #e4e4e4;
-    width: calc(100% - 255px);
+    width: max-content;
 
     .body-container {
       background: var(--grey-d-8-d-8-d-8, #d8d8d8);

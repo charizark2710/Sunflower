@@ -3,12 +3,11 @@ import { connect } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { getAllDevices } from '../../../../axios/api';
 import { setPage } from '../../../../redux/actions/page';
+import config from '../../../../utils/en.json';
 import { DeviceData, HeadCell } from '../../../../utils/interface';
-import { DeviceListIcon } from '../../../atoms/icon/ListIcon.atom';
 import TableAtom from '../../../atoms/table/Table.atom';
 import BreakcrumbMocules from '../../../molecules/breakcrumb/Breakcrumb.mocules';
 import { FormCreateDeviceMolecules } from '../../../molecules/form/device-create/FormCreateDevice.molecules';
-import config from '../../../../utils/en.json';
 import './ListDevices.scss';
 
 interface ListDevicesProps {
@@ -23,10 +22,11 @@ interface DeviceResponse {
   type: string;
   status: string;
   life_time: string;
+  region: string;
 }
 
 export function createData(data: DeviceResponse): DeviceData {
-  const { id, name, firmware_ver, app_ver, type, status, life_time } = data;
+  const { id, name, firmware_ver, app_ver, type, status, life_time, region } = data;
   return {
     device_id: id,
     device_name: name,
@@ -35,6 +35,7 @@ export function createData(data: DeviceResponse): DeviceData {
     type,
     status,
     lifetime: life_time,
+    region,
   };
 }
 
@@ -64,28 +65,28 @@ const ListDevices: React.FC<ListDevicesProps> = ({ dispatch }) => {
 
   const headCells: HeadCell[] = [
     {
-      numeric: false,
-      label: 'STT',
+      label: 'No',
+      numeric: undefined,
     },
     {
       id: 'device_name',
       numeric: false,
-      label: config['deviceDetail.device.name'],
+      label: config['deviceDetail.device.device_name'],
     },
     {
-      id: 'firmware_ver',
+      id: 'user_name',
       numeric: false,
-      label: config['deviceDetail.device.firm'],
+      label: config['deviceDetail.device.user_name'],
     },
     {
-      id: 'app_ver',
+      id: 'region',
       numeric: false,
-      label: config['deviceDetail.device.app'],
+      label: config['deviceDetail.device.region'],
     },
     {
-      id: 'type',
+      id: 'lifetime',
       numeric: false,
-      label: config['deviceDetail.device.type'],
+      label: config['deviceDetail.device.lifetime'],
     },
     {
       id: 'status',
@@ -93,13 +94,13 @@ const ListDevices: React.FC<ListDevicesProps> = ({ dispatch }) => {
       label: config['deviceDetail.device.status'],
     },
     {
-      id: 'lifetime',
+      id: '',
       numeric: false,
-      label: config['deviceDetail.device.lifetime'],
+      label: '',
     },
   ];
 
-  const deviceColumns = ['device_name', 'firmware_ver', 'app_ver', 'type', 'status', 'lifetime'];
+  const deviceColumns = ['device_name', 'user_name', 'region', 'lifetime', 'status', ''];
 
   function onClosePopUp() {
     getListDevice();
@@ -115,7 +116,7 @@ const ListDevices: React.FC<ListDevicesProps> = ({ dispatch }) => {
       <div className='card-container'>
         <BreakcrumbMocules
           title={config['deviceList.name']}
-          icon={<DeviceListIcon />}
+          icon={''}
           modal={<FormCreateDeviceMolecules onClosePopUp={onClosePopUp} />}
           status={popupStatus}
           link={config['deviceList.pathLink']}

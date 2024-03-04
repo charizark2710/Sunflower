@@ -16,16 +16,17 @@ function AdminPage(props: AdminPageProps) {
   return (
     <>
       <Grid container className='admin-container'>
-        {/* <Grid item xs={12} display={{ xs: 'block', md: 'none' }}>
-          <HeaderTemplate header={<HeaderOrganism />} />
-        </Grid> */}
-        <div className='left-side'>
-          <SidebarOrganism size={collapse ? 'sm' : 'md'} />
-        </div>
-        <div className='right-side'>
+        <Grid item xs={collapse ? 1.2 : 2.25} display={{ xs: 'block', md: 'block' }}>
+          <SidebarOrganism
+            collapse={collapse}
+            size={collapse ? 'sm' : 'md'}
+            changeStateSideBar={() => setCollapse(!collapse)}
+          />
+        </Grid>
+        <Grid item xs={collapse ? 10.7 : 9.75} display={{ xs: 'block', md: 'block' }} className='right-side'>
           <HeaderTemplate header={<HeaderOrganism />} />
           <div className='body-container'>{props.children}</div>
-        </div>
+        </Grid>
       </Grid>
     </>
   );
