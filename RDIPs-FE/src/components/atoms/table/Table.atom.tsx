@@ -96,7 +96,11 @@ const TableAtom = (props: {
   const rows = props.rows;
   const DEFAULT_ORDER = 'asc';
   const DEFAULT_ORDER_BY = props.deviceColumns[1];
-  const DEFAULT_ROWS_PER_PAGE = 5;
+  const DEFAULT_ROWS_PER_PAGE = 20;
+
+
+  console.log("row", rows);
+  
 
   const { onRowClick } = props;
   const [order, setOrder] = React.useState<Order>(DEFAULT_ORDER);
@@ -183,7 +187,7 @@ const TableAtom = (props: {
                         key={row.idDevice + ' ' + index}
                         sx={{ cursor: 'pointer' }}
                       >
-                        <TableCell align='center'>{index + 1}</TableCell>
+                        <TableCell align='center'>{(index + 1 < 10) ? ("0" + (index +1)) : (index +1) }</TableCell>
                         {props.deviceColumns.map((col, i) => {
                           return (
                             <TableCell
@@ -211,7 +215,7 @@ const TableAtom = (props: {
           </Table>
         </TableContainer>
         <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
+          rowsPerPageOptions={[20, 30, 50]}
           component='div'
           count={rows.length}
           rowsPerPage={rowsPerPage}

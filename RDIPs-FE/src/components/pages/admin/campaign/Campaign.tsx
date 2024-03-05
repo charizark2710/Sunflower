@@ -5,15 +5,16 @@ import { HeadCell, TypeUserEnum, UserData } from '../../../../utils/interface';
 import { Campaign as CampainIcon } from '../../../atoms/icon/ListIcon.atom';
 import TableAtom from '../../../atoms/table/Table.atom';
 import BreakcrumbMocules from '../../../molecules/breakcrumb/Breakcrumb.mocules';
+import config from '../../../../utils/en.json';
 import './Campaign.scss';
 
-const Campaign = ({dispatch} : any) => {
+const Campaign = ({ dispatch }: any) => {
   function navigateToDetailPage(detail: any) {
     return;
   }
 
   useEffect(() => {
-    dispatch(setPage('Campaign'));
+    dispatch(setPage(config['campaignList.title']));
   }, [dispatch]);
 
   const userListData = [
@@ -80,14 +81,16 @@ const Campaign = ({dispatch} : any) => {
 
   return (
     <div className='list-container'>
-      <BreakcrumbMocules title='Campains' icon={<CampainIcon />}/>
-      <TableAtom
-        onRowClick={navigateToDetailPage}
-        rows={userListData}
-        deviceColumns={userColumns}
-        title='Campaign'
-        headCells={headCells}
-      />
+      <div className='card-container'>
+        <BreakcrumbMocules title={config['campaignList.name']} icon={''}  link={config['campaignList.pathLink']} />
+        <TableAtom
+          onRowClick={navigateToDetailPage}
+          rows={userListData}
+          deviceColumns={userColumns}
+          title={config['campaignList.title']}
+          headCells={headCells}
+        />
+      </div>
     </div>
   );
 };

@@ -1,11 +1,20 @@
 .admin-container {
-  background-color: #f4f5f7;
+  width: 100vw;
+  min-height: 100vh;
+  background: var(--white-ffffff, #fff);
+  box-shadow: 4px 0px 4px 0px rgba(37, 32, 91, 0.5);
+  display: flex;
   color: #4a5157;
-  .body-container {
-    min-height: calc(100vh - 175px);
+  .left-side {
+    width: max-content;
   }
-
   .right-side {
     border-left: 1px solid #e4e4e4;
+    width: max-content;
+
+    .body-container {
+      background: var(--grey-d-8-d-8-d-8, #d8d8d8);
+      padding: 32px 32px 32px 28px;
+    }
   }
 }

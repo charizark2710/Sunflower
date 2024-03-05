@@ -1,26 +1,9 @@
+import { useEffect, useState } from 'react';
 import { AdminListIcon, Campaign, DeviceListIcon, UserListIcon } from '../../../atoms/icon/ListIcon.atom';
-import SearchAtom from '../../../atoms/search/Search.atom';
-import { StraightAtom } from '../../../atoms/straight/Straight.atom';
+import SunFlowerLogo from '../../../atoms/image/SunFlowerLogo.atom';
+import { LogoutButtonMolecules } from '../../../molecules/clutter-button-mocules/LogoutButton.mocules';
 import SunflowerLabel from '../../../molecules/label/SunflowerLabel.mocules';
-// import Image from '../../../atoms/image/Image';
-// import sunflower from '../../../../assets/Sunflower.png';
 import './Sidebar.organism.scss';
-
-const sideBarItems = [
-  {
-    to: '/',
-    className: 'link-item',
-    children: (
-      <span style={{ fontSize: '16px' }}>
-        <strong>SUN</strong>flower
-      </span>
-    ),
-  },
-  { to: '/list-devices', className: 'link-item', children: 'List Devices', icon: <DeviceListIcon /> },
-  { to: '/list-users', className: 'link-item', children: 'List Users', icon: <UserListIcon /> },
-  { to: '/list-admin', className: 'link-item', children: 'List Admin', icon: <AdminListIcon /> },
-  { to: '/campaign', className: 'link-item', children: 'Campaign', icon: <Campaign />},
-];
 
 const topLabelStyle = {
   fontSize: '16px',
@@ -28,34 +11,60 @@ const topLabelStyle = {
   marginBottom: '20px',
 };
 
-const straight = <StraightAtom width='100%' thick='0.1px' color='#e4e4e4' />;
+function SidebarOrganism({
+  onClick,
+  changeStateSideBar,
+  size,
+  collapse,
+}: {
+  onClick?: (args: any) => void;
+  changeStateSideBar?: (args: any) => void;
+  size: string;
+  collapse: boolean;
+}) {
+  const [state, setState] = useState(collapse);
 
-function SidebarOrganism({ onClick, size }: { onClick?: (args: any) => void; size: string }) {
+  const sideBarItems = [
+    {
+      to: '/',
+      className: 'link-item',
+      children: (
+        <span style={{ fontSize: '16px' }}>
+          <SunFlowerLogo w={'100px'} label={!state} />
+        </span>
+      ),
+    },
+    { to: '/list-devices', className: 'link-item', children: "Device's List", icon: <DeviceListIcon /> },
+    { to: '/list-users', className: 'link-item', children: "User's List", icon: <UserListIcon /> },
+    { to: '/list-admin', className: 'link-item', children: "Admin's List", icon: <AdminListIcon /> },
+    { to: '/campaign', className: 'link-item', children: "Campaign's List", icon: <Campaign /> },
+  ];
+
   return (
     <div className='sidebar'>
-      {sideBarItems.map((item, i) => {
-        return i === 0 ? (
-          <div key={i}>
-            <SunflowerLabel
-              key={item.to + i}
-              link={item}
-              iconPos={1}
-              height='10px'
-              style={topLabelStyle}
-              icon='toggle'
-              onClick={onClick}
-              size={size}
-            />
-            <div className = 'search-area'> 
-              {/* <SearchAtom/> */}
-              {/* <Image url={sunflower} w ='50%' /> */}
+      <div>
+        {sideBarItems.map((item, i) => {
+          return i === 0 ? (
+            <div key={i}>
+              <SunflowerLabel
+                key={item.to + i}
+                link={item}
+                iconPos={1}
+                height='32px'
+                style={topLabelStyle}
+                icon='toggle'
+                onClick={onClick}
+                size={size}
+                isHomepage={true}
+              />
+              <div className='search-area' onClick={changeStateSideBar}></div>
             </div>
-            {size === 'md' ? straight : ''}
-          </div>
-        ) : (
-          <SunflowerLabel key={item.to + i} link={item} size={size} children={straight} specialIcon={item.icon} />
-        );
-      })}
+          ) : (
+            <SunflowerLabel state={state} key={item.to + i} link={item} size={size} children={''} specialIcon={item.icon} />
+          );
+        })}
+      </div>
+      <LogoutButtonMolecules />
     </div>
   );
 }

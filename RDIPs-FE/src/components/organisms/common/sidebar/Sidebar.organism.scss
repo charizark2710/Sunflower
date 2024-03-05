@@ -1,9 +1,11 @@
 .sidebar {
-    padding-top: 30px;
     background: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
 
     .search-area{
-        height: 90px;
-        margin: 12px 10px;
+        height: 80px;
     }
 }
