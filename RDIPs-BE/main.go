@@ -30,5 +30,5 @@ func main() {
 	commonModel.Helper.SetDb(db)
 	routers.InitRouter(r)
 	routers.InitAmqpRoutes()
-	r.Run(":" + os.Getenv("PORT"))
+	r.Run(":" + os.Getenv("API_PORT"))
 }

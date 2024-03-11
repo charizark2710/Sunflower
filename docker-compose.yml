@@ -141,6 +141,22 @@ services:
       pi4:
         aliases:
           - sunflower
+
+  ui:
+    container_name: sunflower_ui
+    env_file:
+      - .env
+    build:
+      context: ./RDIPs-FE
+      dockerfile: Dockerfile
+    depends_on: [api]
+    ports:
+      - '3000:3000'
+    networks:
+      pi4:
+        aliases:
+          - sunflower
+
   server:
     container_name: sunflower_server
     build: 
