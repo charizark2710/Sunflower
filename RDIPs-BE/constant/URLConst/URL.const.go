@@ -24,7 +24,8 @@ const (
 	GetWeatherForecast = "/weather/forecast"
 
 	//Keycloak
-	PostLogin         = "/login"
-	PostKeycloakUsers = "/users"
-	GetKeycloakUsers  = "/users"
+	PostLogin           = "/login"
+	PostKeycloakUsers   = "/users"
+	GetKeycloakUsers    = "/users"
+	GetKeycloakUserById = "/users/:id"
 )

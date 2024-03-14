@@ -4,17 +4,14 @@ import (
 	LogConstant "RDIPs-BE/constant/LogConst"
 	urlconst "RDIPs-BE/constant/URLConst"
 	"RDIPs-BE/handler"
-	"RDIPs-BE/model"
 	commonModel "RDIPs-BE/model/common"
 	"RDIPs-BE/utils"
 	"context"
-	"encoding/json"
-	"io"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
+	"github.com/Nerzal/gocloak/v13"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
@@ -90,34 +87,24 @@ func CheckClientTokenValidation() gin.HandlerFunc {
 
 func getTokenByClientAccount(ctx context.Context, c *gin.Context) error {
 	utils.Log(LogConstant.Debug, "getTokenByClientAccount is calling")
-	payload := strings.NewReader(
-		"client_id=" + os.Getenv("KEYCLOAK_CLIENT_ID") +
-			"&username=" + os.Getenv("KEYCLOAK_USER") +
-			"&password=" + os.Getenv("KEYCLOAK_PASSWORD") +
-			"&grant_type=password")
 
-	url := os.Getenv("KEYCLOAK_BASE_URL") + "/realms/" + os.Getenv("KEYCLOAK_REALM_NAME") + "/protocol/openid-connect/token"
-	req, _ := http.NewRequest(http.MethodPost, url, payload)
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	client := gocloak.NewClient(os.Getenv("KEYCLOAK_BASE_URL"))
+	token, err := client.LoginAdmin(
+		context.Background(),
+		os.Getenv("KEYCLOAK_USER"),
+		os.Getenv("KEYCLOAK_PASSWORD"),
+		os.Getenv("KEYCLOAK_REALM_NAME"))
+	utils.Log(LogConstant.Info, "After login admin")
 
-	client := &http.Client{}
-
-	resp, err := client.Do(req)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return err
 	}
-	defer resp.Body.Close()
-	if resp.StatusCode == 200 {
-		var body, _ = io.ReadAll(resp.Body)
-		var tokenConnectResponse model.TokenConnectResponse
-		if err := json.Unmarshal(body, &tokenConnectResponse); err == nil {
-			c.Set(KEYCLOAK_TOKEN_CLIENT_KEY, tokenConnectResponse.Token)
-			refreshPeriodKeycloak = time.Duration(time.Duration(tokenConnectResponse.ExpiredIn).Seconds())
-			lastFetchedTime = time.Now()
-		}
-	}
+	c.Set(KEYCLOAK_TOKEN_CLIENT_KEY, token.AccessToken)
+	refreshPeriodKeycloak = time.Duration(time.Duration(token.ExpiresIn).Seconds())
+	lastFetchedTime = time.Now()
 	return nil
+
 }
 
 func isExpired() bool {
