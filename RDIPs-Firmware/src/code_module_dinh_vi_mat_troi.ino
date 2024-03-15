@@ -38,7 +38,7 @@ void setup() {
   pinMode(LDR3, OUTPUT);
   pinMode(LDR4, OUTPUT);
   pinMode(LDR5, OUTPUT);
-  digitalWrite(LDR, LOW);  //mac dinh quang tro luon bat
+  digitalWrite(LDR, LOW);  //mac dinh quang tro tat
   digitalWrite(LDR2, LOW);
   digitalWrite(LDR3, LOW);
   digitalWrite(LDR4, LOW);
