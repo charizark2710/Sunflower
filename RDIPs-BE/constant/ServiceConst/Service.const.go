@@ -32,10 +32,12 @@ var ServicesMap = map[string]ServiceFn{
 	"GET" + urlconst.GetWeatherForecast: services.GetWeatherForecast,
 
 	//Keycloak
-	"POST" + urlconst.PostLogin:          services.Login,
-	"GET" + urlconst.GetKeycloakUsers:    services.GetKeycloakUsers,
-	"GET" + urlconst.GetKeycloakUserById: services.GetKeycloakUserById,
-	"POST" + urlconst.PostKeycloakUsers:  services.PostKeycloakUser,
+	"POST" + urlconst.PostLogin:            services.Login,
+	"GET" + urlconst.GetKeycloakUsers:      services.GetKeycloakUsers,
+	"GET" + urlconst.GetKeycloakUserById:   services.GetKeycloakUserById,
+	"POST" + urlconst.PostKeycloakUser:     services.PostKeycloakUser,
+	"PUT" + urlconst.PutKeycloakUsers:      services.PutKeycloakUser,
+	"DELETE" + urlconst.DeleteKeycloakUser: services.DeleteKeycloakUser,
 }
 
 var ServiceMapMQTT = map[string]string{
