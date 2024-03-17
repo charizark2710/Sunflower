@@ -13,6 +13,7 @@ func KeycloakRouter(router *gin.Engine) {
 
 	router.Use(middleware.CheckClientTokenValidation())
 	router.GET(urlconst.GetKeycloakUsers, controller.Controller)
+	router.GET(urlconst.GetKeycloakUserById, controller.Controller)
 	router.POST(urlconst.PostKeycloakUser, controller.Controller)
 	router.PUT(urlconst.PutKeycloakUsers, controller.Controller)
 	router.DELETE(urlconst.DeleteKeycloakUser, controller.Controller)

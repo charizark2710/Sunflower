@@ -16,5 +16,4 @@ FROM base as production
 COPY --chown=sunflower:rdips . .
 USER sunflower
 RUN go build -o sunflower
-RUN ls
 CMD [ "./sunflower" ]

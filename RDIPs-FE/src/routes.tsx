@@ -15,7 +15,7 @@ export function CommonRoute(): ReturnType<typeof useRoutes> {
   const routes: RouteObject[] = [
     {
       path: '/',
-      element: <LandingPage />,
+      element: <LoginPage />,
     },
     {
       path: '/login',

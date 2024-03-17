@@ -1,21 +1,18 @@
 .link-item {
-    height: 100%;
-    font-weight: 400;
-    font-size: 12px;
-    line-height: 15px;
-    text-align: center;
+  height: 100%;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 15px;
+  width: 100%;
 }
 
 .link-item:active {
-    height: 30px;
-    color: yellow;
-    border-bottom: 1px solid #E2E8F6;
-    transition: all 0.2s ease-out;
+  height: 30px;
+  color: yellow;
+  border-bottom: 1px solid #E2E8F6;
+  transition: all 0.2s ease-out;
 }
 
 .link-item:hover {
-    padding-right: 5px;
-    border-bottom: 1px solid #E2E8F6;
-    transition: all 0.2s ease-out;
+  padding-right: 5px;
 }
-

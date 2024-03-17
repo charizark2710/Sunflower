@@ -47,27 +47,36 @@ var PostKeycloakUser = func(c *commonModel.ServiceContext) (commonModel.Response
 
 var GetKeycloakUsers = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
 	utils.Log(LogConstant.Info, "GetKeycloakUsers Start")
+	client := gocloak.NewClient(os.Getenv("KEYCLOAK_BASE_URL"))
+	users, err := client.GetUsers(
+		c.Ctx.Request.Context(),
+		c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY),
+		os.Getenv("KEYCLOAK_REALM_NAME"),
+		gocloak.GetUsersParams{},
+	)
+	if err == nil {
+		utils.Log(LogConstant.Info, "GetKeycloakUsers End")
+		return commonModel.ResponseTemplate{HttpCode: 200, Data: users}, nil
 
-	url := ADMIN_KEYCLOAK_HOST + "users"
-	req, _ := http.NewRequest(http.MethodGet, url, strings.NewReader(``))
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY))
+	}
+	return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+}
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+var GetKeycloakUserById = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
+	utils.Log(LogConstant.Info, "GetKeycloakUserById Start")
+	userId := c.Param("id")
+	client := gocloak.NewClient(os.Getenv("KEYCLOAK_BASE_URL"))
+	user, err := client.GetUserByID(
+		c.Ctx.Request.Context(),
+		c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY),
+		os.Getenv("KEYCLOAK_REALM_NAME"),
+		userId,
+	)
+	if err == nil {
+		utils.Log(LogConstant.Info, "GetKeycloakUserById End")
+		return commonModel.ResponseTemplate{HttpCode: 200, Data: user}, nil
 	}
-	defer resp.Body.Close()
-	if resp.StatusCode == http.StatusOK {
-		var body, _ = io.ReadAll(resp.Body)
-		var keycloakUserResponse []model.KeycloakUser
-		if err := json.Unmarshal(body, &keycloakUserResponse); err == nil {
-			utils.Log(LogConstant.Info, "GetKeycloakUsers End")
-			return commonModel.ResponseTemplate{HttpCode: 200, Data: keycloakUserResponse}, nil
-		}
-	}
-	return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, nil
+	return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
 }
 
 var Login = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
