@@ -34,7 +34,9 @@ require (
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
+	github.com/go-resty/resty/v2 v2.7.0 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
+	github.com/golang-jwt/jwt/v5 v5.0.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgconn v1.14.0 // indirect
@@ -53,6 +55,7 @@ require (
 	github.com/mattn/go-isatty v0.0.18 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
+	github.com/opentracing/opentracing-go v1.2.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.7 // indirect
 	github.com/stretchr/testify v1.8.4 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect

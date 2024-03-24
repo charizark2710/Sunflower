@@ -25,7 +25,9 @@ const (
 
 	//Keycloak
 	PostLogin           = "/login"
-	PostKeycloakUsers   = "/users"
+	PostKeycloakUser    = "/users"
 	GetKeycloakUsers    = "/users"
 	GetKeycloakUserById = "/users/:id"
+	PutKeycloakUsers    = "/users/:id"
+	DeleteKeycloakUser  = "/users/:id"
 )
