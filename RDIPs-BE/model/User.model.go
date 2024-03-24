@@ -44,3 +44,10 @@ type KeycloakRole struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 }
+
+type GroupRequest struct {
+	Name       *string              `json:"name,omitempty"`
+	Attributes *map[string][]string `json:"attributes,omitempty"`
+	RealmRoles *[]string            `json:"realmRoles,omitempty"`
+	UserIds    *[]string            `json:"UserIds,omitempty"`
+}
