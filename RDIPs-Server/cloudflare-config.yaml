@@ -14,5 +14,7 @@ ingress:
   - hostname: amqp.sunflower-rdips.tech
     service: http://localhost:5672
 
+  - hostname: auth.sunflower-rdips.tech
+    service: http://localhost:5672
 
   - service: http_status:404
