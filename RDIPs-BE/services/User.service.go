@@ -227,19 +227,17 @@ var PostKeycloakGroup = func(c *commonModel.ServiceContext) (commonModel.Respons
 	ctx := c.Ctx.Request.Context()
 
 	groupRequest := model.GroupRequest{}
-	err := json.Unmarshal(c.Body, &groupRequest)
+	if err := json.Unmarshal(c.Body, &groupRequest); err == nil {
+		groupBody := gocloak.Group{
+			Name:       groupRequest.Name,
+			Attributes: groupRequest.Attributes,
+			RealmRoles: groupRequest.NewRealmRoles,
+		}
 
-	groupBody := gocloak.Group{
-		Name:       groupRequest.Name,
-		Attributes: groupRequest.Attributes,
-		RealmRoles: groupRequest.RealmRoles,
-	}
-
-	if err == nil {
-		roles, err := getRealRoles(c, client, groupBody)
-
+		roles, err := getRealmRoles(c, client, groupBody)
 		if err != nil {
-			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+			utils.Log(LogConstant.Error, err)
+			return commonModel.ResponseTemplate{HttpCode: 500, Message: err.Error()}, err
 		}
 
 		groupID, err := client.CreateGroup(
@@ -248,9 +246,9 @@ var PostKeycloakGroup = func(c *commonModel.ServiceContext) (commonModel.Respons
 			ADMIN_KEYCLOAK_REALM_NAME,
 			groupBody,
 		)
-
 		if err != nil {
-			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+			utils.Log(LogConstant.Error, err)
+			return commonModel.ResponseTemplate{HttpCode: 500, Message: err.Error()}, err
 		}
 
 		err = client.AddRealmRoleToGroup(
@@ -260,29 +258,110 @@ var PostKeycloakGroup = func(c *commonModel.ServiceContext) (commonModel.Respons
 			groupID,
 			roles,
 		)
-
 		if err != nil {
-			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+			utils.Log(LogConstant.Error, err)
+			return commonModel.ResponseTemplate{HttpCode: 500, Message: err.Error()}, err
 		}
 
-		err = addUsersToGroup(c, client, groupRequest.UserIds, groupID)
-
+		err = addUsersToGroup(c, client, groupRequest.NewUserIds, groupID)
 		if err != nil {
-			client.DeleteGroup(
-				ctx,
-				c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY),
-				ADMIN_KEYCLOAK_REALM_NAME,
-				groupID,
-			)
-
-			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+			utils.Log(LogConstant.Error, err)
+			return commonModel.ResponseTemplate{HttpCode: 500, Message: err.Error()}, err
 		}
 	}
 
-	return commonModel.ResponseTemplate{HttpCode: 200, Data: nil}, err
+	return commonModel.ResponseTemplate{HttpCode: 200, Data: nil}, nil
 }
 
-var getRealRoles = func(c *commonModel.ServiceContext,
+var PutKeycloakGroup = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
+	utils.Log(LogConstant.Info, "PutKeycloakGroup Start")
+	defer utils.Log(LogConstant.Info, "PutKeycloakGroup End")
+
+	groupID := c.Param("id")
+	client := gocloak.NewClient(ADMIN_KEYCLOAK_BASE_URL)
+	ctx := c.Ctx.Request.Context()
+	groupRequest := model.GroupRequest{}
+
+	if err := json.Unmarshal(c.Body, &groupRequest); err == nil {
+		group, err := client.GetGroup(
+			ctx,
+			c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY),
+			ADMIN_KEYCLOAK_REALM_NAME,
+			groupID,
+		)
+		if err != nil {
+			utils.Log(LogConstant.Error, err)
+			return commonModel.ResponseTemplate{HttpCode: 500, Message: err.Error()}, err
+		}
+
+		group.Name = groupRequest.Name
+		group.Attributes = groupRequest.Attributes
+		err = client.UpdateGroup(
+			ctx,
+			c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY),
+			ADMIN_KEYCLOAK_REALM_NAME,
+			*group,
+		)
+		if err != nil {
+			utils.Log(LogConstant.Error, err)
+			return commonModel.ResponseTemplate{HttpCode: 500, Message: err.Error()}, err
+		}
+
+		group.RealmRoles = groupRequest.OldRealmRoles
+		oldRoles, err := getRealmRoles(c, client, *group)
+		if err != nil {
+			utils.Log(LogConstant.Error, err)
+			return commonModel.ResponseTemplate{HttpCode: 500, Message: err.Error()}, err
+		}
+
+		err = client.DeleteRealmRoleFromGroup(
+			ctx,
+			c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY),
+			ADMIN_KEYCLOAK_REALM_NAME,
+			groupID,
+			oldRoles,
+		)
+		if err != nil {
+			utils.Log(LogConstant.Error, err)
+			return commonModel.ResponseTemplate{HttpCode: 500, Message: err.Error()}, err
+		}
+
+		group.RealmRoles = groupRequest.NewRealmRoles
+		newRoles, err := getRealmRoles(c, client, *group)
+		if err != nil {
+			utils.Log(LogConstant.Error, err)
+			return commonModel.ResponseTemplate{HttpCode: 500, Message: err.Error()}, err
+		}
+
+		err = client.AddRealmRoleToGroup(
+			ctx,
+			c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY),
+			ADMIN_KEYCLOAK_REALM_NAME,
+			groupID,
+			newRoles,
+		)
+		if err != nil {
+			utils.Log(LogConstant.Error, err)
+			return commonModel.ResponseTemplate{HttpCode: 500, Message: err.Error()}, err
+		}
+
+		err = deleteUsersFromGroup(c, client, groupRequest.OldUserIds, groupID)
+		if err != nil {
+			utils.Log(LogConstant.Error, err)
+			return commonModel.ResponseTemplate{HttpCode: 500, Message: err.Error()}, err
+		}
+
+		err = addUsersToGroup(c, client, groupRequest.NewUserIds, groupID)
+		if err != nil {
+			utils.Log(LogConstant.Error, err)
+			return commonModel.ResponseTemplate{HttpCode: 500, Message: err.Error()}, err
+		}
+	}
+
+	return commonModel.ResponseTemplate{HttpCode: 200, Data: nil}, nil
+}
+
+var getRealmRoles = func(c *commonModel.ServiceContext,
 	client *gocloak.GoCloak, groupBody gocloak.Group) ([]gocloak.Role, error) {
 	ctx := c.Ctx.Request.Context()
 	roles := []gocloak.Role{}
@@ -310,6 +389,27 @@ var addUsersToGroup = func(c *commonModel.ServiceContext,
 
 	for _, userId := range *userIds {
 		err := client.AddUserToGroup(
+			ctx,
+			c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY),
+			ADMIN_KEYCLOAK_REALM_NAME,
+			userId,
+			groupID,
+		)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+var deleteUsersFromGroup = func(c *commonModel.ServiceContext,
+	client *gocloak.GoCloak, userIds *[]string, groupID string) error {
+	ctx := c.Ctx.Request.Context()
+
+	for _, userId := range *userIds {
+		err := client.DeleteUserFromGroup(
 			ctx,
 			c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY),
 			ADMIN_KEYCLOAK_REALM_NAME,

@@ -18,4 +18,5 @@ func KeycloakRouter(router *gin.Engine) {
 	router.PUT(urlconst.PutKeycloakUsers, controller.Controller)
 	router.DELETE(urlconst.DeleteKeycloakUser, controller.Controller)
 	router.POST(urlconst.PostKeycloakGroup, controller.Controller)
+	router.PUT(urlconst.PutKeycloakGroup, controller.Controller)
 }
