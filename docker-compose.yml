@@ -9,7 +9,7 @@ services:
     build:
       context: ./RDIPs-Server
       dockerfile: keycloak.Dockerfile
-    command: ["start-dev"]
+    command: [ "start-dev", "--import-realm", "--verbose" ]
     environment:
       - KC_DB=postgres
       - KC_DB_URL=jdbc:postgresql://postgres/keycloak
@@ -22,16 +22,20 @@ services:
     depends_on:
       - db
     ports:
-      - '8081:8080'
+      - '9000:8080'
     healthcheck:
-      test: ['CMD-SHELL', '[ -f /tmp/HealthCheck.java ] || echo "public class HealthCheck { public static void main(String[] args) throws java.lang.Throwable { System.exit(java.net.HttpURLConnection.HTTP_OK == ((java.net.HttpURLConnection)new java.net.URL(args[0]).openConnection()).getResponseCode() ? 1 : 0); } }" > /tmp/HealthCheck.java && java /tmp/HealthCheck.java http://localhost:8080/health/live']
+      test:
+        [
+          'CMD-SHELL',
+          '[ -f /tmp/HealthCheck.java ] || echo "public class HealthCheck { public static void main(String[] args) throws java.lang.Throwable { System.exit(java.net.HttpURLConnection.HTTP_OK == ((java.net.HttpURLConnection)new java.net.URL(args[0]).openConnection()).getResponseCode() ? 1 : 0); } }" > /tmp/HealthCheck.java && java /tmp/HealthCheck.java http://localhost:8080/health/live'
+        ]
       interval: 10s
       retries: 5
       start_period: 20s
     networks:
       pi4:
         aliases:
-          - sunflower
+          - sunflower_auth
 
   rabbitmq:
     container_name: "rabbitmq"
@@ -51,10 +55,10 @@ services:
       - '15672:15672'
       - '1883:1883'
     healthcheck:
-          test: rabbitmq-diagnostics -q ping
-          interval: 30s
-          timeout: 30s
-          retries: 3
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 30s
+      retries: 3
     networks:
       pi4:
         aliases:
@@ -89,11 +93,15 @@ services:
     ports:
       - '${POSTGRES_PORT}:${POSTGRES_PORT}'
     healthcheck:
-      test: ["CMD-SHELL", "sh -c 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}'"]
+      test:
+        [
+          "CMD-SHELL",
+          "sh -c 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}'"
+        ]
       interval: 30s
       timeout: 60s
       retries: 5
-      start_period: 80s  
+      start_period: 80s
     volumes:
       - db:/var/lib/postgresql/data
       - ./RDIPs-Migration/init_db.sh:/docker-entrypoint-initdb.d/db_init.sh
@@ -126,12 +134,12 @@ services:
       dockerfile: Dockerfile
       target: production
     depends_on:
-        db:
-          condition: service_healthy
-        rabbitmq:
-          condition: service_healthy
-        keycloak:
-          condition: service_healthy
+      db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
 
     ports:
       - '8080:8080'
@@ -141,6 +149,31 @@ services:
       pi4:
         aliases:
           - sunflower
+  
+  api_bk:
+    container_name: sunflower_api_bk
+    env_file:
+      - .env
+    build:
+      context: ./RDIPs-BE
+      dockerfile: Dockerfile
+      target: production
+    depends_on:
+      db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    ports:
+      - '8081:8080'
+    volumes:
+      - './RDIPs-BE:/srv/www/volume_sunflower'
+    networks:
+      pi4:
+        aliases:
+          - sunflower
+
 
   ui:
     container_name: sunflower_ui
@@ -149,7 +182,8 @@ services:
     build:
       context: ./RDIPs-FE
       dockerfile: Dockerfile
-    depends_on: [api]
+    # command: [ "serve", "-s", "build" ]
+    depends_on: [ api ]
     ports:
       - '3000:3000'
     networks:
@@ -159,19 +193,23 @@ services:
 
   server:
     container_name: sunflower_server
-    build: 
+    restart: unless-stopped
+    build:
       context: ./RDIPs-Server
-    depends_on:
-      - api
+    depends_on: [ api, ui, api_bk ]
     ports:
       - "80:80"
+      - "81:81"
       - "443:443"
+      - "8882:8883"
+      - "8672:8672"
     volumes:
       - './RDIPs-Server/conf.d:/opt/nginx/conf.d'
       - './RDIPs-Server/nginx.conf:/opt/nginx/conf'
       - './RDIPs-Server/stream.conf.d:/opt/nginx/stream.conf.d'
     networks:
       pi4:
+
 
 volumes:
   db:
