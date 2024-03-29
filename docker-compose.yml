@@ -22,7 +22,7 @@ services:
     depends_on:
       - db
     ports:
-      - '8081:8080'
+      - '9000:8080'
     healthcheck:
       test:
         [
@@ -35,7 +35,7 @@ services:
     networks:
       pi4:
         aliases:
-          - sunflower
+          - sunflower_auth
 
   rabbitmq:
     container_name: "rabbitmq"
@@ -149,6 +149,31 @@ services:
       pi4:
         aliases:
           - sunflower
+  
+  api_bk:
+    container_name: sunflower_api_bk
+    env_file:
+      - .env
+    build:
+      context: ./RDIPs-BE
+      dockerfile: Dockerfile
+      target: production
+    depends_on:
+      db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    ports:
+      - '8081:8080'
+    volumes:
+      - './RDIPs-BE:/srv/www/volume_sunflower'
+    networks:
+      pi4:
+        aliases:
+          - sunflower
+
 
   ui:
     container_name: sunflower_ui
@@ -171,10 +196,13 @@ services:
     restart: unless-stopped
     build:
       context: ./RDIPs-Server
-    depends_on: [ api, ui ]
+    depends_on: [ api, ui, api_bk ]
     ports:
       - "80:80"
+      - "81:81"
       - "443:443"
+      - "8882:8883"
+      - "8672:8672"
     volumes:
       - './RDIPs-Server/conf.d:/opt/nginx/conf.d'
       - './RDIPs-Server/nginx.conf:/opt/nginx/conf'
