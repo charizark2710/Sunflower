@@ -1,18 +1,17 @@
-tunnel: f1dd4cc9-6721-45a9-9c77-c326f4e4945a
-credentials-file: /home/hieu/.cloudflared/f1dd4cc9-6721-45a9-9c77-c326f4e4945a.json
+tunnel: bd21bef4-1139-4b0a-be2f-df8887380661
+credentials-file: /home/hieu/.cloudflared/bd21bef4-1139-4b0a-be2f-df8887380661.json
 
 ingress:
-  - hostname: api.sunflower-rdips.tech
+  - hostname: sunflower-rdips.tech
     service: http://localhost:80
 
   - hostname: amqp-management.sunflower-rdips.tech
     service: http://localhost:81
 
   - hostname: mqtt.sunflower-rdips.tech
-    service: http://localhost:1883
+    service: http://localhost:8883
 
   - hostname: amqp.sunflower-rdips.tech
-    service: http://localhost:5672
-
+    service: http://localhost:8672
 
   - service: http_status:404

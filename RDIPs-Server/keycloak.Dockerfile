@@ -13,8 +13,8 @@ RUN /opt/keycloak/bin/kc.sh build
 FROM quay.io/keycloak/keycloak:latest
 COPY --from=builder /opt/keycloak/ /opt/keycloak/
 
-COPY ./RDIPs-Realm.json /opt/keycloak/imports
-ENV KEYCLOAK_IMPORT=/opt/keycloak/imports/RDIPs-Realm.json
+COPY ./RDIPs-Realm.json /opt/keycloak/data/import/
+ENV KEYCLOAK_IMPORT=/opt/keycloak/data/import/RDIPs-Realm.json
 # change these values to point to a running postgres instance
 # ENV KC_DB=postgres
 # ENV KC_DB_URL=<DBURL>
