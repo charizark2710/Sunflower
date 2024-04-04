@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func KeycloakRouter(router *gin.Engine) {
+func UserRouter(router *gin.Engine) {
 	router.POST(urlconst.PostLogin, controller.Controller)
 
 	router.Use(middleware.CheckClientTokenValidation())

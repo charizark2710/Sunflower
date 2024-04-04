@@ -89,7 +89,7 @@ var Login = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, e
 				"&username=" + loginRequest.Username +
 				"&password=" + loginRequest.Password +
 				"&grant_type=password")
-		url := os.Getenv("KEYCLOAK_BASE_URL") + "/realms/master/protocol/openid-connect/token"
+		url := os.Getenv("KEYCLOAK_BASE_URL") + "/realms/" + os.Getenv("KEYCLOAK_REALM_NAME") + "/protocol/openid-connect/token"
 		req, _ := http.NewRequest(http.MethodPost, url, payload)
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 		client := &http.Client{}
