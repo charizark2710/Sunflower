@@ -1,5 +1,3 @@
-import { AppBar, Box, Grid } from '@mui/material';
-
 import { useState } from 'react';
 import avatar from '../../../../assets/Avatar.png';
 import notiOn from '../../../../assets/icons/noti-on.svg';
@@ -9,6 +7,7 @@ import { StraightAtom } from '../../../atoms/straight/Straight.atom';
 import { ClutterButtonMolecules } from '../../../molecules/clutter-button-mocules/ClutterButton.molecules';
 import { NavbarMolecules } from '../../../molecules/navbar-molecules/Navbar.molecules';
 import './Header.organism.scss';
+import { AppBar, Box, Grid } from '@mui/material';
 
 function HeaderOrganism() {
   // const navbarTitle = useSelector((state: any) => state.navbarTitle);

@@ -1,12 +1,12 @@
 import React from 'react';
-import Link from '@mui/material/Link';
 import './Link.atom.scss';
+import { Link } from '@mui/material';
 
 export interface LinkAtomProps {
   onClick?: (args: any) => void;
   to?: string;
   className?: string;
-  children: React.ReactNode;
+  children?: React.ReactNode;
   color?: string;
   target?: string;
   href? : string;

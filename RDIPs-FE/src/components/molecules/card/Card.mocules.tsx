@@ -4,6 +4,7 @@ import TextAtomHeader from '../../atoms/text/TextHeader.atom';
 import EditIcon from '@mui/icons-material/Edit';
 import { SimpleDialog } from '../../atoms/dialog/Dialog.atom';
 import { useEffect, useState } from 'react';
+import { Box, Divider } from '@mui/material';
 
 interface CardProps {
   title: string;
@@ -30,16 +31,16 @@ const CardMocules: React.FC<CardProps> = ({ title, children, modal, status }) =>
     setOpen(false);
   };
   return (
-    <section>
+    <Divider>
       <SimpleDialog title={addTitle} children={modal} open={open} onClose={handleClose} />
-      <div className='card-container'>
-        <div className='mb-10 flex-justify-space-between'>
+      <Box className='card-container'>
+        <Box className='mb-10 flex-justify-space-between'>
           <TextAtomHeader text={title} />
           <EditIcon onClick={handleClickOpen} />
-        </div>
-        <div className='card-body'>{children}</div>
-      </div>
-    </section>
+        </Box>
+        <Box className='card-body'>{children}</Box>
+      </Box>
+    </Divider>
   );
 };
 

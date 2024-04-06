@@ -1,6 +1,7 @@
 import React from 'react';
-import { ButtonAtom } from '../../atoms/button/Button.atom';
 import './ClutterButton.molecules.scss';
+import { Box } from '@mui/material';
+import { ButtonAtom } from '../../atoms/button/Button.atom';
 
 interface ClutterButtonMoleculesProps {
   onLogin?: (args: any) => void;
@@ -10,7 +11,7 @@ interface ClutterButtonMoleculesProps {
 export const ClutterButtonMolecules: React.FC<ClutterButtonMoleculesProps> = (props) => {
   const { onLogin, onRegister } = props;
   return (
-    <div style={{marginRight: '10px', display: 'flex', alignItems: 'center'}}>
+    <Box style={{marginRight: '10px', display: 'flex', alignItems: 'center'}}>
       <ButtonAtom
         buttonStyle='btn--login'
         buttonSize='btn--small'
@@ -25,6 +26,6 @@ export const ClutterButtonMolecules: React.FC<ClutterButtonMoleculesProps> = (pr
       >
         Register
       </ButtonAtom>
-    </div>
+    </Box>
   );
 };

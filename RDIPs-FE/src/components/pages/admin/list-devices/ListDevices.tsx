@@ -2,13 +2,14 @@ import { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { getAllDevices } from '../../../../axios/api';
-import { setPage } from '../../../../redux/actions/page';
+import { setNavbarTitle } from '../../../../redux/slice/pageSlice';
 import config from '../../../../utils/en.json';
 import { DeviceData, HeadCell } from '../../../../utils/interface';
 import TableAtom from '../../../atoms/table/Table.atom';
 import BreakcrumbMocules from '../../../molecules/breakcrumb/Breakcrumb.mocules';
 import { FormCreateDeviceMolecules } from '../../../molecules/form/device-create/FormCreateDevice.molecules';
 import './ListDevices.scss';
+import { Box } from '@mui/material';
 
 interface ListDevicesProps {
   dispatch: any;
@@ -45,7 +46,7 @@ const ListDevices: React.FC<ListDevicesProps> = ({ dispatch }) => {
 
   const navigate = useNavigate();
   useEffect(() => {
-    dispatch(setPage(config['deviceList.title']));
+    dispatch(setNavbarTitle(config['deviceList.title']));
   }, [dispatch]);
 
   useEffect(() => {
@@ -54,7 +55,7 @@ const ListDevices: React.FC<ListDevicesProps> = ({ dispatch }) => {
 
   const getListDevice = () => {
     getAllDevices()
-      .then((data) => {
+      .then((data: {data: any}) => {
         let devices = data.data;
         setDeviceListData(devices.reverse().map((device: DeviceResponse) => createData(device)));
       })
@@ -112,8 +113,8 @@ const ListDevices: React.FC<ListDevicesProps> = ({ dispatch }) => {
   }
 
   return (
-    <div className='list-container'>
-      <div className='card-container'>
+    <Box className='list-container'>
+      <Box className='card-container'>
         <BreakcrumbMocules
           title={config['deviceList.name']}
           icon={''}
@@ -128,8 +129,8 @@ const ListDevices: React.FC<ListDevicesProps> = ({ dispatch }) => {
           title={config['deviceList.title']}
           headCells={headCells}
         />
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };
 
