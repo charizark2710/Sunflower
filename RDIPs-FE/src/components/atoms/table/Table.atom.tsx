@@ -1,17 +1,8 @@
-import Box from '@mui/material/Box';
-import Paper from '@mui/material/Paper';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TablePagination from '@mui/material/TablePagination';
-import TableRow from '@mui/material/TableRow';
-import TableSortLabel from '@mui/material/TableSortLabel';
 import { visuallyHidden } from '@mui/utils';
 import * as React from 'react';
 import { HeadCell } from '../../../utils/interface';
-import "./Table.atom.scss";
+import './Table.atom.scss';
+import { Box, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, TableSortLabel } from '@mui/material';
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
   if (b[orderBy] < a[orderBy]) {
@@ -97,11 +88,6 @@ const TableAtom = (props: {
   const DEFAULT_ORDER = 'asc';
   const DEFAULT_ORDER_BY = props.deviceColumns[1];
   const DEFAULT_ROWS_PER_PAGE = 20;
-
-
-  console.log("row", rows);
-  
-
   const { onRowClick } = props;
   const [order, setOrder] = React.useState<Order>(DEFAULT_ORDER);
   const [orderBy, setOrderBy] = React.useState<any>(DEFAULT_ORDER_BY);
@@ -187,12 +173,12 @@ const TableAtom = (props: {
                         key={row.idDevice + ' ' + index}
                         sx={{ cursor: 'pointer' }}
                       >
-                        <TableCell align='center'>{(index + 1 < 10) ? ("0" + (index +1)) : (index +1) }</TableCell>
+                        <TableCell align='center'>{index + 1 < 10 ? '0' + (index + 1) : index + 1}</TableCell>
                         {props.deviceColumns.map((col, i) => {
                           return (
                             <TableCell
                               key={`${row.idDevice}${i}`}
-                              align={row.numeric === undefined ? 'center' : (!row.numeric ? 'left' : 'center')}
+                              align={row.numeric === undefined ? 'center' : !row.numeric ? 'left' : 'center'}
                             >
                               {row[col]}
                             </TableCell>

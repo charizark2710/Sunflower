@@ -1,6 +1,6 @@
-import { Box } from '@mui/material';
+import { Box, Button, Typography } from '@mui/material';
 import React from 'react';
-import { useLocation, useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router-dom';
 import chartData from '../../../../../lib/chartData.json';
 import { HighChartCustom } from '../../../../../lib/highchart/HighChartCustom';
 import { TypeChart } from '../../../../../utils/enum';
@@ -8,10 +8,10 @@ import { DeviceChangeHistoryData, DeviceLogHistoryData, HeadCell, StatusEnum } f
 import CollapseAtom from '../../../../atoms/collapse/Collapse';
 import TableAtom from '../../../../atoms/table/Table.atom';
 import DetailDeviceUser from './DetailDeviceUser';
-import Maintaince from './history/Maintainace';
 import Expense from './history/Expense';
-import Receipt from './history/Receipt';
 import Feedback from './history/Feedback';
+import Maintaince from './history/Maintainace';
+import Receipt from './history/Receipt';
 // import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 // import dayjs, { Dayjs } from 'dayjs';
 
@@ -25,13 +25,13 @@ function DatepickerByType(type: string) {
         </Box>
       );
     case 'Month':
-      return <div>Month here</div>;
+      return <Box>Month here</Box>;
     case 'Year':
-      return <div>Year here</div>;
+      return <Box>Year here</Box>;
     case 'Decade':
-      return <div>Decade here</div>;
+      return <Box>Decade here</Box>;
   }
-  return <div>DatePicker here</div>;
+  return <Box>DatePicker here</Box>;
 }
 
 export const HighChartInDevice = () => {
@@ -40,16 +40,16 @@ export const HighChartInDevice = () => {
 
   return (
     <>
-      <div>
+      <Box>
         {listTimeType.map((t, i) => {
           return (
-            <button style={{ fontWeight: t === type ? 'bold' : '' }} key={i} onClick={() => setType(t)}>
+            <Button style={{ fontWeight: t === type ? 'bold' : '' }} key={i} onClick={() => setType(t)}>
               {t}
-            </button>
+            </Button>
           );
         })}
         {DatepickerByType(type)}
-      </div>
+      </Box>
       <HighChartCustom
         typeChart={TypeChart.sline}
         timeType={+type}
@@ -181,29 +181,29 @@ const DetailUser = () => {
   const detailUser: any = state;
 
   return (
-    <div style={{ padding: '0 30px', backgroundColor: 'white', minHeight: '80vh' }}>
-      <section>
-        <h3>User information</h3>
-        <div>UserId: {detailUser.user_id}</div>
-        <div>User Name: {detailUser.user_name}</div>
-        <div>Firmware version: {detailUser.address}</div>
-        <div>App version: {detailUser.phone_num}</div>
-        <div>Type: {detailUser.email}</div>
-        <div>Status: {detailUser.type}</div>
-      </section>
-      <section className='table-list-devices'>
-        <h3>List Devices Base User</h3>
+    <Box style={{ padding: '0 30px', backgroundColor: 'white', minHeight: '80vh' }}>
+      <Box>
+        <Typography component={'span'} variant="h3">User information</Typography>
+        <Box>UserId: {detailUser.user_id}</Box>
+        <Box>User Name: {detailUser.user_name}</Box>
+        <Box>Firmware version: {detailUser.address}</Box>
+        <Box>App version: {detailUser.phone_num}</Box>
+        <Box>Type: {detailUser.email}</Box>
+        <Box>Status: {detailUser.type}</Box>
+      </Box>
+      <Box className='table-list-devices'>
+        <Typography component={'span'} variant="h3">List Devices Base User</Typography>
         <DetailDeviceUser />
-      </section>
-      <section className='history'>
-        <h3>History</h3>
+      </Box>
+      <Box className='history'>
+        <Typography component={'span'} variant="h3">History</Typography>
         {/* need to confirm more to complete */}
         <CollapseAtom buttonTitle='Maintaince' children={<Maintaince />} />
         <CollapseAtom buttonTitle='Feedback' children={<Feedback />} />
         <CollapseAtom buttonTitle='Receipt' children={<Receipt />} />
         <CollapseAtom buttonTitle='Expense' children={<Expense />} />
-      </section>
-    </div>
+      </Box>
+    </Box>
   );
 };
 

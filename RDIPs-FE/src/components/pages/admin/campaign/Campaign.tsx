@@ -1,20 +1,23 @@
 import { useEffect } from 'react';
 import { connect } from 'react-redux';
-import { setPage } from '../../../../redux/actions/page';
+import { setNavbarTitle } from '../../../../redux/slice/pageSlice';
+import config from '../../../../utils/en.json';
 import { HeadCell, TypeUserEnum, UserData } from '../../../../utils/interface';
-import { Campaign as CampainIcon } from '../../../atoms/icon/ListIcon.atom';
 import TableAtom from '../../../atoms/table/Table.atom';
 import BreakcrumbMocules from '../../../molecules/breakcrumb/Breakcrumb.mocules';
-import config from '../../../../utils/en.json';
 import './Campaign.scss';
+import { useDispatch } from '../../../../redux/store';
+import { Box } from '@mui/material';
 
-const Campaign = ({ dispatch }: any) => {
-  function navigateToDetailPage(detail: any) {
+const Campaign = () => {
+  function navigateToDetailPage() {
     return;
   }
 
+  const dispatch = useDispatch();
+
   useEffect(() => {
-    dispatch(setPage(config['campaignList.title']));
+    dispatch(setNavbarTitle(config['campaignList.title']));
   }, [dispatch]);
 
   const userListData = [
@@ -80,9 +83,9 @@ const Campaign = ({ dispatch }: any) => {
   const userColumns = ['user_name', 'address', 'phone_num', 'email', 'type'];
 
   return (
-    <div className='list-container'>
-      <div className='card-container'>
-        <BreakcrumbMocules title={config['campaignList.name']} icon={''}  link={config['campaignList.pathLink']} />
+    <Box className='list-container'>
+      <Box className='card-container'>
+        <BreakcrumbMocules title={config['campaignList.name']} icon={''} link={config['campaignList.pathLink']} />
         <TableAtom
           onRowClick={navigateToDetailPage}
           rows={userListData}
@@ -90,8 +93,8 @@ const Campaign = ({ dispatch }: any) => {
           title={config['campaignList.title']}
           headCells={headCells}
         />
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };
 

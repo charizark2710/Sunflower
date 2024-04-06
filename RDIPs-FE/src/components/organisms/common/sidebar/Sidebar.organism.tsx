@@ -1,3 +1,4 @@
+import { Box, Typography } from '@mui/material'
 import {
   AdminListIcon,
   Campaign,
@@ -31,9 +32,9 @@ function SidebarOrganism({
       to: "/",
       className: "link-item",
       children: (
-        <span style={{ fontSize: "16px" }}>
+        <Typography component={'span'} style={{ fontSize: "16px" }}>
           <SunFlowerLogo w={"100px"} label={!collapse} />
-        </span>
+        </Typography>
       ),
     },
     {
@@ -63,11 +64,11 @@ function SidebarOrganism({
   ]
 
   return (
-    <div className="sidebar">
-      <div>
+    <Box className="sidebar">
+      <Box>
         {sideBarItems.map((item, i) => {
           return i === 0 ? (
-            <div key={i}>
+            <Box key={i}>
               <SunflowerLabel
                 key={item.to + i}
                 link={item}
@@ -79,8 +80,8 @@ function SidebarOrganism({
                 size={size}
                 isHomepage={true}
               />
-              <div className="search-area" onClick={changeStateSideBar}></div>
-            </div>
+              <Box className="search-area" onClick={changeStateSideBar}></Box>
+            </Box>
           ) : (
             <SunflowerLabel
               state={collapse}
@@ -92,9 +93,9 @@ function SidebarOrganism({
             />
           )
         })}
-      </div>
+      </Box>
       <LogoutButtonMolecules />
-    </div>
+    </Box>
   )
 }
 

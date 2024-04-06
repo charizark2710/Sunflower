@@ -1,10 +1,11 @@
 import { connect } from 'react-redux';
-import './Breakcrumb.mocules.scss';
 import { ButtonAtom } from '../../atoms/button/Button.atom';
 import { SimpleDialog } from '../../atoms/dialog/Dialog.atom';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router';
 import { SearchAtom } from '../../atoms/search/Search.atom';
+import { useNavigate } from 'react-router-dom';
+import { Box, Typography } from '@mui/material';
+import './Breakcrumb.mocules.scss';
 
 interface BreakCrumbProps {
   title: string;
@@ -15,14 +16,7 @@ interface BreakCrumbProps {
   link?: string;
 }
 
-const BreakCrumbMocule: React.FC<BreakCrumbProps> = ({
-  title,
-  icon = <></>,
-  modal,
-  status,
-  level = 2,
-  link = '/admin',
-}) => {
+const BreakCrumbMocule: React.FC<BreakCrumbProps> = ({ title, icon = <></>, modal, status, level = 2, link = '/admin' }) => {
   const navigate = useNavigate();
   let addTitle = `Add ${title}`;
   let path = level === 2 ? 'Home' : 'Home/...';
@@ -52,36 +46,27 @@ const BreakCrumbMocule: React.FC<BreakCrumbProps> = ({
   };
 
   return (
-    <div className='breakcrumb-container'>
-      <SimpleDialog
-        title={addTitle}
-        children={modal}
-        open={open}
-        onClose={handleClose}
-      />
-      <div className='flex-justify-space-between'>
-        <div>
-          <div className='breakcrumb-small'>
-            <span className='underline' onClick={redirectToHome}>
+    <Box className='breakcrumb-container'>
+      <SimpleDialog title={addTitle} children={modal} open={open} onClose={handleClose} />
+      <Box className='flex-justify-space-between'>
+        <Box>
+          <Box className='breakcrumb-small'>
+            <Typography component={'span'} className='underline' onClick={redirectToHome}>
               {path}
-            </span>
+            </Typography>
             {'/'}
-            <span className='underline' onClick={redirectToLink}>
+            <Typography component={'span'} className='underline' onClick={redirectToLink}>
               {icon} {title}
-            </span>
-          </div>
-          <div className='breakcrumb-big'>{title}</div>
-        </div>
-        <div className='flex-align-center w-max'>
+            </Typography>
+          </Box>
+          <Box className='breakcrumb-big'>{title}</Box>
+        </Box>
+        <Box className='flex-align-center w-max'>
           <SearchAtom />
-          <ButtonAtom
-            children={'Add New'}
-            buttonStyle='add-button'
-            onClick={handleClickOpen}
-          />
-        </div>
-      </div>
-    </div>
+          <ButtonAtom children={'Add New'} buttonStyle='add-button' onClick={handleClickOpen} />
+        </Box>
+      </Box>
+    </Box>
   );
 };
 

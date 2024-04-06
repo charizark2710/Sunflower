@@ -8,7 +8,7 @@ interface CopyrightMoleculesProps {
 
 export const CopyrightMolecules: React.FC<CopyrightMoleculesProps> = () => {
   return (
-    <Typography variant="body2" color="text.secondary">
+    <Typography component={'span'} variant="body2" color="text.secondary">
     {'Copyright © '}
     <LinkAtom color="inherit" target="_blank" href="https://sunflower.com/">
      Sunflower

@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios from 'axios';
 
 const baseURL = process.env.REACT_APP_API_URL || "/api"
 
@@ -6,6 +6,7 @@ export const axiosClient = axios.create({
   baseURL,
   headers: {
       'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + localStorage.getItem('token')
     },
 })
 
