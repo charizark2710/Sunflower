@@ -268,6 +268,9 @@ var PostKeycloakGroup = func(c *commonModel.ServiceContext) (commonModel.Respons
 			utils.Log(LogConstant.Error, err)
 			return commonModel.ResponseTemplate{HttpCode: 500, Message: err.Error()}, err
 		}
+	} else {
+		utils.Log(LogConstant.Error, err)
+		return commonModel.ResponseTemplate{HttpCode: 500, Message: err.Error()}, err
 	}
 
 	return commonModel.ResponseTemplate{HttpCode: 200, Data: nil}, nil
