@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func KeycloakRouter(router *gin.Engine) {
+func UserRouter(router *gin.Engine) {
 	router.POST(urlconst.PostLogin, controller.Controller)
 
 	router.Use(middleware.CheckClientTokenValidation())
@@ -17,6 +17,4 @@ func KeycloakRouter(router *gin.Engine) {
 	router.POST(urlconst.PostKeycloakUser, controller.Controller)
 	router.PUT(urlconst.PutKeycloakUsers, controller.Controller)
 	router.DELETE(urlconst.DeleteKeycloakUser, controller.Controller)
-	router.POST(urlconst.PostKeycloakGroup, controller.Controller)
-	router.PUT(urlconst.PutKeycloakGroup, controller.Controller)
 }
