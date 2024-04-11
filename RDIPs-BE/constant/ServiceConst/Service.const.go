@@ -43,6 +43,8 @@ var ServicesMap = map[string]ServiceFn{
 	"GET" + urlconst.GetKeycloakGroups:      services.GetKeycloakGroups,
 	"GET" + urlconst.GetKeycloakGroupById:   services.GetKeycloakGroupById,
 	"DELETE" + urlconst.DeleteKeycloakGroup: services.DeleteKeycloakGroup,
+	"POST" + urlconst.PostKeycloakGroup:     services.PostKeycloakGroup,
+	"PUT" + urlconst.PutKeycloakGroup:       services.PutKeycloakGroup,
 }
 
 var ServiceMapMQTT = map[string]string{
