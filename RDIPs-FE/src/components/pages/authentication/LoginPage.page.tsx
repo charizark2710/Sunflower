@@ -28,24 +28,20 @@ const LoginPage = ({ dispatch }: any) => {
   };
 
   const LoginValidationSchema = Yup.object().shape({
-    email: Yup.string().email('Wrong email format').required('Email Required'),
+    email: Yup.string(),
     password: Yup.string().required('Password required'),
   });
 
-  const USER = {
-    name: 'admin@gmail.com',
-    password: '1234',
-  };
-
   const handleLogin = (value: any) => {
     let { email, password } = value;
-
-    if (email === USER.name && password === USER.password) {
-      dispatch(login({username: email, password: password}));
-      navigate('/admin');
-    } else {
-      alert('Wrong email or password');
-    }
+    dispatch(login({ username: email, password: password }))
+      .unwrap()
+      .then(() => {
+        navigate('/admin');
+      })
+      .catch(() => {
+        alert('Wrong email or password');
+      });
   };
   return (
     <ThemeProvider theme={defaultTheme}>
@@ -62,16 +58,14 @@ const LoginPage = ({ dispatch }: any) => {
           <SunFlowerLogo />
           <Box className='administrator-title'>Administrator</Box>
 
-          <Formik
-            initialValues={initialValues}
-            validationSchema={LoginValidationSchema}
-            onSubmit={handleLogin}
-          >
-            {({errors, isValid} : {errors: AccountInfo, isValid: boolean}) => (
+          <Formik initialValues={initialValues} validationSchema={LoginValidationSchema} onSubmit={handleLogin}>
+            {({ errors, isValid }: { errors: AccountInfo; isValid: boolean }) => (
               <Form>
                 <Box sx={{ mt: 1 }}>
                   <Box className='flex-justify-start flex-align-center'>
-                    <Typography component={'span'} className='input-title'>Email</Typography>
+                    <Typography component={'span'} className='input-title'>
+                      Username
+                    </Typography>
                     <Typography component={'span'}>
                       <Field
                         as={TextField}
@@ -87,7 +81,9 @@ const LoginPage = ({ dispatch }: any) => {
                     </Typography>
                   </Box>
                   <Box className='flex-justify-start flex-align-center'>
-                    <Typography component={'span'} className='input-title'>Password</Typography>
+                    <Typography component={'span'} className='input-title'>
+                      Password
+                    </Typography>
                     <Typography component={'span'}>
                       <Field
                         as={TextField}
@@ -105,19 +101,13 @@ const LoginPage = ({ dispatch }: any) => {
                       />
                     </Typography>
                     {!showPassword ? (
-                      <Visibility
-                        onClick={handleClickShowPassword}
-                        className='ml-12'
-                      />
+                      <Visibility onClick={handleClickShowPassword} className='ml-12' />
                     ) : (
-                      <VisibilityOff
-                        onClick={handleClickShowPassword}
-                        className='ml-12'
-                      />
+                      <VisibilityOff onClick={handleClickShowPassword} className='ml-12' />
                     )}
                   </Box>
                   <Box className='group-button flex-justify-center'>
-                    <Button type='submit' className={ isValid ? 'enabled login-button': 'login-button'}>
+                    <Button type='submit' className={isValid ? 'enabled login-button' : 'login-button'}>
                       Login
                     </Button>
                     <Link href='#' variant='body2' className='forgot-pass'>
