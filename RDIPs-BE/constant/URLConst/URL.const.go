@@ -30,4 +30,6 @@ const (
 	GetKeycloakUserById = "/users/:id"
 	PutKeycloakUsers    = "/users/:id"
 	DeleteKeycloakUser  = "/users/:id"
+	PostKeycloakGroup   = "/groups"
+	PutKeycloakGroup    = "/groups/:id"
 )
