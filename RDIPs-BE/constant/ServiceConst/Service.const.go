@@ -31,15 +31,20 @@ var ServicesMap = map[string]ServiceFn{
 	//Weather
 	"GET" + urlconst.GetWeatherForecast: services.GetWeatherForecast,
 
-	//Keycloak
+	//Keycloak - Users
 	"POST" + urlconst.PostLogin:            services.Login,
 	"GET" + urlconst.GetKeycloakUsers:      services.GetKeycloakUsers,
 	"GET" + urlconst.GetKeycloakUserById:   services.GetKeycloakUserById,
 	"POST" + urlconst.PostKeycloakUser:     services.PostKeycloakUser,
 	"PUT" + urlconst.PutKeycloakUsers:      services.PutKeycloakUser,
 	"DELETE" + urlconst.DeleteKeycloakUser: services.DeleteKeycloakUser,
-	"POST" + urlconst.PostKeycloakGroup:    services.PostKeycloakGroup,
-	"PUT" + urlconst.PutKeycloakGroup:      services.PutKeycloakGroup,
+
+	//Keycloak - Groups
+	"GET" + urlconst.GetKeycloakGroups:      services.GetKeycloakGroups,
+	"GET" + urlconst.GetKeycloakGroupById:   services.GetKeycloakGroupById,
+	"DELETE" + urlconst.DeleteKeycloakGroup: services.DeleteKeycloakGroup,
+	"POST" + urlconst.PostKeycloakGroup:     services.PostKeycloakGroup,
+	"PUT" + urlconst.PutKeycloakGroup:       services.PutKeycloakGroup,
 }
 
 var ServiceMapMQTT = map[string]string{
