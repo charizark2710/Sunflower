@@ -5,9 +5,16 @@ const baseURL = process.env.REACT_APP_API_URL || "/api"
 export const axiosClient = axios.create({
   baseURL,
   headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + localStorage.getItem('token')
-    },
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer ' + localStorage.getItem('token')
+  } 
+})
+
+export const axiosClientWithoutAuthentication = axios.create({
+  baseURL,
+  headers: {
+      'Content-Type': 'application/json'
+    }
 })
 
 export function setupAxios(store: any) {  
