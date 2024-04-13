@@ -15,7 +15,6 @@ import (
 var GetKeycloakGroups = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
 	utils.Log(LogConstant.Info, "GetKeycloakGroups Start")
 	client := gocloak.NewClient(os.Getenv("KEYCLOAK_BASE_URL"))
-	utils.Log(LogConstant.Debug, "Hello "+c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY))
 	groups, err := client.GetGroups(
 		c.Ctx.Request.Context(),
 		c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY),
