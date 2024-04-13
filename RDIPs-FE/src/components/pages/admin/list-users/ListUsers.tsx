@@ -1,13 +1,13 @@
-import { useNavigate } from 'react-router-dom';
-import './ListUsers.scss';
-import TableAtom from '../../../atoms/table/Table.atom';
-import { HeadCell, TypeUserEnum, UserData } from '../../../../utils/interface';
 import { useEffect } from 'react';
-import { setPage } from '../../../../redux/actions/page';
 import { connect } from 'react-redux';
-import BreakcrumbMocules from '../../../molecules/breakcrumb/Breakcrumb.mocules';
-import { UserListIcon } from '../../../atoms/icon/ListIcon.atom';
+import { useNavigate } from 'react-router-dom';
+import { setNavbarTitle } from '../../../../redux/slice/pageSlice';
 import config from '../../../../utils/en.json';
+import { HeadCell, TypeUserEnum, UserData } from '../../../../utils/interface';
+import TableAtom from '../../../atoms/table/Table.atom';
+import BreakcrumbMocules from '../../../molecules/breakcrumb/Breakcrumb.mocules';
+import './ListUsers.scss';
+import { Box } from '@mui/material';
 
 const ListUsers = ({ dispatch }: any) => {
   const navigate = useNavigate();
@@ -16,7 +16,7 @@ const ListUsers = ({ dispatch }: any) => {
   }
 
   useEffect(() => {
-    dispatch(setPage(config['usersList.title']));
+    dispatch(setNavbarTitle(config['usersList.title']));
   }, [dispatch]);
 
   const userListData = [
@@ -82,8 +82,8 @@ const ListUsers = ({ dispatch }: any) => {
   const userColumns = ['user_name', 'address', 'phone_num', 'email', 'type'];
 
   return (
-    <div className='list-container'>
-      <div className='card-container'>
+    <Box className='list-container'>
+      <Box className='card-container'>
         <BreakcrumbMocules title={config['usersList.name']} icon={''} link={config['usersList.pathLink']} />
         <TableAtom
           onRowClick={navigateToDetailPage}
@@ -92,8 +92,8 @@ const ListUsers = ({ dispatch }: any) => {
           title={config['usersList.title']}
           headCells={headCells}
         />
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };
 

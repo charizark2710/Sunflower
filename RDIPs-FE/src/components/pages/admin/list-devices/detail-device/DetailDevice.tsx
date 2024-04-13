@@ -1,6 +1,4 @@
-import { Box } from '@mui/material';
 import React, { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router';
 import chartData from '../../../../../lib/chartData.json';
 import { HighChartCustom } from '../../../../../lib/highchart/HighChartCustom';
 import { TypeChart } from '../../../../../utils/enum';
@@ -13,6 +11,9 @@ import { FormCreateDeviceMolecules } from '../../../../molecules/form/device-cre
 import config from '../../../../../utils/en.json';
 import { getAllDevices } from '../../../../../axios/api';
 import { createData } from '../ListDevices';
+import { Box, Button, Divider } from '@mui/material';
+import { useLocation, useNavigate } from 'react-router-dom';
+
 // import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 // import dayjs, { Dayjs } from 'dayjs';
 
@@ -26,13 +27,13 @@ function DatepickerByType(type: string) {
         </Box>
       );
     case 'Month':
-      return <div>Month here</div>;
+      return <Box>Month here</Box>;
     case 'Year':
-      return <div>Year here</div>;
+      return <Box>Year here</Box>;
     case 'Decade':
-      return <div>Decade here</div>;
+      return <Box>Decade here</Box>;
   }
-  return <div>DatePicker here</div>;
+  return <Box>DatePicker here</Box>;
 }
 
 export const HighChartInDevice = () => {
@@ -41,16 +42,16 @@ export const HighChartInDevice = () => {
 
   return (
     <>
-      <div>
+      <Box>
         {listTimeType.map((t, i) => {
           return (
-            <button style={{ fontWeight: t === type ? 'bold' : '' }} key={i} onClick={() => setType(t)}>
+            <Button style={{ fontWeight: t === type ? 'bold' : '' }} key={i} onClick={() => setType(t)}>
               {t}
-            </button>
+            </Button>
           );
         })}
         {DatepickerByType(type)}
-      </div>
+      </Box>
       <HighChartCustom
         typeChart={TypeChart.sline}
         timeType={+type}
@@ -182,46 +183,53 @@ export const HistoryChangeTableInDevice = () => {
 const DetailDevice = () => {
   let { state } = useLocation();
   const [detailDevice, setDetailDevice]: any = useState(state);
-  const [popupStatus, setPopupStatus] = useState("");
+  const [popupStatus, setPopupStatus] = useState('');
 
   useEffect(() => {
     getDeviceById();
   }, [popupStatus]);
 
   const getDeviceById = () => {
-    console.log("calling me twice");
-    
     let id = (state as any).device_id as string;
     getAllDevices(id)
-    .then((data) => {
-      setDetailDevice(createData(data.data));
-    })
-    .catch(() => {
-      setDetailDevice(state);
-    });
-  }
+      .then((data: {data: any}) => {
+        setDetailDevice(createData(data.data));
+      })
+      .catch(() => {
+        setDetailDevice(state);
+      });
+  };
 
   return (
-    <div className='list-container'>
-      <CardMocules title={config['deviceDetail.infoTitle']} status={popupStatus} modal={<FormCreateDeviceMolecules state="update" onClosePopUp={()=> setPopupStatus("closed")} data={detailDevice}/>}>
+    <Box className='list-container'>
+      <CardMocules
+        title={config['deviceDetail.infoTitle']}
+        status={popupStatus}
+        modal={
+          <FormCreateDeviceMolecules state='update' onClosePopUp={() => setPopupStatus('closed')} data={detailDevice} />
+        }
+      >
         <TextAtomDetail title={config['deviceDetail.device.device_name']}> {detailDevice.device_name} </TextAtomDetail>
-        <TextAtomDetail title= {config['deviceDetail.device.id']}> {detailDevice.device_id} </TextAtomDetail>
-        <TextAtomDetail title= {config['deviceDetail.device.firm']}> {detailDevice.firmware_ver} </TextAtomDetail>
+        <TextAtomDetail title={config['deviceDetail.device.id']}> {detailDevice.device_id} </TextAtomDetail>
+        <TextAtomDetail title={config['deviceDetail.device.firm']}> {detailDevice.firmware_ver} </TextAtomDetail>
         <TextAtomDetail title={config['deviceDetail.device.app']}> {detailDevice.app_ver} </TextAtomDetail>
         <TextAtomDetail title={config['deviceDetail.device.type']}> {detailDevice.type} </TextAtomDetail>
-        <TextAtomDetail title={config['deviceDetail.device.status']} > {detailDevice.status} </TextAtomDetail>
+        <TextAtomDetail title={config['deviceDetail.device.status']}> {detailDevice.status} </TextAtomDetail>
         <TextAtomDetail title={config['deviceDetail.device.lifetime']}> {detailDevice.life_time} </TextAtomDetail>
       </CardMocules>
-      <section className='performance-statistics'>
+      <Divider className='performance-statistics'>
         <CollapseAtom buttonTitle={config['deviceDetail.performance.buttonTitle']} children={<HighChartInDevice />} />
-      </section>
-      <section className='log-history'>
+      </Divider>
+      <Divider className='log-history'>
         <CollapseAtom buttonTitle={config['deviceDetail.logHistory.buttonTitle']} children={<HistoryLogTableInDevice />} />
-      </section>
-      <section className='change-history'>
-        <CollapseAtom buttonTitle={config['deviceDetail.changeHistory.buttonTitle']} children={<HistoryChangeTableInDevice />} />
-      </section>
-    </div>
+      </Divider>
+      <Divider className='change-history'>
+        <CollapseAtom
+          buttonTitle={config['deviceDetail.changeHistory.buttonTitle']}
+          children={<HistoryChangeTableInDevice />}
+        />
+      </Divider>
+    </Box>
   );
 };
 

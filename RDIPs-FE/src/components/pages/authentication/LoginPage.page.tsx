@@ -1,19 +1,15 @@
 import { Visibility, VisibilityOff } from '@mui/icons-material';
-import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
-import CssBaseline from '@mui/material/CssBaseline';
-import Link from '@mui/material/Link';
-import TextField from '@mui/material/TextField';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { Field, Form, Formik } from 'formik';
 import { useState } from 'react';
 import { connect } from 'react-redux';
-import { useNavigate } from 'react-router';
-import * as Yup from 'yup';
-import { login } from '../../../redux/actions/authentication';
 import ErrorMessageAtom from '../../atoms/error-message/ErrorMessageAtom.atom';
 import SunFlowerLogo from '../../atoms/image/SunFlowerLogo.atom';
 import './LoginPage.page.scss';
+import { login } from '../../../redux/slice/authSlice';
+import { Box, Button, Container, CssBaseline, Link, TextField, ThemeProvider, Typography, createTheme } from '@mui/material';
+import { AccountInfo } from '../../../model/page';
+import { useNavigate } from 'react-router-dom';
+import * as Yup from 'yup';
 
 const defaultTheme = createTheme();
 
@@ -32,24 +28,20 @@ const LoginPage = ({ dispatch }: any) => {
   };
 
   const LoginValidationSchema = Yup.object().shape({
-    email: Yup.string().email('Wrong email format').required('Email Required'),
+    email: Yup.string(),
     password: Yup.string().required('Password required'),
   });
 
-  const USER = {
-    name: 'admin@gmail.com',
-    password: '1234',
-  };
-
   const handleLogin = (value: any) => {
     let { email, password } = value;
-
-    if (email === USER.name && password === USER.password) {
-      dispatch(login(true));
-      navigate('/admin');
-    } else {
-      alert('Wrong email or password');
-    }
+    dispatch(login({ username: email, password: password }))
+      .unwrap()
+      .then(() => {
+        navigate('/admin');
+      })
+      .catch(() => {
+        alert('Wrong email or password');
+      });
   };
   return (
     <ThemeProvider theme={defaultTheme}>
@@ -64,19 +56,17 @@ const LoginPage = ({ dispatch }: any) => {
           }}
         >
           <SunFlowerLogo />
-          <div className='administrator-title'>Administrator</div>
+          <Box className='administrator-title'>Administrator</Box>
 
-          <Formik
-            initialValues={initialValues}
-            validationSchema={LoginValidationSchema}
-            onSubmit={handleLogin}
-          >
-            {({errors, isValid}) => (
+          <Formik initialValues={initialValues} validationSchema={LoginValidationSchema} onSubmit={handleLogin}>
+            {({ errors, isValid }: { errors: AccountInfo; isValid: boolean }) => (
               <Form>
                 <Box sx={{ mt: 1 }}>
-                  <div className='flex-justify-start flex-align-center'>
-                    <span className='input-title'>Email</span>
-                    <span>
+                  <Box className='flex-justify-start flex-align-center'>
+                    <Typography component={'span'} className='input-title'>
+                      Username
+                    </Typography>
+                    <Typography component={'span'}>
                       <Field
                         as={TextField}
                         required
@@ -88,11 +78,13 @@ const LoginPage = ({ dispatch }: any) => {
                         className={errors.email ? 'error' : ''}
                         helperText={<ErrorMessageAtom name='email' />}
                       />
-                    </span>
-                  </div>
-                  <div className='flex-justify-start flex-align-center'>
-                    <span className='input-title'>Password</span>
-                    <span>
+                    </Typography>
+                  </Box>
+                  <Box className='flex-justify-start flex-align-center'>
+                    <Typography component={'span'} className='input-title'>
+                      Password
+                    </Typography>
+                    <Typography component={'span'}>
                       <Field
                         as={TextField}
                         margin='normal'
@@ -107,27 +99,21 @@ const LoginPage = ({ dispatch }: any) => {
                         autoComplete='current-password'
                         helperText={<ErrorMessageAtom name='password' />}
                       />
-                    </span>
+                    </Typography>
                     {!showPassword ? (
-                      <Visibility
-                        onClick={handleClickShowPassword}
-                        className='ml-12'
-                      />
+                      <Visibility onClick={handleClickShowPassword} className='ml-12' />
                     ) : (
-                      <VisibilityOff
-                        onClick={handleClickShowPassword}
-                        className='ml-12'
-                      />
+                      <VisibilityOff onClick={handleClickShowPassword} className='ml-12' />
                     )}
-                  </div>
-                  <div className='group-button flex-justify-center'>
-                    <button type='submit' className={ isValid ? 'enabled login-button': 'login-button'}>
+                  </Box>
+                  <Box className='group-button flex-justify-center'>
+                    <Button type='submit' className={isValid ? 'enabled login-button' : 'login-button'}>
                       Login
-                    </button>
+                    </Button>
                     <Link href='#' variant='body2' className='forgot-pass'>
-                      <span>Forgot your password?</span>
+                      <Typography component={'span'}>Forgot your password?</Typography>
                     </Link>
-                  </div>
+                  </Box>
                 </Box>
               </Form>
             )}

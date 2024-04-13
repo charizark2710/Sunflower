@@ -1,12 +1,12 @@
 import { useEffect } from 'react';
+import { connect } from 'react-redux';
+import { setNavbarTitle } from '../../../../redux/slice/pageSlice';
+import config from '../../../../utils/en.json';
 import { AdminData, HeadCell } from '../../../../utils/interface';
 import TableAtom from '../../../atoms/table/Table.atom';
-import './ListAdmin.scss';
-import { setPage } from '../../../../redux/actions/page';
-import config from '../../../../utils/en.json';
-import { connect } from 'react-redux';
-import { AdminListIcon } from '../../../atoms/icon/ListIcon.atom';
+import { Box } from '@mui/material';
 import BreakcrumbMocules from '../../../molecules/breakcrumb/Breakcrumb.mocules';
+import './ListAdmin.scss';
 
 const ListAdmin = ({ dispatch }: any) => {
   function navigateToDetailPage(detail: any) {
@@ -14,7 +14,7 @@ const ListAdmin = ({ dispatch }: any) => {
   }
 
   useEffect(() => {
-    dispatch(setPage(config['adminList.title']));
+    dispatch(setNavbarTitle(config['adminList.title']));
   }, [dispatch]);
 
   const userListData = [
@@ -63,11 +63,9 @@ const ListAdmin = ({ dispatch }: any) => {
   const userColumns = ['admin_name', 'status', 'role', 'authentication'];
 
   return (
-    <div className='list-container'>
-      <div className='card-container'>
-        <BreakcrumbMocules title={config['adminList.name']}
-         link={config['adminList.pathLink']}
-         icon={''} />
+    <Box className='list-container'>
+      <Box className='card-container'>
+        <BreakcrumbMocules title={config['adminList.name']} link={config['adminList.pathLink']} icon={''} />
         <TableAtom
           onRowClick={navigateToDetailPage}
           rows={userListData}
@@ -75,8 +73,8 @@ const ListAdmin = ({ dispatch }: any) => {
           title={config['adminList.title']}
           headCells={headCells}
         />
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };
 

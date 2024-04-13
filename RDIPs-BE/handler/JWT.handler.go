@@ -39,8 +39,10 @@ func ClaimsToken(tokenString string) (jwt.MapClaims, bool) {
 	token, _ := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return []byte(os.Getenv("KEYCLOAK_PUBLIC_KEY")), nil
 	})
-
-	utils.Log(LogConstant.Debug, "claims")
-	claims, ok := token.Claims.(jwt.MapClaims)
-	return claims, ok
+	if token != nil {
+		utils.Log(LogConstant.Debug, "claims")
+		claims, ok := token.Claims.(jwt.MapClaims)
+		return claims, ok
+	}
+	return nil, false
 }

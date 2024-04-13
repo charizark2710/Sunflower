@@ -1,7 +1,7 @@
 import { Provider } from 'react-redux';
 import { BrowserRouter } from 'react-router-dom';
 import './App.scss';
-import { store } from './redux/store';
+import store from './redux/store';
 import { CommonRoute } from './routes';
 
 function App() {

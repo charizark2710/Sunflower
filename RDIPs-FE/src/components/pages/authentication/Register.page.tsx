@@ -1,16 +1,5 @@
+import { Avatar, Box, Button, Checkbox, Container, CssBaseline, FormControlLabel, Grid, Link, TextField, ThemeProvider, Typography, createTheme } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import Avatar from '@mui/material/Avatar';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
-import Container from '@mui/material/Container';
-import CssBaseline from '@mui/material/CssBaseline';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Grid from '@mui/material/Grid';
-import Link from '@mui/material/Link';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
 import ErrorMessageAtom from '../../atoms/error-message/ErrorMessageAtom.atom';
 import { FormikAtom } from '../../atoms/formik/FormikAtom.atom';
 import { CopyrightMolecules } from '../../molecules/copyright/Copyright.mocules';
@@ -35,7 +24,6 @@ export default function Register() {
   });
 
   const handeRegister = (value: any) => {
-    console.log('registered');
   };
 
   const registerForm = (
