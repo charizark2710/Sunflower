@@ -36,6 +36,7 @@ type Devices struct {
 	History        *History     `json:"history,omitempty"`
 	PerformanceID  string       `json:"performanceID,omitempty"`
 	Performance    *Performance `json:"performance,omitempty"`
+	// LightMatrix    string       `json:"light_matrix,omitempty"`
 }
 
 type SysDevices struct {
@@ -53,6 +54,7 @@ type SysDevices struct {
 	Name           string        `gorm:"column:name;unique"`
 	Region         string        `gorm:"column:region"`
 	DeviceRel      *SysDeviceRel `gorm:"foreignKey:DeviceID"`
+	// LightMatrix    string        `gorm:"column:light_matrix;default:5x5"`
 }
 
 func (SysDevices) TableName() string {

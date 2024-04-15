@@ -10,7 +10,28 @@
             "request": "launch",
             "mode": "debug",
             "program": "${workspaceRoot}",
-            "processId": 0
+            "env": {
+                "POSTGRES_HOST": "localhost",
+                "POSTGRES_PORT": "5432",
+                "POSTGRES_USER": "sunflower",
+                "POSTGRES_PASSWORD": "123456789",
+                "POSTGRES_DB": "RDIPs",
+                "POSTGRES_SCHEMA": "sunflower",
+                "BROKER_HOST": "localhost",
+                "BROKER_PORT": "5672",
+                "BROKER_USER": "admin",
+                "BROKER_PASSWORD": "admin",
+                "WEATHER_BASE_URL": "https://api-gateway.weatherplus.vn",
+                "WEATHER_USER_NAME": "guest_2301",
+                "WEATHER_PASSWORD": "G2301@2023",
+                "WEATHER_API_KEY_HEADER": "b0e9c775fb2bfce983fc77fda49c48ac6863ba20",
+                "KEYCLOAK_BASE_URL": "http://localhost:9000",
+                "KEYCLOAK_USER": "admin",
+                "KEYCLOAK_PASSWORD": "admin",
+                "KEYCLOAK_CLIENT_ID": "rdips-client",
+                "KEYCLOAK_PUBLIC_KEY": "Test",
+                "KEYCLOAK_REALM_NAME": "RDIPs",
+            }
         }
     ]
 }

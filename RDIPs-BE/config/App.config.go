@@ -51,7 +51,7 @@ func DbConfig() (*gorm.DB, error) {
 				utils.Log(LogConstant.Info, "Create table "+m.TableName())
 				err := db.Migrator().CreateTable(m)
 				if err != nil {
-					return nil, err
+					utils.Log(LogConstant.Warning, err)
 				}
 			}
 		}
