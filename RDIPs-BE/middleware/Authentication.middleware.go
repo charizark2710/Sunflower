@@ -32,18 +32,19 @@ func Validation() gin.HandlerFunc {
 		secret := os.Getenv("SECRECT")
 		tokenStr := c.GetHeader("Authorization")
 		if tokenStr != "" {
-
-			// _, verifyErr := handler.VerifyToken(c.GetHeader("Authorization"), secret)
-			// if verifyErr != nil {
-			// 	c.AbortWithStatus(401)
-			// }
-
 			claims, ok := handler.ClaimsToken(tokenStr)
 			if !ok {
 				c.AbortWithStatus(http.StatusUnauthorized)
 				return
 			}
 
+			//Check expired time, and return 403
+			if isTokenExpired(claims) {
+				c.AbortWithStatus(http.StatusForbidden)
+				return
+			}
+
+			//Check permission, and return 403
 			if !userHasPermission(claims, urlconst.URLRoles[c.Request.Method+c.FullPath()]) {
 				c.AbortWithStatus(http.StatusForbidden)
 				return
@@ -71,7 +72,7 @@ func Validation() gin.HandlerFunc {
 
 func CheckClientTokenValidation() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if isExpired() {
+		if isKeyCloakTokenClientExpired() {
 			ctx, cancel := context.WithTimeout(c.Request.Context(), refreshPeriodKeycloak)
 			defer cancel()
 
@@ -107,12 +108,25 @@ func getTokenByClientAccount(ctx context.Context, c *gin.Context) error {
 
 }
 
-func isExpired() bool {
+func isKeyCloakTokenClientExpired() bool {
 	if KeycloakTokenClient == "" {
 		return true
 	}
 
 	return time.Now().After(lastFetchedTimeKeycloak.Add(refreshPeriodKeycloak))
+}
+
+func isTokenExpired(claims jwt.MapClaims) bool {
+	utils.Log(LogConstant.Debug, "check token is expired start")
+	exp := claims["exp"].(float64)
+	expUnix := int64(exp)
+	// Convert Unix timestamp to time.Time
+	expTime := time.Unix(expUnix, 0)
+	// Verify the token's expiration time
+	if time.Now().Before(expTime) {
+		return false
+	}
+	return true
 }
 
 func userHasPermission(claims jwt.MapClaims, requiredPermissions []string) bool {

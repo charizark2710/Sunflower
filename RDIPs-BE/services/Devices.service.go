@@ -76,7 +76,7 @@ var UpdateDevice = func(c *commonModel.ServiceContext) (commonModel.ResponseTemp
 			utils.Log(LogConstant.Error, err)
 			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil, Message: err.Error()}, err
 		}
-		return commonModel.ResponseTemplate{HttpCode: 200, Data: nil, Message: err.Error()}, nil
+		return commonModel.ResponseTemplate{HttpCode: 200, Data: nil}, nil
 	} else {
 		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil, Message: err.Error()}, err
 	}
@@ -91,7 +91,7 @@ var DeleteDevice = func(c *commonModel.ServiceContext) (commonModel.ResponseTemp
 		utils.Log(LogConstant.Error, err)
 		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil, Message: err.Error()}, err
 	}
-	return commonModel.ResponseTemplate{HttpCode: 200, Data: nil, Message: ""}, err
+	return commonModel.ResponseTemplate{HttpCode: 200, Data: nil}, err
 }
 
 var GetLogOfDevice = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
