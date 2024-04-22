@@ -31,6 +31,7 @@
                 "KEYCLOAK_CLIENT_ID": "rdips-client",
                 "KEYCLOAK_PUBLIC_KEY": "Test",
                 "KEYCLOAK_REALM_NAME": "RDIPs",
+                "CLIENT_SECRET":"<KEYCLOAK_CLIENT_SECRET>",
             }
         }
     ]

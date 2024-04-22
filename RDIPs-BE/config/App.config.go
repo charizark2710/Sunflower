@@ -11,6 +11,8 @@ import (
 
 	LogConstant "RDIPs-BE/constant/LogConst"
 	AMQP_handler "RDIPs-BE/handler/AMQP"
+	Keycloak_handler "RDIPs-BE/handler/Keycloak"
+
 	"RDIPs-BE/model"
 	"RDIPs-BE/utils"
 )
@@ -61,4 +63,8 @@ func DbConfig() (*gorm.DB, error) {
 
 func RabbitMqConfig() error {
 	return AMQP_handler.InitializeAMQP()
+}
+
+func KeycloakConfig() error {
+	return Keycloak_handler.InitKeycloakClient()
 }
