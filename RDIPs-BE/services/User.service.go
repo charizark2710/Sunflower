@@ -2,6 +2,7 @@ package services
 
 import (
 	LogConstant "RDIPs-BE/constant/LogConst"
+	keycloak "RDIPs-BE/handler/Keycloak"
 	"RDIPs-BE/middleware"
 	"RDIPs-BE/model"
 	commonModel "RDIPs-BE/model/common"
@@ -24,36 +25,22 @@ var PostKeycloakUser = func(c *commonModel.ServiceContext) (commonModel.Response
 	utils.Log(LogConstant.Info, "PostKeycloakUser Start")
 	defer utils.Log(LogConstant.Info, "PostKeycloakUser End")
 
-	client := gocloak.NewClient(ADMIN_KEYCLOAK_BASE_URL)
-	ctx := c.Ctx.Request.Context()
-
 	userBody := gocloak.User{}
 	err := json.Unmarshal(c.Body, &userBody)
 
 	if err == nil {
-		_, err := client.CreateUser(
-			ctx,
-			c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY),
-			ADMIN_KEYCLOAK_REALM_NAME,
-			userBody,
-		)
-		if err != nil {
-			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+		_, userErr := keycloak.CreateUser(c.Ctx, c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY), userBody)
+		if userErr != nil {
+			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, userErr
 		}
-		return commonModel.ResponseTemplate{HttpCode: 200, Data: nil}, nil
+		return commonModel.ResponseTemplate{HttpCode: 200, Data: "Create User successfully"}, nil
 	}
 	return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
 }
 
 var GetKeycloakUsers = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
 	utils.Log(LogConstant.Info, "GetKeycloakUsers Start")
-	client := gocloak.NewClient(os.Getenv("KEYCLOAK_BASE_URL"))
-	users, err := client.GetUsers(
-		c.Ctx.Request.Context(),
-		c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY),
-		os.Getenv("KEYCLOAK_REALM_NAME"),
-		gocloak.GetUsersParams{},
-	)
+	users, err := keycloak.GetUsers(c.Ctx, c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY), gocloak.GetUsersParams{})
 	if err == nil {
 		utils.Log(LogConstant.Info, "GetKeycloakUsers End")
 		return commonModel.ResponseTemplate{HttpCode: 200, Data: users}, nil
@@ -65,13 +52,7 @@ var GetKeycloakUsers = func(c *commonModel.ServiceContext) (commonModel.Response
 var GetKeycloakUserById = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
 	utils.Log(LogConstant.Info, "GetKeycloakUserById Start")
 	userId := c.Param("id")
-	client := gocloak.NewClient(os.Getenv("KEYCLOAK_BASE_URL"))
-	user, err := client.GetUserByID(
-		c.Ctx.Request.Context(),
-		c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY),
-		os.Getenv("KEYCLOAK_REALM_NAME"),
-		userId,
-	)
+	user, err := keycloak.GetUserByID(c.Ctx, c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY), userId)
 	if err == nil {
 		utils.Log(LogConstant.Info, "GetKeycloakUserById End")
 		return commonModel.ResponseTemplate{HttpCode: 200, Data: user}, nil
@@ -79,8 +60,12 @@ var GetKeycloakUserById = func(c *commonModel.ServiceContext) (commonModel.Respo
 	return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
 }
 
+/*
+* This Function will send
+ */
 var Login = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
 	utils.Log(LogConstant.Debug, "Login start")
+
 	loginRequest := model.LoginByKeycloakRequest{}
 	err := json.Unmarshal(c.Body, &loginRequest)
 	if err == nil {
