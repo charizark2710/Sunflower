@@ -3,14 +3,20 @@ package routers
 import (
 	urlconst "RDIPs-BE/constant/URLConst"
 	"RDIPs-BE/controller"
+	"RDIPs-BE/middleware"
 
 	"github.com/gin-gonic/gin"
 )
 
 func GroupRouter(router *gin.Engine) {
-	router.GET(urlconst.GetKeycloakGroups, controller.Controller)
-	router.GET(urlconst.GetKeycloakGroupById, controller.Controller)
-	router.DELETE(urlconst.DeleteKeycloakGroup, controller.Controller)
-	router.POST(urlconst.PostKeycloakGroup, controller.Controller)
-	router.PUT(urlconst.PutKeycloakGroup, controller.Controller)
+	authRouter := router.Group("")
+	{
+		authRouter.Use(middleware.CheckClientTokenValidation())
+		authRouter.GET(urlconst.GetKeycloakGroups, controller.Controller)
+		authRouter.GET(urlconst.GetKeycloakGroupById, controller.Controller)
+		authRouter.DELETE(urlconst.DeleteKeycloakGroup, controller.Controller)
+		authRouter.POST(urlconst.PostKeycloakGroup, controller.Controller)
+		authRouter.PUT(urlconst.PutKeycloakGroup, controller.Controller)
+	}
+
 }
