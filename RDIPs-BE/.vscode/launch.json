@@ -11,7 +11,7 @@
             "mode": "debug",
             "program": "${workspaceRoot}",
             "env": {
-                "API_PORT": 8080,
+                "API_PORT": "8080",
                 "POSTGRES_HOST": "localhost",
                 "POSTGRES_PORT": "5432",
                 "POSTGRES_USER": "sunflower",
@@ -32,7 +32,9 @@
                 "KEYCLOAK_CLIENT_ID": "rdips-client",
                 "KEYCLOAK_PUBLIC_KEY": "Test",
                 "KEYCLOAK_REALM_NAME": "RDIPs",
+                "APP_HOST": "localhost",
                 "CLIENT_SECRET":"<KEYCLOAK_CLIENT_SECRET>",
+                "REDIRECT_URI": "http://localhost:8080/callback",
             }
         }
     ]

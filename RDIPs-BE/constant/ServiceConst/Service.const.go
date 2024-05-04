@@ -31,8 +31,11 @@ var ServicesMap = map[string]ServiceFn{
 	//Weather
 	"GET" + urlconst.GetWeatherForecast: services.GetWeatherForecast,
 
+	//Keycloak - Authentication
+	"GET" + urlconst.GetLoginScreen: services.GetLoginScreen,
+	"GET" + urlconst.Callback:       services.Callback,
+
 	//Keycloak - Users
-	"POST" + urlconst.PostLogin:            services.Login,
 	"GET" + urlconst.GetKeycloakUsers:      services.GetKeycloakUsers,
 	"GET" + urlconst.GetKeycloakUserById:   services.GetKeycloakUserById,
 	"POST" + urlconst.PostKeycloakUser:     services.PostKeycloakUser,

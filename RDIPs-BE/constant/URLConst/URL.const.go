@@ -23,8 +23,11 @@ const (
 	//Weather
 	GetWeatherForecast = "/weather/forecast"
 
+	// Authenticate
+	GetLoginScreen = "/login"
+	Callback       = "/callback"
+
 	//Keycloak - Users
-	PostLogin           = "/login"
 	PostKeycloakUser    = "/users"
 	GetKeycloakUsers    = "/users"
 	GetKeycloakUserById = "/users/:id"

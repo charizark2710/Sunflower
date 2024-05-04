@@ -27,7 +27,7 @@ var (
 
 func Validation() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if c.FullPath() == urlconst.PostKeycloakUser {
+		if c.FullPath() == urlconst.GetLoginScreen || c.FullPath() == urlconst.Callback {
 			c.Next()
 			return
 		}
@@ -36,18 +36,21 @@ func Validation() gin.HandlerFunc {
 		if tokenStr != "" {
 			claims, ok := handler.ClaimsToken(tokenStr)
 			if !ok {
+				utils.Log(LogConstant.Error, "Unauthorized")
 				c.AbortWithStatusJSON(http.StatusUnauthorized, "Unauthorized")
 				return
 			}
 
 			//Check expired time, and return 403
 			if isTokenExpired(claims) {
+				utils.Log(LogConstant.Error, "Token is Expired")
 				c.AbortWithStatusJSON(http.StatusForbidden, "Token is Expired")
 				return
 			}
 
 			//Check permission, and return 403
 			if !userHasPermission(claims, urlconst.URLRoles[c.Request.Method+c.FullPath()]) {
+				utils.Log(LogConstant.Error, "User doesn't have permission")
 				c.AbortWithStatusJSON(http.StatusForbidden, "User doesn't have permission")
 				return
 			}
@@ -61,6 +64,7 @@ func Validation() gin.HandlerFunc {
 			utils.Log(LogConstant.Debug, "CheckPermission End")
 			c.Next()
 		} else {
+			utils.Log(LogConstant.Error, "Unauthorized")
 			c.AbortWithStatusJSON(http.StatusUnauthorized, "Unauthorized")
 			return
 		}
