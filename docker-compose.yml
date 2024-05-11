@@ -10,6 +10,7 @@ services:
     build:
       context: ./RDIPs-Server
       dockerfile: keycloak.Dockerfile
+    # command: bash -c "while :; do echo 'Hit CTRL+C'; sleep 1; done"
     command: [ "start-dev", "--import-realm", "--verbose" ]
     environment:
       - KC_DB=postgres
@@ -37,6 +38,8 @@ services:
       pi4:
         aliases:
           - sunflower_auth
+    volumes:
+      - keycloak:/opt
 
   rabbitmq:
     container_name: "rabbitmq"
@@ -216,6 +219,7 @@ volumes:
   db:
   pgadmin:
   api:
+  keycloak:
 networks:
   pi4:
     driver: bridge
