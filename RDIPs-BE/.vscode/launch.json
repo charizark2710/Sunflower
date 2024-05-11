@@ -11,6 +11,7 @@
             "mode": "debug",
             "program": "${workspaceRoot}",
             "env": {
+                "REACT_APP_API_URL": "http://localhost:3030",
                 "API_PORT": "8080",
                 "POSTGRES_HOST": "localhost",
                 "POSTGRES_PORT": "5432",
@@ -33,7 +34,6 @@
                 "KEYCLOAK_PUBLIC_KEY": "Test",
                 "KEYCLOAK_REALM_NAME": "RDIPs",
                 "APP_HOST": "localhost",
-                "CLIENT_SECRET":"<KEYCLOAK_CLIENT_SECRET>",
                 "REDIRECT_URI": "http://localhost:8080/callback",
             }
         }

@@ -4,7 +4,8 @@ import (
 	LogConstant "RDIPs-BE/constant/LogConst"
 	urlconst "RDIPs-BE/constant/URLConst"
 	"RDIPs-BE/handler"
-	commonModel "RDIPs-BE/model/common"
+	keycloak "RDIPs-BE/handler/Keycloak"
+	model "RDIPs-BE/model/common"
 	"RDIPs-BE/utils"
 	"context"
 	"net/http"
@@ -31,41 +32,52 @@ func Validation() gin.HandlerFunc {
 			c.Next()
 			return
 		}
-		secret := os.Getenv("SECRET")
-		tokenStr := c.GetHeader("Authorization")
-		if tokenStr != "" {
+		tokenStr, err := c.Cookie("access_token")
+
+		//Check expired time, and get new token if refresh token valid
+		if err != nil {
+			utils.Log(LogConstant.Error, "Token is Missing")
+			c.AbortWithStatusJSON(http.StatusForbidden, "Token is Missing")
+			return
+		} else {
 			claims, ok := handler.ClaimsToken(tokenStr)
+			if !ok {
+				utils.Log(LogConstant.Error, "Wrong token format")
+				c.AbortWithStatusJSON(http.StatusUnauthorized, "Wrong token format")
+				return
+			}
+			sub, ok := claims["sub"].(string)
+			if !ok {
+				utils.Log(LogConstant.Error, "Wrong token format")
+				c.AbortWithStatusJSON(http.StatusUnauthorized, "Wrong token format")
+				return
+			}
+			refreshToken, err := model.CacheSrv.Get(sub)
+			if err != nil {
+				utils.Log(LogConstant.Error, err)
+				c.AbortWithStatusJSON(http.StatusUnauthorized, err)
+				return
+			}
+			jwt, err := keycloak.RefreshAccessTokem(c, string(refreshToken.Value))
+			if err != nil {
+				utils.Log(LogConstant.Error, err)
+				c.AbortWithStatusJSON(500, err)
+				return
+			}
+			claims, ok = handler.ClaimsToken(jwt.AccessToken)
 			if !ok {
 				utils.Log(LogConstant.Error, "Unauthorized")
 				c.AbortWithStatusJSON(http.StatusUnauthorized, "Unauthorized")
 				return
 			}
-
-			//Check expired time, and return 403
-			if isTokenExpired(claims) {
-				utils.Log(LogConstant.Error, "Token is Expired")
-				c.AbortWithStatusJSON(http.StatusForbidden, "Token is Expired")
-				return
-			}
-
 			//Check permission, and return 403
 			if !userHasPermission(claims, urlconst.URLRoles[c.Request.Method+c.FullPath()]) {
 				utils.Log(LogConstant.Error, "User doesn't have permission")
 				c.AbortWithStatusJSON(http.StatusForbidden, "User doesn't have permission")
 				return
 			}
-			token, signError := handler.SignToken(&commonModel.Credential{UserName: "test", OtherInfo: ""}, secret)
-			if signError != nil {
-				c.AbortWithStatus(500)
-				return
-			}
-
-			c.SetCookie("token", token, 0, "/", os.Getenv("HOST"), false, true)
 			utils.Log(LogConstant.Debug, "CheckPermission End")
 			c.Next()
-		} else {
-			utils.Log(LogConstant.Error, "Unauthorized")
-			c.AbortWithStatusJSON(http.StatusUnauthorized, "Unauthorized")
 			return
 		}
 	}
@@ -117,15 +129,15 @@ func isKeyCloakTokenClientExpired() bool {
 	return time.Now().After(lastFetchedTimeKeycloak.Add(refreshPeriodKeycloak))
 }
 
-func isTokenExpired(claims jwt.MapClaims) bool {
-	utils.Log(LogConstant.Debug, "check token is expired start")
-	exp := claims["exp"].(float64)
-	expUnix := int64(exp)
-	// Convert Unix timestamp to time.Time
-	expTime := time.Unix(expUnix, 0)
-	// Verify the token's expiration time
-	return !time.Now().Before(expTime)
-}
+// func isTokenExpired(claims jwt.MapClaims) bool {
+// 	utils.Log(LogConstant.Debug, "check token is expired start")
+// 	exp := claims["exp"].(float64)
+// 	expUnix := int64(exp)
+// 	// Convert Unix timestamp to time.Time
+// 	expTime := time.Unix(expUnix, 0)
+// 	// Verify the token's expiration time
+// 	return !time.Now().Before(expTime)
+// }
 
 func userHasPermission(claims jwt.MapClaims, requiredPermissions []string) bool {
 	utils.Log(LogConstant.Debug, "userHasPermission start")

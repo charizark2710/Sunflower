@@ -20,6 +20,7 @@ RUN chmod -R u+rwx /opt
 USER keycloak
 COPY ./RDIPs-Realm.json /opt/keycloak/data/import/
 ENV KEYCLOAK_IMPORT=/opt/keycloak/data/import/RDIPs-realm.json
+ENV KC_FEATURES=token-exchange
 # change these values to point to a running postgres instance
 # ENV KC_DB=postgres
 # ENV KC_DB_URL=<DBURL>

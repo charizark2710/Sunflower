@@ -71,7 +71,7 @@ func InitKeycloakClient() error {
 	return err
 }
 
-func GetKeycloakClient() (*GoCloakClientStruct, error) {
+func GetGocloakObj() (*GoCloakClientStruct, error) {
 	keycloakObj, err := keycloakPool.Get()
 	if err != nil {
 		utils.Log(LogConstant.Error, err)
@@ -82,7 +82,7 @@ func GetKeycloakClient() (*GoCloakClientStruct, error) {
 }
 
 func CreateUser(ctx context.Context, clientKey string, userBody gocloak.User) (string, error) {
-	goCloakObj, err := GetKeycloakClient()
+	goCloakObj, err := GetGocloakObj()
 	if err != nil {
 		utils.Log(LogConstant.Error, err)
 		return "", err
@@ -99,7 +99,7 @@ func CreateUser(ctx context.Context, clientKey string, userBody gocloak.User) (s
 }
 
 func GetUsers(ctx context.Context, clientKey string, params gocloak.GetUsersParams) ([]*gocloak.User, error) {
-	goCloakObj, err := GetKeycloakClient()
+	goCloakObj, err := GetGocloakObj()
 	if err != nil {
 		utils.Log(LogConstant.Error, err)
 		return nil, err
@@ -116,7 +116,7 @@ func GetUsers(ctx context.Context, clientKey string, params gocloak.GetUsersPara
 }
 
 func GetUserByID(ctx context.Context, clientKey string, id string) (*gocloak.User, error) {
-	goCloakObj, err := GetKeycloakClient()
+	goCloakObj, err := GetGocloakObj()
 	if err != nil {
 		utils.Log(LogConstant.Error, err)
 		return nil, err
@@ -148,8 +148,8 @@ func GetLoginScreen() (string, string, error) {
 	return authURL, codeVerifier, nil
 }
 
-func GetTokenObject(ctx context.Context, code, codeVerify string) (interface{}, error) {
-	goCloakObj, err := GetKeycloakClient()
+func GetTokenObject(ctx context.Context, code, codeVerify string) (map[string]interface{}, error) {
+	goCloakObj, err := GetGocloakObj()
 	if err != nil {
 		utils.Log(LogConstant.Error, err)
 		return nil, err
@@ -161,7 +161,7 @@ func GetTokenObject(ctx context.Context, code, codeVerify string) (interface{}, 
 	httpClient := goCloakObj.GoCloakClient.RestyClient().R()
 
 	endpoint := ADMIN_KEYCLOAK_BASE_URL + "/realms/" + ADMIN_KEYCLOAK_REALM_NAME + "/protocol/openid-connect/token"
-	var result interface{}
+	var result map[string]interface{}
 	resp, err := httpClient.SetFormData(map[string]string{
 		"grant_type":    "authorization_code",
 		"code":          code,
@@ -190,4 +190,23 @@ func GetTokenObject(ctx context.Context, code, codeVerify string) (interface{}, 
 		return nil, err
 	}
 	return result, nil
+}
+
+func RefreshAccessTokem(ctx context.Context, refreshToken string) (jwt *gocloak.JWT, err error) {
+	goCloakObj, err := GetGocloakObj()
+	gkClient := goCloakObj.GoCloakClient
+
+	if err != nil {
+		utils.Log(LogConstant.Error, err)
+		return nil, err
+	}
+	if refreshToken != "" {
+		jwt, err := gkClient.RefreshToken(ctx, refreshToken, CLIENT_ID, goCloakObj.client_secret, ADMIN_KEYCLOAK_REALM_NAME)
+		if err != nil {
+			utils.Log(LogConstant.Error, err)
+			return nil, err
+		}
+		return jwt, nil
+	}
+	return nil, fmt.Errorf("can't have access_token")
 }

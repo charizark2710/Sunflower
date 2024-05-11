@@ -2,6 +2,7 @@ package services
 
 import (
 	LogConstant "RDIPs-BE/constant/LogConst"
+	"RDIPs-BE/handler"
 	keycloak "RDIPs-BE/handler/Keycloak"
 	"RDIPs-BE/middleware"
 	"RDIPs-BE/model"
@@ -9,16 +10,19 @@ import (
 	"RDIPs-BE/utils"
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 
 	"github.com/Nerzal/gocloak/v13"
+	"github.com/bradfitz/gomemcache/memcache"
 )
 
 var ADMIN_KEYCLOAK_MASTER_HOST = os.Getenv("KEYCLOAK_BASE_URL") + "/admin/realms/master/"
 var ADMIN_KEYCLOAK_BASE_URL = os.Getenv("KEYCLOAK_BASE_URL")
 var ADMIN_KEYCLOAK_REALM_NAME = os.Getenv("KEYCLOAK_REALM_NAME")
 var APP_HOST = os.Getenv("APP_HOST")
+var REACT_APP_API_URL = os.Getenv("REACT_APP_API_URL")
 
 var PostKeycloakUser = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
 	utils.Log(LogConstant.Info, "PostKeycloakUser Start")
@@ -65,9 +69,11 @@ var GetKeycloakUserById = func(c *commonModel.ServiceContext) (commonModel.Respo
 var GetLoginScreen = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
 	utils.Log(LogConstant.Debug, "GetLoginScreen Start")
 	loginPage, codeVerify, err := keycloak.GetLoginScreen()
+
 	if err == nil {
 		c.Ctx.SetCookie("code", codeVerify, 10*60, "/", APP_HOST, true, true)
-		return commonModel.ResponseTemplate{HttpCode: 200, Data: loginPage}, err
+		c.Ctx.Header("Location", loginPage)
+		return commonModel.ResponseTemplate{HttpCode: http.StatusFound, Data: nil}, err
 	}
 	return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
 }
@@ -78,6 +84,7 @@ var GetLoginScreen = func(c *commonModel.ServiceContext) (commonModel.ResponseTe
 var Callback = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
 	utils.Log(LogConstant.Debug, "Callback Start")
 	codeVerifier, err := c.Ctx.Cookie("code")
+	c.Ctx.SetCookie("code", "", -1, "/", APP_HOST, true, true)
 	if err != nil {
 		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
 	}
@@ -86,7 +93,41 @@ var Callback = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate
 	}
 	res, err := keycloak.GetTokenObject(c.Ctx, c.Query("code"), codeVerifier)
 	if err == nil {
-		return commonModel.ResponseTemplate{HttpCode: 200, Data: res}, err
+		unexpectedErr := fmt.Errorf("something went wrong")
+		accessToken, ok := res["access_token"].(string)
+		if !ok {
+			utils.Log(LogConstant.Error, unexpectedErr)
+			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, unexpectedErr
+		}
+		claimToken, ok := handler.ClaimsToken(accessToken)
+		if !ok {
+			utils.Log(LogConstant.Error, unexpectedErr)
+			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, unexpectedErr
+		}
+		refreshToken, ok := res["refresh_token"].(string)
+		if !ok {
+			utils.Log(LogConstant.Error, unexpectedErr)
+			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, unexpectedErr
+		}
+		sub, ok := claimToken["sub"].(string)
+		if !ok {
+			utils.Log(LogConstant.Error, unexpectedErr)
+			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, unexpectedErr
+		}
+		commonModel.CacheSrv.Add(&memcache.Item{
+			Key:        sub,
+			Value:      []byte(refreshToken),
+			Expiration: 30 * 60,
+		})
+		if !ok {
+			utils.Log(LogConstant.Error, unexpectedErr)
+			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, unexpectedErr
+		}
+		c.Ctx.SetCookie("access_token", accessToken, 10*60, "/", APP_HOST, true, true)
+		c.Ctx.Header("Location", REACT_APP_API_URL)
+
+		c.Ctx.Request.URL.RawQuery = ""
+		return commonModel.ResponseTemplate{HttpCode: http.StatusPermanentRedirect, Data: nil}, err
 	}
 	return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
 }
