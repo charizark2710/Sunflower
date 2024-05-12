@@ -28,4 +28,5 @@ ENV KC_FEATURES=token-exchange
 # ENV KC_DB_PASSWORD=<DBPASSWORD>
 # ENV KC_HOSTNAME=localhost
 # RUN /opt/keycloak/bin/kc.sh export --realm RDIPs --dir /opt --users realm_file
+# cp /var/lib/docker/volumes/sunflower_keycloak/_data/RDIPs-realm.json ~/Desktop/Sunflower
 RUN ["/opt/keycloak/bin/kc.sh"]

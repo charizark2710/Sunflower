@@ -16,6 +16,7 @@ import (
 
 	"github.com/Nerzal/gocloak/v13"
 	"github.com/bradfitz/gomemcache/memcache"
+	"github.com/google/uuid"
 )
 
 var ADMIN_KEYCLOAK_MASTER_HOST = os.Getenv("KEYCLOAK_BASE_URL") + "/admin/realms/master/"
@@ -124,6 +125,8 @@ var Callback = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate
 			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, unexpectedErr
 		}
 		c.Ctx.SetCookie("access_token", accessToken, 10*60, "/", APP_HOST, true, true)
+		c.Ctx.SetCookie("token", uuid.NewString(), 10*60, "/", APP_HOST, true, true)
+
 		c.Ctx.Header("Location", REACT_APP_API_URL)
 
 		c.Ctx.Request.URL.RawQuery = ""
