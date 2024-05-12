@@ -21,6 +21,9 @@ var ADMIN_KEYCLOAK_REALM_NAME = os.Getenv("KEYCLOAK_REALM_NAME")
 var CLIENT_ID = os.Getenv("KEYCLOAK_CLIENT_ID")
 var REDIRECT_URI = os.Getenv("REDIRECT_URI")
 
+// For debug local docker deploy only
+var KEYCLOAK_AUTHEN_URL = os.Getenv("KEYCLOAK_AUTHEN_URL")
+
 type GoCloakClientStruct struct {
 	GoCloakClient *gocloak.GoCloak
 	client_id     string
@@ -136,7 +139,11 @@ func GetLoginScreen() (string, string, error) {
 	codeVerifier := oauth2.GenerateVerifier()
 	codeChallenge := oauth2.S256ChallengeFromVerifier(codeVerifier)
 	codeVerifyMethod := "S256"
-	authURL := ADMIN_KEYCLOAK_BASE_URL + "/realms/" + ADMIN_KEYCLOAK_REALM_NAME +
+	kcEndpoint := ADMIN_KEYCLOAK_BASE_URL
+	if KEYCLOAK_AUTHEN_URL != "" {
+		kcEndpoint = KEYCLOAK_AUTHEN_URL
+	}
+	authURL := kcEndpoint + "/realms/" + ADMIN_KEYCLOAK_REALM_NAME +
 		"/protocol/openid-connect/auth?response_type=code" +
 		"&client_id=" + CLIENT_ID +
 		"&redirect_uri=" + url.PathEscape(REDIRECT_URI) +

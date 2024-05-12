@@ -37,7 +37,7 @@ services:
     networks:
       pi4:
         aliases:
-          - sunflower_auth
+          - auth.sunflower-rdips.tech
     volumes:
       - keycloak:/opt
 
@@ -66,7 +66,9 @@ services:
     networks:
       pi4:
         aliases:
-          - sfBroker
+          - amqp-management.sunflower-rdips.tech
+          - mqtt.sunflower-rdips.tech
+          - amqp.sunflower-rdips.tech
   # gateway:
   #   container_name: "gateway"
   #   # Maybe there some memory leak that prevent docker to excute command so this is good for now
@@ -112,7 +114,8 @@ services:
     networks:
       pi4:
         aliases:
-          - sunflower
+          - sunflower-rdips.tech
+
   pgadmin:
     container_name: pgadmin4
     image: dpage/pgadmin4
@@ -129,6 +132,7 @@ services:
       pi4:
         aliases:
           - sunflower
+
   api:
     container_name: sunflower_api
     env_file:
@@ -152,7 +156,7 @@ services:
     networks:
       pi4:
         aliases:
-          - sunflower
+          - sunflower-rdips.tech
   
   api_bk:
     container_name: sunflower_api_bk
@@ -176,7 +180,7 @@ services:
     networks:
       pi4:
         aliases:
-          - sunflower
+          - sunflower-rdips.tech
 
 
   ui:
@@ -193,7 +197,7 @@ services:
     networks:
       pi4:
         aliases:
-          - sunflower
+          - sunflower-rdips.tech
 
   server:
     container_name: sunflower_server
