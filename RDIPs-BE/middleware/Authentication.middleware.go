@@ -52,30 +52,33 @@ func Validation() gin.HandlerFunc {
 				c.AbortWithStatusJSON(http.StatusUnauthorized, "Wrong token format")
 				return
 			}
-			refreshToken, err := model.CacheSrv.Get(sub)
-			if err != nil {
-				utils.Log(LogConstant.Error, err)
-				c.AbortWithStatusJSON(http.StatusUnauthorized, err)
-				return
+			if isTokenExpired(claims) {
+				refreshToken, err := model.CacheSrv.Get(sub)
+				if err != nil {
+					utils.Log(LogConstant.Error, err)
+					c.AbortWithStatusJSON(http.StatusUnauthorized, err)
+					return
+				}
+				jwt, err := keycloak.RefreshAccessTokem(c, string(refreshToken.Value))
+				if err != nil {
+					utils.Log(LogConstant.Error, err)
+					c.AbortWithStatusJSON(500, err)
+					return
+				}
+				claims, ok = handler.ClaimsToken(jwt.AccessToken)
 			}
-			jwt, err := keycloak.RefreshAccessTokem(c, string(refreshToken.Value))
-			if err != nil {
-				utils.Log(LogConstant.Error, err)
-				c.AbortWithStatusJSON(500, err)
-				return
-			}
-			claims, ok = handler.ClaimsToken(jwt.AccessToken)
+
 			if !ok {
 				utils.Log(LogConstant.Error, "Unauthorized")
 				c.AbortWithStatusJSON(http.StatusUnauthorized, "Unauthorized")
 				return
 			}
 			//Check permission, and return 403
-			if !userHasPermission(claims, urlconst.URLRoles[c.Request.Method+c.FullPath()]) {
-				utils.Log(LogConstant.Error, "User doesn't have permission")
-				c.AbortWithStatusJSON(http.StatusForbidden, "User doesn't have permission")
-				return
-			}
+			// if !userHasPermission(claims, urlconst.URLRoles[c.Request.Method+c.FullPath()]) {
+			// 	utils.Log(LogConstant.Error, "User doesn't have permission")
+			// 	c.AbortWithStatusJSON(http.StatusForbidden, "User doesn't have permission")
+			// 	return
+			// }
 			utils.Log(LogConstant.Debug, "CheckPermission End")
 			c.Next()
 			return
@@ -129,15 +132,15 @@ func isKeyCloakTokenClientExpired() bool {
 	return time.Now().After(lastFetchedTimeKeycloak.Add(refreshPeriodKeycloak))
 }
 
-// func isTokenExpired(claims jwt.MapClaims) bool {
-// 	utils.Log(LogConstant.Debug, "check token is expired start")
-// 	exp := claims["exp"].(float64)
-// 	expUnix := int64(exp)
-// 	// Convert Unix timestamp to time.Time
-// 	expTime := time.Unix(expUnix, 0)
-// 	// Verify the token's expiration time
-// 	return !time.Now().Before(expTime)
-// }
+func isTokenExpired(claims jwt.MapClaims) bool {
+	utils.Log(LogConstant.Debug, "check token is expired start")
+	exp := claims["exp"].(float64)
+	expUnix := int64(exp)
+	// Convert Unix timestamp to time.Time
+	expTime := time.Unix(expUnix, 0)
+	// Verify the token's expiration time
+	return !time.Now().Before(expTime)
+}
 
 func userHasPermission(claims jwt.MapClaims, requiredPermissions []string) bool {
 	utils.Log(LogConstant.Debug, "userHasPermission start")

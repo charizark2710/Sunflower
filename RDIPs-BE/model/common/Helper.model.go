@@ -1,11 +1,13 @@
 package model
 
 import (
+	"os"
+
 	"github.com/bradfitz/gomemcache/memcache"
 	"gorm.io/gorm"
 )
 
-var CacheSrv = memcache.New("10.0.0.1:11211")
+var CacheSrv = memcache.New(os.Getenv("CACHE_SERVER") + ":11211")
 
 type helper struct {
 	db *gorm.DB

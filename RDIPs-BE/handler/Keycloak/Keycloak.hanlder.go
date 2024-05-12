@@ -202,7 +202,7 @@ func GetTokenObject(ctx context.Context, code, codeVerify string) (map[string]in
 func RefreshAccessTokem(ctx context.Context, refreshToken string) (jwt *gocloak.JWT, err error) {
 	goCloakObj, err := GetGocloakObj()
 	gkClient := goCloakObj.GoCloakClient
-
+	fmt.Print(refreshToken)
 	if err != nil {
 		utils.Log(LogConstant.Error, err)
 		return nil, err

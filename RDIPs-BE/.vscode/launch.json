@@ -35,6 +35,7 @@
                 "KEYCLOAK_REALM_NAME": "RDIPs",
                 "APP_HOST": "localhost",
                 "REDIRECT_URI": "http://localhost:8080/callback",
+                "CACHE_SERVER": "localhost"
             }
         }
     ]
