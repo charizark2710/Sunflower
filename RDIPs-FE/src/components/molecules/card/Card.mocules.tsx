@@ -1,10 +1,10 @@
-import './Card.mocules.scss';
-import { connect } from 'react-redux';
-import TextAtomHeader from '../../atoms/text/TextHeader.atom';
 import EditIcon from '@mui/icons-material/Edit';
-import { SimpleDialog } from '../../atoms/dialog/Dialog.atom';
-import { useEffect, useState } from 'react';
 import { Box, Divider } from '@mui/material';
+import { useEffect, useState } from 'react';
+import { connect } from 'react-redux';
+import { SimpleDialog } from '../../atoms/dialog/Dialog.atom';
+import TextAtomHeader from '../../atoms/text/TextHeader.atom';
+import './Card.mocules.scss';
 
 interface CardProps {
   title: string;

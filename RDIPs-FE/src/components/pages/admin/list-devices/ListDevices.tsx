@@ -1,3 +1,4 @@
+import { Box } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -9,10 +10,10 @@ import TableAtom from '../../../atoms/table/Table.atom';
 import BreakcrumbMocules from '../../../molecules/breakcrumb/Breakcrumb.mocules';
 import { FormCreateDeviceMolecules } from '../../../molecules/form/device-create/FormCreateDevice.molecules';
 import './ListDevices.scss';
-import { Box } from '@mui/material';
 
 interface ListDevicesProps {
   dispatch: any;
+  showTableOnly: boolean;
 }
 
 interface DeviceResponse {
@@ -40,7 +41,7 @@ export function createData(data: DeviceResponse): DeviceData {
   };
 }
 
-const ListDevices: React.FC<ListDevicesProps> = ({ dispatch }) => {
+const ListDevices: React.FC<ListDevicesProps> = ({ dispatch, showTableOnly = false }) => {
   const [deviceListData, setDeviceListData] = useState([]);
   const [popupStatus, setPopupStatus] = useState('');
 
@@ -55,7 +56,7 @@ const ListDevices: React.FC<ListDevicesProps> = ({ dispatch }) => {
 
   const getListDevice = () => {
     getAllDevices()
-      .then((data: {data: any}) => {
+      .then((data: { data: any }) => {
         let devices = data.data;
         setDeviceListData(devices.reverse().map((device: DeviceResponse) => createData(device)));
       })
@@ -112,7 +113,15 @@ const ListDevices: React.FC<ListDevicesProps> = ({ dispatch }) => {
     navigate('/detail-device', { replace: false, state: detail });
   }
 
-  return (
+  return showTableOnly ? (
+    <TableAtom
+      onRowClick={navigateToDetailPage}
+      rows={deviceListData}
+      deviceColumns={deviceColumns}
+      title={config['deviceList.title']}
+      headCells={headCells}
+    />
+  ) : (
     <Box className='list-container'>
       <Box className='card-container'>
         <BreakcrumbMocules

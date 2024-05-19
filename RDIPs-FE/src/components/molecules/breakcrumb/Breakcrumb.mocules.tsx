@@ -1,10 +1,11 @@
+import { Box, Typography } from '@mui/material';
+import { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { ButtonAtom } from '../../atoms/button/Button.atom';
 import { SimpleDialog } from '../../atoms/dialog/Dialog.atom';
-import { useEffect, useState } from 'react';
 import { SearchAtom } from '../../atoms/search/Search.atom';
-import { useNavigate } from 'react-router-dom';
-import { Box, Typography } from '@mui/material';
+import TitlePageAtom from '../../atoms/text/TitlePgae.atom';
 import './Breakcrumb.mocules.scss';
 
 interface BreakCrumbProps {
@@ -59,7 +60,7 @@ const BreakCrumbMocule: React.FC<BreakCrumbProps> = ({ title, icon = <></>, moda
               {icon} {title}
             </Typography>
           </Box>
-          <Box className='breakcrumb-big'>{title}</Box>
+          <TitlePageAtom title={title}></TitlePageAtom>
         </Box>
         <Box className='flex-align-center w-max'>
           <SearchAtom />

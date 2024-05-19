@@ -1,13 +1,13 @@
+import { Box } from '@mui/material';
 import { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { setNavbarTitle } from '../../../../redux/slice/pageSlice';
+import { useDispatch } from '../../../../redux/store';
 import config from '../../../../utils/en.json';
 import { HeadCell, TypeUserEnum, UserData } from '../../../../utils/interface';
 import TableAtom from '../../../atoms/table/Table.atom';
 import BreakcrumbMocules from '../../../molecules/breakcrumb/Breakcrumb.mocules';
 import './Campaign.scss';
-import { useDispatch } from '../../../../redux/store';
-import { Box } from '@mui/material';
 
 const Campaign = () => {
   function navigateToDetailPage() {

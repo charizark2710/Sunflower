@@ -1,6 +1,10 @@
+import { Box, Button, Divider } from '@mui/material';
 import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { getAllDevices } from '../../../../../axios/api';
 import chartData from '../../../../../lib/chartData.json';
 import { HighChartCustom } from '../../../../../lib/highchart/HighChartCustom';
+import config from '../../../../../utils/en.json';
 import { TypeChart } from '../../../../../utils/enum';
 import { DeviceChangeHistoryData, DeviceLogHistoryData, HeadCell, StatusEnum } from '../../../../../utils/interface';
 import CollapseAtom from '../../../../atoms/collapse/Collapse';
@@ -8,11 +12,7 @@ import TableAtom from '../../../../atoms/table/Table.atom';
 import TextAtomDetail from '../../../../atoms/text/TextDetail.atom';
 import CardMocules from '../../../../molecules/card/Card.mocules';
 import { FormCreateDeviceMolecules } from '../../../../molecules/form/device-create/FormCreateDevice.molecules';
-import config from '../../../../../utils/en.json';
-import { getAllDevices } from '../../../../../axios/api';
 import { createData } from '../ListDevices';
-import { Box, Button, Divider } from '@mui/material';
-import { useLocation, useNavigate } from 'react-router-dom';
 
 // import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 // import dayjs, { Dayjs } from 'dayjs';

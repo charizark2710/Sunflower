@@ -1,9 +1,5 @@
+import { SelectChangeEvent } from '@mui/material';
 import React from 'react';
-import { Box, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
-import chartData from '../../lib/chartData.json';
-import DatePickerCustom from '../../lib/datepicker/DatePickerCustom';
-import { HighChartCustom } from '../../lib/highchart/HighChartCustom';
-import { TypeChart } from '../../utils/enum';
 import './Temp.page.scss';
 
 function TempPage() {

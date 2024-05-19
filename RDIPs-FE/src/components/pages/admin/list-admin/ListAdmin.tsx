@@ -1,10 +1,10 @@
+import { Box } from '@mui/material';
 import { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { setNavbarTitle } from '../../../../redux/slice/pageSlice';
 import config from '../../../../utils/en.json';
 import { AdminData, HeadCell } from '../../../../utils/interface';
 import TableAtom from '../../../atoms/table/Table.atom';
-import { Box } from '@mui/material';
 import BreakcrumbMocules from '../../../molecules/breakcrumb/Breakcrumb.mocules';
 import './ListAdmin.scss';
 
