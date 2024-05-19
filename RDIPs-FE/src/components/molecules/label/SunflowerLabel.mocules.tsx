@@ -1,9 +1,9 @@
 import AcUnitIcon from '@mui/icons-material/AcUnit';
+import { Box, Typography } from '@mui/material';
 import { connect } from 'react-redux';
 import { Page } from '../../../model/page';
-import './SunflowerLabel.mocules.scss';
-import { Box, Typography } from '@mui/material';
 import { LinkAtom, LinkAtomProps } from '../../atoms/link/Link.atom';
+import './SunflowerLabel.mocules.scss';
 
 interface SunLabelProps {
   link?: LinkAtomProps;

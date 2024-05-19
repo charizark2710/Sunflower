@@ -1,11 +1,11 @@
+import { Box, Button, TextField } from '@mui/material';
 import { Field } from 'formik';
 import React from 'react';
 import { addDevice, updateDevice } from '../../../../axios/api';
+import { initValue } from '../../../../utils/function';
+import { DeviceData } from '../../../../utils/interface';
 import ErrorMessageAtom from '../../../atoms/error-message/ErrorMessageAtom.atom';
 import { FormikAtom } from '../../../atoms/formik/FormikAtom.atom';
-import { DeviceData } from '../../../../utils/interface';
-import { Box, Button, TextField } from '@mui/material';
-import { initValue } from '../../../../utils/function';
 
 interface FormCreateDeviceMoleculesProps {
   onClosePopUp: (value?: any) => void;
@@ -36,12 +36,12 @@ export const FormCreateDeviceMolecules: React.FC<FormCreateDeviceMoleculesProps>
   const handleSubmit = (formValue: RequestCreateDevices) => {
     if (state === 'create') {
       addDevice(formValue)
-        .then((data: any) => onClosePopUp())
-        .catch((err: any) => alert('Oop! There is some error happened!'));
+        .then((_) => onClosePopUp())
+        .catch((_) => alert('Oop! There is some error happened!'));
     } else {
       updateDevice(formValue)
-        .then((data: any) => onClosePopUp())
-        .catch((err: any) => alert('Oop! There is some error happened!'));
+        .then((_) => onClosePopUp())
+        .catch((_) => alert('Oop! There is some error happened!'));
     }
   };
 

@@ -1,4 +1,4 @@
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Button, Grid } from '@mui/material';
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import chartData from '../../../../../lib/chartData.json';
@@ -7,7 +7,9 @@ import { TypeChart } from '../../../../../utils/enum';
 import { DeviceChangeHistoryData, DeviceLogHistoryData, HeadCell, StatusEnum } from '../../../../../utils/interface';
 import CollapseAtom from '../../../../atoms/collapse/Collapse';
 import TableAtom from '../../../../atoms/table/Table.atom';
+import TitlePageAtom from '../../../../atoms/text/TitlePgae.atom';
 import DetailDeviceUser from './DetailDeviceUser';
+import './DetailUser.scss';
 import Expense from './history/Expense';
 import Feedback from './history/Feedback';
 import Maintaince from './history/Maintainace';
@@ -181,27 +183,46 @@ const DetailUser = () => {
   const detailUser: any = state;
 
   return (
-    <Box style={{ padding: '0 30px', backgroundColor: 'white', minHeight: '80vh' }}>
-      <Box>
-        <Typography component={'span'} variant="h3">User information</Typography>
-        <Box>UserId: {detailUser.user_id}</Box>
-        <Box>User Name: {detailUser.user_name}</Box>
-        <Box>Firmware version: {detailUser.address}</Box>
-        <Box>App version: {detailUser.phone_num}</Box>
-        <Box>Type: {detailUser.email}</Box>
-        <Box>Status: {detailUser.type}</Box>
-      </Box>
-      <Box className='table-list-devices'>
-        <Typography component={'span'} variant="h3">List Devices Base User</Typography>
+    <Box className='list-container'>
+      <Box className='card-container'>
+        <Box>
+          <TitlePageAtom title='User information'></TitlePageAtom>
+          <br></br>
+          <Box sx={{ flexGrow: 1 }}>
+            <Grid container spacing={2}>
+              <Grid item xs={6}>
+                <Box>UserId: {detailUser.user_id}</Box>
+              </Grid>
+              <Grid item xs={6}>
+                <Box>User Name: {detailUser.user_name}</Box>
+              </Grid>
+              <Grid item xs={6}>
+                <Box>Firmware version: {detailUser.address}</Box>
+              </Grid>
+              <Grid item xs={6}>
+                <Box>App version: {detailUser.phone_num}</Box>
+              </Grid>
+              <Grid item xs={6}>
+                <Box>Type: {detailUser.email}</Box>
+              </Grid>
+              <Grid item xs={6}>
+                <Box>Status: {detailUser.type}</Box>
+              </Grid>
+            </Grid>
+          </Box>
+        </Box>
+        <br></br>
+        <TitlePageAtom title='List Devices Base User'></TitlePageAtom>
+        <br></br>
         <DetailDeviceUser />
-      </Box>
-      <Box className='history'>
-        <Typography component={'span'} variant="h3">History</Typography>
-        {/* need to confirm more to complete */}
-        <CollapseAtom buttonTitle='Maintaince' children={<Maintaince />} />
-        <CollapseAtom buttonTitle='Feedback' children={<Feedback />} />
-        <CollapseAtom buttonTitle='Receipt' children={<Receipt />} />
-        <CollapseAtom buttonTitle='Expense' children={<Expense />} />
+        <Box className='history'>
+          <TitlePageAtom title='History'></TitlePageAtom>
+          {/* need to confirm more to complete */}
+          <CollapseAtom buttonTitle='Maintaince' children={<Maintaince />} />
+          <CollapseAtom buttonTitle='Feedback' children={<Feedback />} />
+          <CollapseAtom buttonTitle='Receipt' children={<Receipt />} />
+          <CollapseAtom buttonTitle='Expense' children={<Expense />} />
+        </Box>
       </Box>
     </Box>
   );

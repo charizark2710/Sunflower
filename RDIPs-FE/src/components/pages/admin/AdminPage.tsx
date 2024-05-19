@@ -1,10 +1,10 @@
+import { Box, Grid } from '@mui/material';
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import HeaderOrganism from '../../organisms/common/header/Header.organism';
 import SidebarOrganism from '../../organisms/common/sidebar/Sidebar.organism';
 import HeaderTemplate from '../../templates/common/Header.template';
 import './AdminPage.scss';
-import { Box, Grid } from '@mui/material';
 
 interface AdminPageProps {
   children?: React.ReactNode;

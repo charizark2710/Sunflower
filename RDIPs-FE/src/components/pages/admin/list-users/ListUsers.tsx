@@ -1,3 +1,4 @@
+import { Box } from '@mui/material';
 import { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -7,7 +8,6 @@ import { HeadCell, TypeUserEnum, UserData } from '../../../../utils/interface';
 import TableAtom from '../../../atoms/table/Table.atom';
 import BreakcrumbMocules from '../../../molecules/breakcrumb/Breakcrumb.mocules';
 import './ListUsers.scss';
-import { Box } from '@mui/material';
 
 const ListUsers = ({ dispatch }: any) => {
   const navigate = useNavigate();
