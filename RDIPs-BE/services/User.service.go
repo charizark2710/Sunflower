@@ -124,7 +124,7 @@ var Callback = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate
 			utils.Log(LogConstant.Error, unexpectedErr)
 			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, unexpectedErr
 		}
-		c.Ctx.SetCookie("access_token", accessToken, 10*60, "/", APP_HOST, true, true)
+		c.Ctx.SetCookie("access_token", accessToken, 30*60, "/", APP_HOST, true, true)
 		c.Ctx.SetCookie("token", uuid.NewString(), 30*60, "/", APP_HOST, true, false)
 
 		c.Ctx.Header("Location", REACT_APP_API_URL)
