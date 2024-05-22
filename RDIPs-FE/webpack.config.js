@@ -26,18 +26,17 @@ module.exports = {
   stats: 'errors-only',
   devServer: {
     static: [{ directory: path.join(__dirname, "build") }, { directory: path.join(__dirname, "public") }],
-    proxy: {
-      '/api': {
-         target: {
-            host: "localhost",
-            protocol: 'http:',
-            port: 8080
-         },
-         pathRewrite: {
-            '^/api': ''
-         }
+    proxy: [{
+      context: ['/api'],
+      target: {
+        host: "localhost",
+        protocol: 'http:',
+        port: 8080
+      },
+      pathRewrite: {
+        '^/api': ''
       }
-    },
+    }],
     compress: true,
     historyApiFallback: true,
     port: 3030, // you can change the port

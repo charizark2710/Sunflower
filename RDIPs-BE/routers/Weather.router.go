@@ -9,7 +9,5 @@ import (
 )
 
 func WeatherRouter(router *gin.Engine) {
-
-	router.Use(middleware.ValidationAPIWeatherKey())
-	router.GET(urlconst.GetWeatherForecast, controller.Controller)
+	router.GET(urlconst.GetWeatherForecast, middleware.ValidationAPIWeatherKey(), controller.Controller)
 }

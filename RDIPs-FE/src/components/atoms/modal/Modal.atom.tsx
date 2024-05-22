@@ -1,9 +1,9 @@
-import { Modal, Box, Typography } from '@mui/material';
+import { Box, Modal, Typography } from '@mui/material';
 
 interface ModalAtomProps {
   data?: any;
-  handleClose: (arg: any)=> void;
-  open: boolean
+  handleClose: (arg: any) => void;
+  open: boolean;
 }
 
 const style = {
@@ -18,25 +18,23 @@ const style = {
   p: 4,
 };
 
-const ModalAtom = (props: ModalAtomProps) => {  
+const ModalAtom = (props: ModalAtomProps) => {
   return (
-    <>
-      <Modal
-        open={props.open}
-        onClose={props.handleClose}
-        aria-labelledby='modal-modal-title'
-        aria-describedby='modal-modal-description'
-      >
-        <Box sx = {style}>
-          <Typography id='modal-modal-title' variant='h6' component='h2'>
-            {props.data.idDevice}
-          </Typography>
-          <Typography id='modal-modal-description' sx={{ mt: 2 }}>
-            Duis mollis, est non commodo luctus, nisi erat porttitor ligula.
-          </Typography>
-        </Box>
-      </Modal>
-    </>
+    <Modal
+      open={props.open}
+      onClose={props.handleClose}
+      aria-labelledby='modal-modal-title'
+      aria-describedby='modal-modal-description'
+    >
+      <Box sx={style}>
+        <Typography component={'h2'} id='modal-modal-title'>
+          {props.data.idDevice}
+        </Typography>
+        <Typography component={'span'} id='modal-modal-description' sx={{ mt: 2 }}>
+          Duis mollis, est non commodo luctus, nisi erat porttitor ligula.
+        </Typography>
+      </Box>
+    </Modal>
   );
 };
 

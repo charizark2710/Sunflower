@@ -1,5 +1,7 @@
 import AcUnitIcon from '@mui/icons-material/AcUnit';
+import { Box, Typography } from '@mui/material';
 import { connect } from 'react-redux';
+import { Page } from '../../../model/page';
 import { LinkAtom, LinkAtomProps } from '../../atoms/link/Link.atom';
 import './SunflowerLabel.mocules.scss';
 
@@ -51,10 +53,10 @@ const SunflowerLabel: React.FC<SunLabelProps> = ({
 
   return (
     <LinkAtom to={link?.to} className={link?.className}>
-      <div style={style} onClick={onClick}>
-        <div className={state ? 'side-bar-item flex-justify-center' : 'side-bar-item'} style={{ height: height }}>
-          <div>
-            <div
+      <Box style={style} onClick={onClick}>
+        <Box className={state ? 'side-bar-item flex-justify-center' : 'side-bar-item'} style={{ height: height }}>
+          <Box>
+            <Box
               className={
                 isHomepage
                   ? 'flex-align-center home-page-item'
@@ -63,30 +65,34 @@ const SunflowerLabel: React.FC<SunLabelProps> = ({
                   : 'flex-align-center  bg-sidebar-item'
               }
             >
-              <div
+              <Box
                 className='flex-align-center'
-                style={{ height: '30px', width: 'fix-content', padding: iconPos !== 0 ? '0' : '0 10px' }}
+                style={{
+                  height: '30px',
+                  width: 'fix-content',
+                  padding: iconPos !== 0 ? '0' : '0 10px',
+                }}
               >
                 {iconPos === 0 ? iconItem() : ''}{' '}
-              </div>
+              </Box>
               {link != null ? (
-                <span className={link?.children === navbarTitle ? 'active link-text' : 'link-text'}>
-                  {state ? '' : link.children}
-                </span>
+                <Typography component={'span'} className={link?.children === navbarTitle ? 'active link-text' : 'link-text'}>
+                  {state ? '' : link?.children}
+                </Typography>
               ) : (
                 ''
               )}
-            </div>
-          </div>
-        </div>
-      </div>
+            </Box>
+          </Box>
+        </Box>
+      </Box>
     </LinkAtom>
   );
 };
 
-const mapPropToState = ({ navbarTitle }: any) => {
+const mapPropToState = ({ page }: { page: Page }) => {
   return {
-    navbarTitle,
+    navbarTitle: page.navbarTitle,
   };
 };
 

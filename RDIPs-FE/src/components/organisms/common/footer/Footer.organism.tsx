@@ -17,7 +17,7 @@ const dataFooterRender = {
   copyRight: '© 2022 Sunflower ProjectProject. All rights reserved',
 };
 
-const footerLeftLinks = [
+const FooterLeftLinks = [
   {
     to: dataFooterRender.linkAdditionLeft[0].link,
     className: 'link-item',
@@ -40,7 +40,7 @@ const footerLeftLinks = [
   },
 ];
 
-const footerRightLinks = [
+const FooterRightLinks = [
   {
     to: dataFooterRender.linkAdditionRight[0].link,
     className: 'link-item',
@@ -55,10 +55,10 @@ const footerRightLinks = [
 
 function FooterOrganism() {
   return (
-    <footer className='footer-container'>
+    <Box className='footer-container'>
       <Grid container>
         <Grid item xs={5} sx={{ paddingLeft: '30px' }}>
-          <NavbarMolecules links={footerLeftLinks} />
+          <NavbarMolecules links={FooterLeftLinks} />
         </Grid>
       </Grid>
       <StraightAtom color='#9F9F9F' />
@@ -67,10 +67,10 @@ function FooterOrganism() {
           {dataFooterRender.copyRight}
         </Grid>
         <Grid item xs={1} className='flex-justify-end'>
-          <NavbarMolecules links={footerRightLinks} />
+          <NavbarMolecules links={FooterRightLinks} />
         </Grid>
       </Grid>
-    </footer>
+    </Box>
   );
 }
 

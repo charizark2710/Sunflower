@@ -1,9 +1,22 @@
 import { configureStore } from '@reduxjs/toolkit';
-import { logger } from 'redux-logger';
-import thunk from 'redux-thunk';
-import reducer from './reducers';
+import {
+  useDispatch as useReduxDispatch,
+  useSelector as useReduxSelector,
+} from "react-redux";
+import pageReducers from './slice/pageSlice';
+import authReducers from './slice/authSlice';
 
-export const store = configureStore({
-  reducer,
-  middleware: [thunk], //TODO
+const reducer = {
+  page: pageReducers,
+  auth: authReducers
+};
+
+export const useSelector = useReduxSelector;
+export const useDispatch = () => useReduxDispatch();
+
+const store = configureStore({
+  reducer: reducer,
+  devTools: true,
 });
+
+export default store;

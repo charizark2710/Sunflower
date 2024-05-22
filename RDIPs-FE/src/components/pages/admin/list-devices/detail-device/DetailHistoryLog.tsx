@@ -1,17 +1,9 @@
-import { useLocation } from 'react-router';
+import { Box } from '@mui/material';
+import { useLocation } from 'react-router-dom';
 
 const DetailHistoryLog = () => {
-  let { state } = useLocation();
-  // const detailHistoryLog: any = state;
-  // console.log(detailHistoryLog);
+  return <Box style={{ padding: '0 30px', backgroundColor: 'white', minHeight: '80vh' }}>Device History Log</Box>;
 
-  return (
-    <div style={{ padding: '0 30px', backgroundColor: 'white', minHeight: '80vh' }}>
-      <section>
-        <h3>Device History Log</h3>
-      </section>
-    </div>
-  );
 };
 
 export default DetailHistoryLog;

@@ -23,11 +23,18 @@ const (
 	//Weather
 	GetWeatherForecast = "/weather/forecast"
 
-	//Keycloak
+	//Keycloak - Users
 	PostLogin           = "/login"
 	PostKeycloakUser    = "/users"
 	GetKeycloakUsers    = "/users"
 	GetKeycloakUserById = "/users/:id"
 	PutKeycloakUsers    = "/users/:id"
 	DeleteKeycloakUser  = "/users/:id"
+
+	//Keycloak - Groups
+	GetKeycloakGroups    = "/groups"
+	GetKeycloakGroupById = "/groups/:id"
+	DeleteKeycloakGroup  = "/groups/:id"
+	PostKeycloakGroup    = "/groups"
+	PutKeycloakGroup     = "/groups/:id"
 )
