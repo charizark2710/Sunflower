@@ -9,9 +9,10 @@ import (
 )
 
 func UserRouter(router *gin.Engine) {
+	router.GET(urlconst.GetLoginScreen, controller.Controller)
+	router.GET(urlconst.Callback, controller.Controller)
 	authRouter := router.Group("")
 	{
-		router.POST(urlconst.PostLogin, controller.Controller)
 		authRouter.Use(middleware.CheckClientTokenValidation())
 		authRouter.GET(urlconst.GetKeycloakUsers, controller.Controller)
 		authRouter.GET(urlconst.GetKeycloakUserById, controller.Controller)

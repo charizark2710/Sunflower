@@ -4,7 +4,8 @@ import (
 	LogConstant "RDIPs-BE/constant/LogConst"
 	urlconst "RDIPs-BE/constant/URLConst"
 	"RDIPs-BE/handler"
-	commonModel "RDIPs-BE/model/common"
+	keycloak "RDIPs-BE/handler/Keycloak"
+	model "RDIPs-BE/model/common"
 	"RDIPs-BE/utils"
 	"context"
 	"net/http"
@@ -14,7 +15,6 @@ import (
 	"github.com/Nerzal/gocloak/v13"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
-	"github.com/google/uuid"
 )
 
 const KEYCLOAK_TOKEN_CLIENT_KEY = "KeycloakTokenClient"
@@ -27,45 +27,61 @@ var (
 )
 
 func Validation() gin.HandlerFunc {
-
 	return func(c *gin.Context) {
-		secret := os.Getenv("SECRECT")
-		tokenStr := c.GetHeader("Authorization")
-		if tokenStr != "" {
+		if c.FullPath() == urlconst.GetLoginScreen || c.FullPath() == urlconst.Callback {
+			c.Next()
+			return
+		}
+		tokenStr, err := c.Cookie("access_token")
+
+		//Check expired time, and get new token if refresh token valid
+		if err != nil {
+			utils.Log(LogConstant.Error, "Token is Missing")
+			c.AbortWithStatusJSON(http.StatusForbidden, "Token is Missing")
+			return
+		} else {
 			claims, ok := handler.ClaimsToken(tokenStr)
 			if !ok {
-				c.AbortWithStatus(http.StatusUnauthorized)
+				utils.Log(LogConstant.Error, "Wrong token format")
+				c.AbortWithStatusJSON(http.StatusUnauthorized, "Wrong token format")
 				return
 			}
-
-			//Check expired time, and return 403
+			sub, ok := claims["sub"].(string)
+			if !ok {
+				utils.Log(LogConstant.Error, "Wrong token format")
+				c.AbortWithStatusJSON(http.StatusUnauthorized, "Wrong token format")
+				return
+			}
 			if isTokenExpired(claims) {
-				c.AbortWithStatus(http.StatusForbidden)
-				return
+				refreshToken, err := model.CacheSrv.Get(sub)
+				if err != nil {
+					utils.Log(LogConstant.Error, err)
+					c.AbortWithStatusJSON(http.StatusUnauthorized, err)
+					return
+				}
+				jwt, err := keycloak.RefreshAccessToken(c, string(refreshToken.Value))
+				if err != nil {
+					utils.Log(LogConstant.Error, err)
+					c.AbortWithStatusJSON(500, err)
+					return
+				}
+				claims, ok = handler.ClaimsToken(jwt.AccessToken)
 			}
 
+			if !ok {
+				utils.Log(LogConstant.Error, "Unauthorized")
+				c.AbortWithStatusJSON(http.StatusUnauthorized, "Unauthorized")
+				return
+			}
 			//Check permission, and return 403
-			if !userHasPermission(claims, urlconst.URLRoles[c.Request.Method+c.FullPath()]) {
-				c.AbortWithStatus(http.StatusForbidden)
-				return
-			}
-
+			// if !userHasPermission(claims, urlconst.URLRoles[c.Request.Method+c.FullPath()]) {
+			// 	utils.Log(LogConstant.Error, "User doesn't have permission")
+			// 	c.AbortWithStatusJSON(http.StatusForbidden, "User doesn't have permission")
+			// 	return
+			// }
 			utils.Log(LogConstant.Debug, "CheckPermission End")
 			c.Next()
-		} else {
-			tokenID, uuidErr := uuid.NewRandom()
-			if uuidErr != nil {
-				c.AbortWithStatus(500)
-				return
-			}
-			token, signError := handler.SignToken(&commonModel.Credential{UserName: "test", OtherInfo: "", ID: tokenID}, secret)
-			if signError != nil {
-				c.AbortWithStatus(500)
-				return
-			}
-
-			c.SetCookie("token", token, 0, "/", os.Getenv("HOST"), false, true)
-			c.Next()
+			return
 		}
 	}
 }
@@ -91,9 +107,9 @@ func getTokenByClientAccount(ctx context.Context, c *gin.Context) error {
 
 	client := gocloak.NewClient(os.Getenv("KEYCLOAK_BASE_URL"))
 	token, err := client.LoginAdmin(
-		context.Background(),
-		os.Getenv("KEYCLOAK_USER"),
-		os.Getenv("KEYCLOAK_PASSWORD"),
+		ctx,
+		os.Getenv("KEYCLOAK_ADMIN"),
+		os.Getenv("KEYCLOAK_ADMIN_PASSWORD"),
 		os.Getenv("KEYCLOAK_REALM_NAME"))
 	utils.Log(LogConstant.Info, "After login admin")
 
@@ -123,10 +139,7 @@ func isTokenExpired(claims jwt.MapClaims) bool {
 	// Convert Unix timestamp to time.Time
 	expTime := time.Unix(expUnix, 0)
 	// Verify the token's expiration time
-	if time.Now().Before(expTime) {
-		return false
-	}
-	return true
+	return !time.Now().Before(expTime)
 }
 
 func userHasPermission(claims jwt.MapClaims, requiredPermissions []string) bool {

@@ -4,12 +4,14 @@ version: '3.1'
 services:
   keycloak:
     container_name: "keycloak"
+    restart: unless-stopped
     env_file:
       - .env
     build:
       context: ./RDIPs-Server
       dockerfile: keycloak.Dockerfile
-    command: [ "start-dev", "--import-realm", "--verbose" ]
+    # command: bash -c "while :; do echo 'Hit CTRL+C'; sleep 1; done"
+    command: [ "start-dev", "--import-realm", "--verbose", "--hostname-strict=false", "--hostname-url=${KEYCLOAK_AUTHEN_URL}" ]
     environment:
       - KC_DB=postgres
       - KC_DB_URL=jdbc:postgresql://postgres/keycloak
@@ -17,12 +19,14 @@ services:
       - KC_DB_URL_PORT=${POSTGRES_PORT}
       - KC_DB_USERNAME=${POSTGRES_USER}
       - KC_DB_PASSWORD=${POSTGRES_PASSWORD}
-      - KEYCLOAK_ADMIN=${KEYCLOAK_USER}
-      - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_PASSWORD}
+      - KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN}
+      - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
+      - KC_HOSTNAME_URL=${KEYCLOAK_AUTHEN_URL}
+      - KC_HOSTNAME_ADMIN_URL=${KEYCLOAK_AUTHEN_URL}
     depends_on:
       - db
-    ports:
-      - '9000:8080'
+    # ports:
+    #   - '9000:8080'
     healthcheck:
       test:
         [
@@ -35,7 +39,9 @@ services:
     networks:
       pi4:
         aliases:
-          - sunflower_auth
+          - auth.sunflower-rdips
+    volumes:
+      - keycloak:/opt
 
   rabbitmq:
     container_name: "rabbitmq"
@@ -62,7 +68,9 @@ services:
     networks:
       pi4:
         aliases:
-          - sfBroker
+          - amqp-management.sunflower-rdips
+          - mqtt.sunflower-rdips
+          - amqp.sunflower-rdips
   # gateway:
   #   container_name: "gateway"
   #   # Maybe there some memory leak that prevent docker to excute command so this is good for now
@@ -108,7 +116,8 @@ services:
     networks:
       pi4:
         aliases:
-          - sunflower
+          - sunflower-rdips
+
   pgadmin:
     container_name: pgadmin4
     image: dpage/pgadmin4
@@ -125,6 +134,7 @@ services:
       pi4:
         aliases:
           - sunflower
+
   api:
     container_name: sunflower_api
     env_file:
@@ -148,7 +158,7 @@ services:
     networks:
       pi4:
         aliases:
-          - sunflower
+          - sunflower-rdips
   
   api_bk:
     container_name: sunflower_api_bk
@@ -172,7 +182,7 @@ services:
     networks:
       pi4:
         aliases:
-          - sunflower
+          - sunflower-rdips
 
 
   ui:
@@ -189,7 +199,7 @@ services:
     networks:
       pi4:
         aliases:
-          - sunflower
+          - sunflower-rdips
 
   server:
     container_name: sunflower_server
@@ -200,6 +210,7 @@ services:
     ports:
       - "80:80"
       - "81:81"
+      - "9000:9000"
       - "443:443"
       - "8882:8883"
       - "8672:8672"
@@ -210,11 +221,17 @@ services:
     networks:
       pi4:
 
-
+  memcached:
+    image: 'bitnami/memcached:latest'
+    networks:
+      pi4:
+        aliases:
+          - cacheSrv
 volumes:
   db:
   pgadmin:
   api:
+  keycloak:
 networks:
   pi4:
     driver: bridge

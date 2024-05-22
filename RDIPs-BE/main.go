@@ -27,6 +27,10 @@ func main() {
 	if err != nil {
 		utils.Log(LogConstant.Fatal, err)
 	}
+	err = config.KeycloakConfig()
+	if err != nil {
+		utils.Log(LogConstant.Fatal, err)
+	}
 	commonModel.Helper.SetDb(db)
 	routers.InitRouter(r)
 	routers.InitAmqpRoutes()
