@@ -11,7 +11,7 @@ services:
       context: ./RDIPs-Server
       dockerfile: keycloak.Dockerfile
     # command: bash -c "while :; do echo 'Hit CTRL+C'; sleep 1; done"
-    command: [ "start-dev", "--import-realm", "--verbose" ]
+    command: [ "start-dev", "--import-realm", "--verbose", "--hostname-strict=false", "--hostname-url=${KEYCLOAK_AUTHEN_URL}" ]
     environment:
       - KC_DB=postgres
       - KC_DB_URL=jdbc:postgresql://postgres/keycloak
@@ -21,10 +21,12 @@ services:
       - KC_DB_PASSWORD=${POSTGRES_PASSWORD}
       - KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN}
       - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
+      - KC_HOSTNAME_URL=${KEYCLOAK_AUTHEN_URL}
+      - KC_HOSTNAME_ADMIN_URL=${KEYCLOAK_AUTHEN_URL}
     depends_on:
       - db
-    ports:
-      - '9000:8080'
+    # ports:
+    #   - '9000:8080'
     healthcheck:
       test:
         [
@@ -208,6 +210,7 @@ services:
     ports:
       - "80:80"
       - "81:81"
+      - "9000:9000"
       - "443:443"
       - "8882:8883"
       - "8672:8672"
