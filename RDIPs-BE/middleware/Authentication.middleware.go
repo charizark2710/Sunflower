@@ -59,7 +59,7 @@ func Validation() gin.HandlerFunc {
 					c.AbortWithStatusJSON(http.StatusUnauthorized, err)
 					return
 				}
-				jwt, err := keycloak.RefreshAccessTokem(c, string(refreshToken.Value))
+				jwt, err := keycloak.RefreshAccessToken(c, string(refreshToken.Value))
 				if err != nil {
 					utils.Log(LogConstant.Error, err)
 					c.AbortWithStatusJSON(500, err)
@@ -108,8 +108,8 @@ func getTokenByClientAccount(ctx context.Context, c *gin.Context) error {
 	client := gocloak.NewClient(os.Getenv("KEYCLOAK_BASE_URL"))
 	token, err := client.LoginAdmin(
 		ctx,
-		os.Getenv("KEYCLOAK_USER"),
-		os.Getenv("KEYCLOAK_PASSWORD"),
+		os.Getenv("KEYCLOAK_ADMIN"),
+		os.Getenv("KEYCLOAK_ADMIN_PASSWORD"),
 		os.Getenv("KEYCLOAK_REALM_NAME"))
 	utils.Log(LogConstant.Info, "After login admin")
 

@@ -28,31 +28,35 @@ type GoCloakClientStruct struct {
 	GoCloakClient *gocloak.GoCloak
 	client_id     string
 	client_secret string
+	client_name   string
 }
 
 var keycloakPool handler.Pool
 
-func InitKeycloakClient() error {
+func InitKeycloakClient(client_name string) error {
 	factoryFn := func() (interface{}, error) {
+		if client_name == "" {
+			client_name = CLIENT_ID
+		}
 		gocloakClient := gocloak.NewClient(os.Getenv("KEYCLOAK_BASE_URL"))
 		// restyClient := gocloakClient.RestyClient()
 		// restyClient.SetDebug(true)
 		// restyClient.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 		ctx := context.Background()
-		jwt, err := gocloakClient.LoginAdmin(ctx, os.Getenv("KEYCLOAK_USER"),
-			os.Getenv("KEYCLOAK_PASSWORD"),
+		jwt, err := gocloakClient.LoginAdmin(ctx, os.Getenv("KEYCLOAK_ADMIN"),
+			os.Getenv("KEYCLOAK_ADMIN_PASSWORD"),
 			ADMIN_KEYCLOAK_REALM_NAME)
 
 		if err != nil {
 			return nil, err
 		}
 
-		client, err := gocloakClient.GetClientRepresentation(ctx, jwt.AccessToken, ADMIN_KEYCLOAK_REALM_NAME, CLIENT_ID)
+		client, err := gocloakClient.GetClientRepresentation(ctx, jwt.AccessToken, ADMIN_KEYCLOAK_REALM_NAME, client_name)
 		if err != nil {
 			utils.Log(LogConstant.Error, err)
 			return nil, err
 		}
-		return &GoCloakClientStruct{GoCloakClient: gocloakClient, client_id: *client.ID, client_secret: *client.Secret}, err
+		return &GoCloakClientStruct{GoCloakClient: gocloakClient, client_id: *client.ID, client_secret: *client.Secret, client_name: client_name}, err
 	}
 
 	pingFn := func(conn interface{}) error {
@@ -174,7 +178,7 @@ func GetTokenObject(ctx context.Context, code, codeVerify string) (map[string]in
 		"code":          code,
 		"redirect_uri":  REDIRECT_URI,
 		"code_verifier": codeVerify,
-		"client_id":     CLIENT_ID,
+		"client_id":     goCloakObj.client_name,
 	}).SetHeader("Authorization", "Basic "+authorizationToken).SetResult(&result).Post(endpoint)
 
 	if resp == nil {
@@ -199,16 +203,16 @@ func GetTokenObject(ctx context.Context, code, codeVerify string) (map[string]in
 	return result, nil
 }
 
-func RefreshAccessTokem(ctx context.Context, refreshToken string) (jwt *gocloak.JWT, err error) {
+func RefreshAccessToken(ctx context.Context, refreshToken string) (jwt *gocloak.JWT, err error) {
 	goCloakObj, err := GetGocloakObj()
-	gkClient := goCloakObj.GoCloakClient
-	fmt.Print(refreshToken)
 	if err != nil {
 		utils.Log(LogConstant.Error, err)
 		return nil, err
 	}
+	gkClient := goCloakObj.GoCloakClient
+	defer keycloakPool.Release(goCloakObj)
 	if refreshToken != "" {
-		jwt, err := gkClient.RefreshToken(ctx, refreshToken, CLIENT_ID, goCloakObj.client_secret, ADMIN_KEYCLOAK_REALM_NAME)
+		jwt, err := gkClient.RefreshToken(ctx, refreshToken, goCloakObj.client_name, goCloakObj.client_secret, ADMIN_KEYCLOAK_REALM_NAME)
 		if err != nil {
 			utils.Log(LogConstant.Error, err)
 			return nil, err

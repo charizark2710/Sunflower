@@ -72,7 +72,7 @@ var GetLoginScreen = func(c *commonModel.ServiceContext) (commonModel.ResponseTe
 	loginPage, codeVerify, err := keycloak.GetLoginScreen()
 
 	if err == nil {
-		c.Ctx.SetCookie("code", codeVerify, 10*60, "/", APP_HOST, true, true)
+		c.Ctx.SetCookie("code", codeVerify, 5*60, "/", APP_HOST, true, true)
 		c.Ctx.Header("Location", loginPage)
 		return commonModel.ResponseTemplate{HttpCode: http.StatusFound, Data: nil}, err
 	}
@@ -125,7 +125,7 @@ var Callback = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate
 			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, unexpectedErr
 		}
 		c.Ctx.SetCookie("access_token", accessToken, 10*60, "/", APP_HOST, true, true)
-		c.Ctx.SetCookie("token", uuid.NewString(), 10*60, "/", APP_HOST, true, true)
+		c.Ctx.SetCookie("token", uuid.NewString(), 30*60, "/", APP_HOST, true, false)
 
 		c.Ctx.Header("Location", REACT_APP_API_URL)
 

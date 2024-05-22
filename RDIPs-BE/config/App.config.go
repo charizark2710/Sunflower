@@ -66,5 +66,5 @@ func RabbitMqConfig() error {
 }
 
 func KeycloakConfig() error {
-	return Keycloak_handler.InitKeycloakClient()
+	return Keycloak_handler.InitKeycloakClient("")
 }
