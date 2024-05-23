@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <Wire.h> // Wire library - used for I2C communication
 #include <math.h> // Call out Pi
+#include <gyro.h>
 
 struct Gyro
 {
