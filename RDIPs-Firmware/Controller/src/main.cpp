@@ -1,8 +1,10 @@
 #include <Arduino.h>
-#include "Gyro.cpp"
+#include <Wire.h>
+#include "gyro.h"
+#include "motor.h"
 
 Gyro gyro;
-
+Motor motor;
 void setup()
 {
   Serial.begin(9600); // Initiate serial communication for printing the results on the Serial monitor
@@ -14,6 +16,7 @@ void setup()
   Wire.write(8); // (8dec -> 0000 1000 binary) Bit D3 High for measuring enable
   Wire.endTransmission();
   delay(10);
+  
 }
 
 void loop()
