@@ -19,5 +19,4 @@ func InitRouter(router *gin.Engine) {
 	HistoryRouter(router)
 	WeatherRouter(router)
 	UserRouter(router)
-	GroupRouter(router)
 }
