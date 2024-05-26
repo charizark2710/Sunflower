@@ -77,6 +77,23 @@
         "clientRole" : false,
         "containerId" : "e1f4a4d5-bf37-4e3f-a697-a76d814608f5",
         "attributes" : { }
+      }, {
+        "id": "5209c8ae-5f63-4340-9ffa-59ae5166fefa",
+        "name": "User",
+        "description": "User Role",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "e1f4a4d5-bf37-4e3f-a697-a76d814608f5",
+        "attributes": {}
+      },
+      {
+        "id": "66b3008b-8c4a-41c1-a318-ca056cb88688",
+        "name": "Admin",
+        "description": "Admin Role",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "e1f4a4d5-bf37-4e3f-a697-a76d814608f5",
+        "attributes": {}
       } ],
       "client" : {
         "realm-management" : [ {
@@ -395,7 +412,7 @@
       } ],
       "disableableCredentialTypes" : [ ],
       "requiredActions" : [ ],
-      "realmRoles" : [ "offline_access", "default-roles-sunflower", "uma_authorization" ],
+      "realmRoles" : [ "offline_access", "default-roles-sunflower", "uma_authorization", "User", "Admin" ],
       "clientRoles" : {
         "realm-management" : [ "manage-realm", "view-realm", "manage-clients", "query-realms", "query-clients", "view-events", "view-authorization", "manage-events", "manage-users", "realm-admin", "manage-authorization", "create-client", "view-identity-providers", "view-users", "query-users", "query-groups", "impersonation", "view-clients", "manage-identity-providers" ],
         "broker" : [ "read-token" ],
