@@ -221,3 +221,78 @@ func RefreshAccessToken(ctx context.Context, refreshToken string) (jwt *gocloak.
 	}
 	return nil, fmt.Errorf("can't have access_token")
 }
+
+func PutKeycloakUser(ctx context.Context, clientKey string, id string, userBody gocloak.User) error {
+	goCloakObj, err := GetGocloakObj()
+	if err != nil {
+		utils.Log(LogConstant.Error, err)
+		return err
+	}
+	defer keycloakPool.Release(goCloakObj)
+	gkClient := goCloakObj.GoCloakClient
+	user, userRrr := gkClient.GetUserByID(
+		ctx,
+		clientKey,
+		ADMIN_KEYCLOAK_REALM_NAME,
+		id,
+	)
+	if userRrr == nil && user != nil {
+		user.Username = userBody.Username
+		user.Enabled = userBody.Enabled
+		user.FirstName = userBody.FirstName
+		user.LastName = userBody.LastName
+		user.Email = userBody.Email
+		user.EmailVerified = userBody.EmailVerified
+		updatedUserRrr := gkClient.UpdateUser(
+			ctx,
+			clientKey,
+			ADMIN_KEYCLOAK_REALM_NAME,
+			*user,
+		)
+		return updatedUserRrr
+	}
+	return userRrr
+}
+
+func AddRealmRoleToUser(ctx context.Context, clientKey string, id string, roles []gocloak.Role) error {
+	goCloakObj, err := GetGocloakObj()
+	if err != nil {
+		utils.Log(LogConstant.Error, err)
+		return err
+	}
+	gkClient := goCloakObj.GoCloakClient
+	defer keycloakPool.Release(goCloakObj)
+
+	addRoleErr := gkClient.AddRealmRoleToUser(ctx, clientKey, ADMIN_KEYCLOAK_REALM_NAME, id, roles)
+
+	return addRoleErr
+}
+
+func DeleteKeycloakUser(ctx context.Context, clientKey string, id string) error {
+	goCloakObj, err := GetGocloakObj()
+	if err != nil {
+		utils.Log(LogConstant.Error, err)
+		return err
+	}
+	defer keycloakPool.Release(goCloakObj)
+	gkClient := goCloakObj.GoCloakClient
+	user, userRrr := gkClient.GetUserByID(
+		ctx,
+		clientKey,
+		ADMIN_KEYCLOAK_REALM_NAME,
+		id,
+	)
+	if userRrr == nil && user != nil {
+		isEnabled := false
+		user.Enabled = &isEnabled
+
+		updatedUserRrr := gkClient.UpdateUser(
+			ctx,
+			clientKey,
+			ADMIN_KEYCLOAK_REALM_NAME,
+			*user,
+		)
+		return updatedUserRrr
+	}
+	return userRrr
+}
