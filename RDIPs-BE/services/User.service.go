@@ -5,10 +5,8 @@ import (
 	"RDIPs-BE/handler"
 	keycloak "RDIPs-BE/handler/Keycloak"
 	"RDIPs-BE/middleware"
-	"RDIPs-BE/model"
 	commonModel "RDIPs-BE/model/common"
 	"RDIPs-BE/utils"
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -136,29 +134,19 @@ var Callback = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate
 }
 
 var PostRoleToUser = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
-	utils.Log(LogConstant.Debug, "PostRoleToUser start")
+	utils.Log(LogConstant.Info, "PostRoleToUser start")
+	defer utils.Log(LogConstant.Info, "PostRoleToUser End")
 	userId := c.Param("userId")
-	roleRequest := model.KeycloakRole{}
-	err := json.Unmarshal(c.Body, &roleRequest)
+	rolesRequest := []gocloak.Role{}
+	err := json.Unmarshal(c.Body, &rolesRequest)
 	if err == nil {
-
-		var buf bytes.Buffer
-		if err := json.NewEncoder(&buf).Encode(roleRequest); err == nil {
-			url := ADMIN_KEYCLOAK_MASTER_HOST + "users/" + userId + "/role-mappings/realm"
-			req, _ := http.NewRequest(http.MethodPost, url, &buf)
-			req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Authorization", "Bearer "+c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY))
-
-			client := &http.Client{}
-			resp, err := client.Do(req)
-			if err != nil {
-				return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
-			}
-			defer resp.Body.Close()
-
-			if resp.StatusCode == http.StatusCreated {
-				return commonModel.ResponseTemplate{HttpCode: 200, Data: nil}, nil
-			}
+		addRolesErr := keycloak.AddRealmRoleToUser(
+			c.Ctx,
+			c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY),
+			userId,
+			rolesRequest)
+		if addRolesErr == nil {
+			return commonModel.ResponseTemplate{HttpCode: 200, Data: nil}, nil
 		}
 		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
 	}
@@ -168,73 +156,33 @@ var PostRoleToUser = func(c *commonModel.ServiceContext) (commonModel.ResponseTe
 var PutKeycloakUser = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
 	utils.Log(LogConstant.Info, "PutKeycloakUser Start")
 	defer utils.Log(LogConstant.Info, "PutKeycloakUser End")
-
 	userId := c.Param("id")
-	client := gocloak.NewClient(ADMIN_KEYCLOAK_BASE_URL)
-	ctx := c.Ctx.Request.Context()
-
-	user, err := client.GetUserByID(
-		ctx,
-		c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY),
-		ADMIN_KEYCLOAK_REALM_NAME,
-		userId,
-	)
-
-	if err == nil && user != nil {
-		userRequest := gocloak.User{}
-		if err := json.Unmarshal(c.Body, &userRequest); err == nil {
-			user.FirstName = userRequest.FirstName
-			user.LastName = userRequest.LastName
-			user.Email = userRequest.Email
-			user.Enabled = userRequest.Enabled
-
-			err := client.UpdateUser(
-				ctx,
-				c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY),
-				ADMIN_KEYCLOAK_REALM_NAME,
-				*user,
-			)
-
-			if err != nil {
-				return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, nil
-			}
-			return commonModel.ResponseTemplate{HttpCode: 200, Data: nil}, nil
+	userRequest := gocloak.User{}
+	if err := json.Unmarshal(c.Body, &userRequest); err == nil {
+		err := keycloak.PutKeycloakUser(
+			c.Ctx,
+			c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY),
+			userId,
+			userRequest)
+		if err != nil {
+			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
 		}
+		return commonModel.ResponseTemplate{HttpCode: 200, Data: nil}, nil
 	}
-
-	return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+	return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, nil
 }
 
 var DeleteKeycloakUser = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
 	utils.Log(LogConstant.Info, "DeleteKeycloakUser Start")
 	defer utils.Log(LogConstant.Info, "DeleteKeycloakUser End")
-
 	userId := c.Param("id")
-	client := gocloak.NewClient(ADMIN_KEYCLOAK_BASE_URL)
-	ctx := c.Ctx.Request.Context()
-
-	user, err := client.GetUserByID(
-		ctx,
+	err := keycloak.DeleteKeycloakUser(
+		c.Ctx,
 		c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY),
-		ADMIN_KEYCLOAK_REALM_NAME,
-		userId,
-	)
+		userId)
 
-	if err == nil && user != nil {
-		isEnabled := false
-		user.Enabled = &isEnabled
-
-		err := client.UpdateUser(
-			ctx,
-			c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY),
-			ADMIN_KEYCLOAK_REALM_NAME,
-			*user,
-		)
-
-		if err != nil {
-			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, nil
-		}
-		return commonModel.ResponseTemplate{HttpCode: 200, Data: nil}, nil
+	if err != nil {
+		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
 	}
-	return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, nil
+	return commonModel.ResponseTemplate{HttpCode: 200, Data: nil}, nil
 }

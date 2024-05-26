@@ -10,6 +10,7 @@ import (
 	"context"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/Nerzal/gocloak/v13"
@@ -20,10 +21,11 @@ import (
 const KEYCLOAK_TOKEN_CLIENT_KEY = "KeycloakTokenClient"
 
 var (
-	KeycloakTokenClient string = ""
-	//Set timeout for authetication key of Weather API Login
-	refreshPeriodKeycloak   = 1 * time.Minute
+	//Set timeout for authetication key of Keycloak API Login
+	refreshPeriodKeycloak   = 5 * time.Minute
 	lastFetchedTimeKeycloak = time.Now()
+	mu                      sync.Mutex
+	store                   = make(map[string]string)
 )
 
 func Validation() gin.HandlerFunc {
@@ -88,7 +90,7 @@ func Validation() gin.HandlerFunc {
 
 func CheckClientTokenValidation() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if isKeyCloakTokenClientExpired() {
+		if isKeyCloakTokenClientExpired(c) {
 			ctx, cancel := context.WithTimeout(c.Request.Context(), refreshPeriodKeycloak)
 			defer cancel()
 
@@ -117,19 +119,28 @@ func getTokenByClientAccount(ctx context.Context, c *gin.Context) error {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return err
 	}
+	mu.Lock()
+	defer mu.Unlock()
+	store[KEYCLOAK_TOKEN_CLIENT_KEY] = token.AccessToken
 	c.Set(KEYCLOAK_TOKEN_CLIENT_KEY, token.AccessToken)
-	refreshPeriodKeycloak = time.Duration(time.Duration(token.ExpiresIn).Seconds())
-	lastFetchedTime = time.Now()
+	refreshPeriodKeycloak = time.Duration(token.ExpiresIn) * time.Second
+	lastFetchedTimeKeycloak = time.Now()
 	return nil
 
 }
 
-func isKeyCloakTokenClientExpired() bool {
-	if KeycloakTokenClient == "" {
-		return true
+func isKeyCloakTokenClientExpired(c *gin.Context) bool {
+	mu.Lock()
+	defer mu.Unlock()
+	if value, exists := store[KEYCLOAK_TOKEN_CLIENT_KEY]; exists {
+		timeIsExpired := lastFetchedTimeKeycloak.Add(refreshPeriodKeycloak)
+		if time.Now().After(timeIsExpired) {
+			return true
+		}
+		c.Set(KEYCLOAK_TOKEN_CLIENT_KEY, value)
+		return false
 	}
-
-	return time.Now().After(lastFetchedTimeKeycloak.Add(refreshPeriodKeycloak))
+	return true
 }
 
 func isTokenExpired(claims jwt.MapClaims) bool {
