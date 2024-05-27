@@ -3,6 +3,7 @@ package keycloak
 import (
 	LogConstant "RDIPs-BE/constant/LogConst"
 	"RDIPs-BE/handler"
+	"RDIPs-BE/model"
 	"RDIPs-BE/utils"
 	"context"
 	"encoding/base64"
@@ -295,4 +296,230 @@ func DeleteKeycloakUser(ctx context.Context, clientKey string, id string) error 
 		return updatedUserRrr
 	}
 	return userRrr
+}
+
+func GetGroups(ctx context.Context, clientKey string, params gocloak.GetGroupsParams) ([]*gocloak.Group, error) {
+	goCloakObj, err := GetGocloakObj()
+	if err != nil {
+		utils.Log(LogConstant.Error, err)
+		return nil, err
+	}
+	defer keycloakPool.Release(goCloakObj)
+	client := goCloakObj.GoCloakClient
+	groups, err := client.GetGroups(
+		ctx,
+		clientKey,
+		ADMIN_KEYCLOAK_REALM_NAME,
+		params,
+	)
+	return groups, err
+}
+
+func GetGroupById(ctx context.Context, clientKey string, id string) (*gocloak.Group, error) {
+	goCloakObj, err := GetGocloakObj()
+	if err != nil {
+		utils.Log(LogConstant.Error, err)
+		return nil, err
+	}
+	defer keycloakPool.Release(goCloakObj)
+	client := goCloakObj.GoCloakClient
+	group, err := client.GetGroup(
+		ctx,
+		clientKey,
+		ADMIN_KEYCLOAK_REALM_NAME,
+		id,
+	)
+	return group, err
+}
+
+func DeleteGroup(ctx context.Context, clientKey string, id string) error {
+	goCloakObj, err := GetGocloakObj()
+	if err != nil {
+		utils.Log(LogConstant.Error, err)
+		return err
+	}
+	defer keycloakPool.Release(goCloakObj)
+	client := goCloakObj.GoCloakClient
+	err = client.DeleteGroup(
+		ctx,
+		clientKey,
+		ADMIN_KEYCLOAK_REALM_NAME,
+		id,
+	)
+	return err
+}
+
+func CreateGroup(ctx context.Context, clientKey string,
+	groupRequest model.GroupRequest, groupBody gocloak.Group) error {
+	goCloakObj, err := GetGocloakObj()
+	if err != nil {
+		utils.Log(LogConstant.Error, err)
+		return err
+	}
+	defer keycloakPool.Release(goCloakObj)
+	client := goCloakObj.GoCloakClient
+	roles, err := getRealmRoles(ctx, clientKey, client, groupBody)
+	if err != nil {
+		return err
+	}
+
+	groupID, err := client.CreateGroup(
+		ctx,
+		clientKey,
+		ADMIN_KEYCLOAK_REALM_NAME,
+		groupBody,
+	)
+	if err != nil {
+		return err
+	}
+
+	err = client.AddRealmRoleToGroup(
+		ctx,
+		clientKey,
+		ADMIN_KEYCLOAK_REALM_NAME,
+		groupID,
+		roles,
+	)
+	if err != nil {
+		return err
+	}
+
+	err = addUsersToGroup(ctx, clientKey, client, groupRequest.NewUserIds, groupID)
+	return err
+}
+
+func EditGroup(ctx context.Context, clientKey string, groupID string,
+	groupRequest model.GroupRequest) error {
+	goCloakObj, err := GetGocloakObj()
+	if err != nil {
+		utils.Log(LogConstant.Error, err)
+		return err
+	}
+	defer keycloakPool.Release(goCloakObj)
+	client := goCloakObj.GoCloakClient
+
+	group, err := client.GetGroup(
+		ctx,
+		clientKey,
+		ADMIN_KEYCLOAK_REALM_NAME,
+		groupID,
+	)
+	if err != nil {
+		return err
+	}
+
+	group.Name = groupRequest.Name
+	group.Attributes = groupRequest.Attributes
+	err = client.UpdateGroup(
+		ctx,
+		clientKey,
+		ADMIN_KEYCLOAK_REALM_NAME,
+		*group,
+	)
+	if err != nil {
+		return err
+	}
+
+	group.RealmRoles = groupRequest.OldRealmRoles
+	oldRoles, err := getRealmRoles(ctx, clientKey, client, *group)
+	if err != nil {
+		return err
+	}
+
+	err = client.DeleteRealmRoleFromGroup(
+		ctx,
+		clientKey,
+		ADMIN_KEYCLOAK_REALM_NAME,
+		groupID,
+		oldRoles,
+	)
+	if err != nil {
+		return err
+	}
+
+	group.RealmRoles = groupRequest.NewRealmRoles
+	newRoles, err := getRealmRoles(ctx, clientKey, client, *group)
+	if err != nil {
+		return err
+	}
+
+	err = client.AddRealmRoleToGroup(
+		ctx,
+		clientKey,
+		ADMIN_KEYCLOAK_REALM_NAME,
+		groupID,
+		newRoles,
+	)
+	if err != nil {
+		return err
+	}
+
+	err = deleteUsersFromGroup(ctx, clientKey, client, groupRequest.OldUserIds, groupID)
+	if err != nil {
+		return err
+	}
+
+	err = addUsersToGroup(ctx, clientKey, client, groupRequest.NewUserIds, groupID)
+	return err
+}
+
+var getRealmRoles = func(ctx context.Context, clientKey string,
+	client *gocloak.GoCloak, groupBody gocloak.Group) ([]gocloak.Role, error) {
+	roles := []gocloak.Role{}
+	for _, role := range *groupBody.RealmRoles {
+		role, err := client.GetRealmRole(
+			ctx,
+			clientKey,
+			ADMIN_KEYCLOAK_REALM_NAME,
+			role,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		roles = append(roles, *role)
+	}
+
+	return roles, nil
+}
+
+var addUsersToGroup = func(ctx context.Context, clientKey string,
+	client *gocloak.GoCloak, userIds *[]string, groupID string) error {
+
+	for _, userId := range *userIds {
+		err := client.AddUserToGroup(
+			ctx,
+			clientKey,
+			ADMIN_KEYCLOAK_REALM_NAME,
+			userId,
+			groupID,
+		)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+var deleteUsersFromGroup = func(ctx context.Context, clientKey string,
+	client *gocloak.GoCloak, userIds *[]string, groupID string) error {
+
+	for _, userId := range *userIds {
+		err := client.DeleteUserFromGroup(
+			ctx,
+			clientKey,
+			ADMIN_KEYCLOAK_REALM_NAME,
+			userId,
+			groupID,
+		)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
