@@ -5,6 +5,7 @@ import (
 	"RDIPs-BE/handler"
 	keycloak "RDIPs-BE/handler/Keycloak"
 	"RDIPs-BE/middleware"
+	"RDIPs-BE/model"
 	commonModel "RDIPs-BE/model/common"
 	"RDIPs-BE/utils"
 	"encoding/json"
@@ -184,5 +185,103 @@ var DeleteKeycloakUser = func(c *commonModel.ServiceContext) (commonModel.Respon
 	if err != nil {
 		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
 	}
+	return commonModel.ResponseTemplate{HttpCode: 200, Data: nil}, nil
+}
+
+var GetKeycloakGroups = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
+	utils.Log(LogConstant.Info, "GetKeycloakGroups Start")
+	defer utils.Log(LogConstant.Info, "GetKeycloakGroups End")
+	groups, err := keycloak.GetGroups(
+		c.Ctx,
+		c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY),
+		gocloak.GetGroupsParams{})
+	if err == nil {
+		utils.Log(LogConstant.Info, "GetKeycloakGroups End")
+		return commonModel.ResponseTemplate{HttpCode: 200, Data: groups}, nil
+	}
+	return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+}
+
+var GetKeycloakGroupById = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
+	utils.Log(LogConstant.Info, "GetKeycloakGroupById Start")
+	defer utils.Log(LogConstant.Info, "GetKeycloakGroupById End")
+	id := c.Param("id")
+	group, err := keycloak.GetGroupById(
+		c.Ctx,
+		c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY),
+		id,
+	)
+	if err == nil {
+		return commonModel.ResponseTemplate{HttpCode: 200, Data: group}, nil
+	}
+	return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+}
+
+var DeleteKeycloakGroup = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
+	utils.Log(LogConstant.Info, "DeleteKeycloakGroup Start")
+	defer utils.Log(LogConstant.Info, "DeleteKeycloakGroup End")
+	id := c.Param("id")
+	err := keycloak.DeleteGroup(
+		c.Ctx,
+		c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY),
+		id,
+	)
+	if err == nil {
+		return commonModel.ResponseTemplate{HttpCode: 200, Data: nil}, nil
+	}
+	return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+}
+
+var PostKeycloakGroup = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
+	utils.Log(LogConstant.Info, "PostKeycloakGroup Start")
+	defer utils.Log(LogConstant.Info, "PostKeycloakGroup End")
+
+	groupRequest := model.GroupRequest{}
+	if err := json.Unmarshal(c.Body, &groupRequest); err == nil {
+		groupBody := gocloak.Group{
+			Name:       groupRequest.Name,
+			Attributes: groupRequest.Attributes,
+			RealmRoles: groupRequest.NewRealmRoles,
+		}
+
+		err := keycloak.CreateGroup(
+			c.Ctx,
+			c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY),
+			groupRequest,
+			groupBody,
+		)
+
+		if err != nil {
+			utils.Log(LogConstant.Error, err)
+			return commonModel.ResponseTemplate{HttpCode: 500, Message: err.Error()}, err
+		}
+	} else {
+		utils.Log(LogConstant.Error, err)
+		return commonModel.ResponseTemplate{HttpCode: 500, Message: err.Error()}, err
+	}
+
+	return commonModel.ResponseTemplate{HttpCode: 200, Data: nil}, nil
+}
+
+var PutKeycloakGroup = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
+	utils.Log(LogConstant.Info, "PutKeycloakGroup Start")
+	defer utils.Log(LogConstant.Info, "PutKeycloakGroup End")
+
+	groupID := c.Param("id")
+	groupRequest := model.GroupRequest{}
+
+	if err := json.Unmarshal(c.Body, &groupRequest); err == nil {
+		err := keycloak.EditGroup(
+			c.Ctx,
+			c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY),
+			groupID,
+			groupRequest,
+		)
+		if err != nil {
+			utils.Log(LogConstant.Error, err)
+			return commonModel.ResponseTemplate{HttpCode: 500, Message: err.Error()}, err
+		}
+	}
+
 	return commonModel.ResponseTemplate{HttpCode: 200, Data: nil}, nil
 }
