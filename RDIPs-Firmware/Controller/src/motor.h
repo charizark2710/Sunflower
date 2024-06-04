@@ -20,6 +20,7 @@ typedef struct Motor
     //==Rotate counter-clockwise==//
     void forward(int speed)
     {
+        Serial.println("Forwarding");
         speed = constrain(speed, MIN_SPEED, MAX_SPEED);
         digitalWrite(IN1, HIGH);
         analogWrite(IN2, 255 - speed);
@@ -27,27 +28,12 @@ typedef struct Motor
     //==Rotate clockwise==//
     void backward(int speed)
     {
+        Serial.println("Backwarding");
         speed = constrain(speed, MIN_SPEED, MAX_SPEED);
         digitalWrite(IN1, LOW);
         analogWrite(IN2, speed);
     }
-    //==The more forward the more Degree increase from negative to positive==//
-    void rotate(float destinationDegrees)
-    {
-        float currentDegrees = myGyro.X_degree;
-        while (currentDegrees != destinationDegrees)
-        {
-            if (destinationDegrees > currentDegrees)
-            {
-                forward(MAX_SPEED);
-            }
-            else
-            {
-                backward(MAX_SPEED);
-            }
-        } 
-        stop();
-    }
+
 } Motor;
 
 #endif
