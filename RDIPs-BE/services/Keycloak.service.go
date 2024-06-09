@@ -196,7 +196,6 @@ var GetKeycloakGroups = func(c *commonModel.ServiceContext) (commonModel.Respons
 		c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY),
 		gocloak.GetGroupsParams{})
 	if err == nil {
-		utils.Log(LogConstant.Info, "GetKeycloakGroups End")
 		return commonModel.ResponseTemplate{HttpCode: 200, Data: groups}, nil
 	}
 	return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
