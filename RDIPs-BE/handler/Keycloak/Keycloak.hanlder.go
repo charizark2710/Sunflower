@@ -373,18 +373,23 @@ func CreateGroup(ctx context.Context, clientKey string,
 		return err
 	}
 
-	err = client.AddRealmRoleToGroup(
-		ctx,
-		clientKey,
-		ADMIN_KEYCLOAK_REALM_NAME,
-		groupID,
-		roles,
-	)
-	if err != nil {
-		return err
+	if len(roles) > 0 {
+		err = client.AddRealmRoleToGroup(
+			ctx,
+			clientKey,
+			ADMIN_KEYCLOAK_REALM_NAME,
+			groupID,
+			roles,
+		)
+		if err != nil {
+			return err
+		}
 	}
 
-	err = addUsersToGroup(ctx, clientKey, client, groupRequest.NewUserIds, groupID)
+	var newUserIds = groupRequest.NewUserIds
+	if newUserIds != nil && len(*newUserIds) > 0 {
+		err = addUsersToGroup(ctx, clientKey, client, newUserIds, groupID)
+	}
 	return err
 }
 
@@ -425,16 +430,17 @@ func EditGroup(ctx context.Context, clientKey string, groupID string,
 	if err != nil {
 		return err
 	}
-
-	err = client.DeleteRealmRoleFromGroup(
-		ctx,
-		clientKey,
-		ADMIN_KEYCLOAK_REALM_NAME,
-		groupID,
-		oldRoles,
-	)
-	if err != nil {
-		return err
+	if len(oldRoles) > 0 {
+		err = client.DeleteRealmRoleFromGroup(
+			ctx,
+			clientKey,
+			ADMIN_KEYCLOAK_REALM_NAME,
+			groupID,
+			oldRoles,
+		)
+		if err != nil {
+			return err
+		}
 	}
 
 	group.RealmRoles = groupRequest.NewRealmRoles
@@ -442,43 +448,54 @@ func EditGroup(ctx context.Context, clientKey string, groupID string,
 	if err != nil {
 		return err
 	}
-
-	err = client.AddRealmRoleToGroup(
-		ctx,
-		clientKey,
-		ADMIN_KEYCLOAK_REALM_NAME,
-		groupID,
-		newRoles,
-	)
-	if err != nil {
-		return err
+	if len(newRoles) > 0 {
+		err = client.AddRealmRoleToGroup(
+			ctx,
+			clientKey,
+			ADMIN_KEYCLOAK_REALM_NAME,
+			groupID,
+			newRoles,
+		)
+		if err != nil {
+			return err
+		}
 	}
 
-	err = deleteUsersFromGroup(ctx, clientKey, client, groupRequest.OldUserIds, groupID)
-	if err != nil {
-		return err
+	var oldUserIds = groupRequest.OldUserIds
+	if oldUserIds != nil && len(*oldUserIds) > 0 {
+		err = deleteUsersFromGroup(ctx, clientKey, client, oldUserIds, groupID)
+		if err != nil {
+			return err
+		}
 	}
 
-	err = addUsersToGroup(ctx, clientKey, client, groupRequest.NewUserIds, groupID)
+	var newUserIds = groupRequest.NewUserIds
+	if newUserIds != nil && len(*newUserIds) > 0 {
+		err = addUsersToGroup(ctx, clientKey, client, newUserIds, groupID)
+	}
+
 	return err
 }
 
 var getRealmRoles = func(ctx context.Context, clientKey string,
 	client *gocloak.GoCloak, groupBody gocloak.Group) ([]gocloak.Role, error) {
 	roles := []gocloak.Role{}
-	for _, role := range *groupBody.RealmRoles {
-		role, err := client.GetRealmRole(
-			ctx,
-			clientKey,
-			ADMIN_KEYCLOAK_REALM_NAME,
-			role,
-		)
+	var realmRoles = groupBody.RealmRoles
+	if realmRoles != nil && len(*realmRoles) > 0 {
+		for _, role := range *realmRoles {
+			role, err := client.GetRealmRole(
+				ctx,
+				clientKey,
+				ADMIN_KEYCLOAK_REALM_NAME,
+				role,
+			)
 
-		if err != nil {
-			return nil, err
+			if err != nil {
+				return nil, err
+			}
+
+			roles = append(roles, *role)
 		}
-
-		roles = append(roles, *role)
 	}
 
 	return roles, nil
