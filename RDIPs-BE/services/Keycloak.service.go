@@ -195,10 +195,11 @@ var GetKeycloakGroups = func(c *commonModel.ServiceContext) (commonModel.Respons
 		c.Ctx,
 		c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY),
 		gocloak.GetGroupsParams{})
-	if err == nil {
-		return commonModel.ResponseTemplate{HttpCode: 200, Data: groups}, nil
+	if err != nil {
+		utils.Log(LogConstant.Error, err)
+		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
 	}
-	return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+	return commonModel.ResponseTemplate{HttpCode: 200, Data: groups}, nil
 }
 
 var GetKeycloakGroupById = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
@@ -210,10 +211,11 @@ var GetKeycloakGroupById = func(c *commonModel.ServiceContext) (commonModel.Resp
 		c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY),
 		id,
 	)
-	if err == nil {
-		return commonModel.ResponseTemplate{HttpCode: 200, Data: group}, nil
+	if err != nil {
+		utils.Log(LogConstant.Error, err)
+		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
 	}
-	return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+	return commonModel.ResponseTemplate{HttpCode: 200, Data: group}, nil
 }
 
 var DeleteKeycloakGroup = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
@@ -225,10 +227,11 @@ var DeleteKeycloakGroup = func(c *commonModel.ServiceContext) (commonModel.Respo
 		c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY),
 		id,
 	)
-	if err == nil {
-		return commonModel.ResponseTemplate{HttpCode: 200, Data: nil}, nil
+	if err != nil {
+		utils.Log(LogConstant.Error, err)
+		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
 	}
-	return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+	return commonModel.ResponseTemplate{HttpCode: 200, Data: nil}, nil
 }
 
 var PostKeycloakGroup = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
