@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func UserRouter(router *gin.Engine) {
+func KeycloakRouter(router *gin.Engine) {
 	router.GET(urlconst.GetLoginScreen, controller.Controller)
 	router.GET(urlconst.Callback, controller.Controller)
 	authRouter := router.Group("")
