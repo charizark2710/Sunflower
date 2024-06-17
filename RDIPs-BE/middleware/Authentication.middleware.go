@@ -10,21 +10,18 @@ import (
 	"context"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/Nerzal/gocloak/v13"
+	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 )
 
 const KEYCLOAK_TOKEN_CLIENT_KEY = "KeycloakTokenClient"
 
-var (
-	KeycloakTokenClient string = ""
-	//Set timeout for authetication key of Weather API Login
-	refreshPeriodKeycloak   = 1 * time.Minute
-	lastFetchedTimeKeycloak = time.Now()
-)
+var wg sync.WaitGroup
 
 func Validation() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -88,11 +85,10 @@ func Validation() gin.HandlerFunc {
 
 func CheckClientTokenValidation() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if isKeyCloakTokenClientExpired() {
-			ctx, cancel := context.WithTimeout(c.Request.Context(), refreshPeriodKeycloak)
-			defer cancel()
-
-			err := getTokenByClientAccount(ctx, c)
+		wg.Wait()
+		if isKeyCloakTokenClientExpired(c) {
+			wg.Add(1)
+			err := getTokenByClientAccount(c.Request.Context(), c)
 			if err != nil {
 				c.AbortWithError(http.StatusInternalServerError, err)
 				return
@@ -103,33 +99,35 @@ func CheckClientTokenValidation() gin.HandlerFunc {
 }
 
 func getTokenByClientAccount(ctx context.Context, c *gin.Context) error {
-	utils.Log(LogConstant.Debug, "getTokenByClientAccount is calling")
-
+	defer wg.Done()
 	client := gocloak.NewClient(os.Getenv("KEYCLOAK_BASE_URL"))
 	token, err := client.LoginAdmin(
 		ctx,
 		os.Getenv("KEYCLOAK_ADMIN"),
 		os.Getenv("KEYCLOAK_ADMIN_PASSWORD"),
 		os.Getenv("KEYCLOAK_REALM_NAME"))
-	utils.Log(LogConstant.Info, "After login admin")
 
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return err
 	}
+	model.CacheSrv.Add(&memcache.Item{
+		Key:        KEYCLOAK_TOKEN_CLIENT_KEY,
+		Value:      []byte(token.AccessToken),
+		Expiration: 5 * 60,
+	})
 	c.Set(KEYCLOAK_TOKEN_CLIENT_KEY, token.AccessToken)
-	refreshPeriodKeycloak = time.Duration(time.Duration(token.ExpiresIn).Seconds())
-	lastFetchedTime = time.Now()
 	return nil
 
 }
 
-func isKeyCloakTokenClientExpired() bool {
-	if KeycloakTokenClient == "" {
+func isKeyCloakTokenClientExpired(c *gin.Context) bool {
+	keycloakTokenItem, err := model.CacheSrv.Get(KEYCLOAK_TOKEN_CLIENT_KEY)
+	if err != nil {
 		return true
 	}
-
-	return time.Now().After(lastFetchedTimeKeycloak.Add(refreshPeriodKeycloak))
+	c.Set(KEYCLOAK_TOKEN_CLIENT_KEY, string(keycloakTokenItem.Value))
+	return false
 }
 
 func isTokenExpired(claims jwt.MapClaims) bool {

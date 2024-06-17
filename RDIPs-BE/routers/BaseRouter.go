@@ -18,6 +18,5 @@ func InitRouter(router *gin.Engine) {
 	PerformanceRouter(router)
 	HistoryRouter(router)
 	WeatherRouter(router)
-	UserRouter(router)
-	GroupRouter(router)
+	KeycloakRouter(router)
 }
