@@ -11,7 +11,7 @@ services:
       context: ./RDIPs-Server
       dockerfile: keycloak.Dockerfile
     # command: bash -c "while :; do echo 'Hit CTRL+C'; sleep 1; done"
-    command: [ "start-dev", "--import-realm", "--verbose", "--hostname-strict=false", "--hostname-url=${KEYCLOAK_AUTHEN_URL}" ]
+    command: [ "start-dev", "--import-realm", "--verbose", "--hostname-strict=false", "--hostname=${KEYCLOAK_AUTHEN_URL}" ]
     environment:
       - KC_DB=postgres
       - KC_DB_URL=jdbc:postgresql://postgres/keycloak
