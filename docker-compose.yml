@@ -160,29 +160,25 @@ services:
         aliases:
           - sunflower-rdips
   
-  api_bk:
-    container_name: sunflower_api_bk
-    env_file:
-      - .env
-    build:
-      context: ./RDIPs-BE
-      dockerfile: Dockerfile
-      target: production
-    depends_on:
-      db:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-      keycloak:
-        condition: service_healthy
-    ports:
-      - '8081:8080'
-    volumes:
-      - './RDIPs-BE:/srv/www/volume_sunflower'
-    networks:
-      pi4:
-        aliases:
-          - sunflower-rdips
+  # api_bk:
+  #   container_name: sunflower_api_bk
+  #   restart: on-failure:3
+  #   env_file:
+  #     - .env
+  #   build:
+  #     context: ./RDIPs-BE
+  #     dockerfile: Dockerfile
+  #     target: production
+  #   depends_on:
+  #     - api
+  #   ports:
+  #     - '8081:8080'
+  #   volumes:
+  #     - './RDIPs-BE:/srv/www/volume_sunflower'
+  #   networks:
+  #     pi4:
+  #       aliases:
+  #         - sunflower-rdips
 
 
   ui:

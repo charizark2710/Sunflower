@@ -34,30 +34,55 @@ type GoCloakClientStruct struct {
 
 var keycloakPool handler.Pool
 
-func InitKeycloakClient(client_name string) error {
-	factoryFn := func() (interface{}, error) {
-		if client_name == "" {
-			client_name = CLIENT_ID
+/*
+Get client_id, client_secret from client_name
+*/
+func getClientData(client_name string) (*string, *string, error) {
+	gocloakClient := gocloak.NewClient(os.Getenv("KEYCLOAK_BASE_URL"))
+	ctx := context.Background()
+	jwt, err := gocloakClient.LoginAdmin(ctx, os.Getenv("KEYCLOAK_ADMIN"),
+		os.Getenv("KEYCLOAK_ADMIN_PASSWORD"),
+		ADMIN_KEYCLOAK_REALM_NAME)
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	client, err := gocloakClient.GetClientRepresentation(ctx, jwt.AccessToken, ADMIN_KEYCLOAK_REALM_NAME, client_name)
+	if err != nil {
+		utils.Log(LogConstant.Error, err)
+		return nil, nil, err
+	}
+	var secretValue *string
+	if client.Secret != nil && *client.Secret != "" {
+		secretValue = client.Secret
+	} else {
+		secret, err := gocloakClient.RegenerateClientSecret(ctx, jwt.AccessToken, ADMIN_KEYCLOAK_REALM_NAME, *client.ID)
+		if err != nil {
+			utils.Log(LogConstant.Error, err)
+			return nil, nil, err
 		}
+
+		secretValue = secret.Value
+	}
+	return client.ClientID, secretValue, nil
+}
+
+func InitKeycloakClient(client_name string) error {
+	if client_name == "" {
+		client_name = CLIENT_ID
+	}
+	client_id, client_secret, err := getClientData(client_name)
+	if err != nil {
+		return err
+	}
+	factoryFn := func() (interface{}, error) {
+
 		gocloakClient := gocloak.NewClient(os.Getenv("KEYCLOAK_BASE_URL"))
 		// restyClient := gocloakClient.RestyClient()
 		// restyClient.SetDebug(true)
 		// restyClient.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
-		ctx := context.Background()
-		jwt, err := gocloakClient.LoginAdmin(ctx, os.Getenv("KEYCLOAK_ADMIN"),
-			os.Getenv("KEYCLOAK_ADMIN_PASSWORD"),
-			ADMIN_KEYCLOAK_REALM_NAME)
-
-		if err != nil {
-			return nil, err
-		}
-
-		client, err := gocloakClient.GetClientRepresentation(ctx, jwt.AccessToken, ADMIN_KEYCLOAK_REALM_NAME, client_name)
-		if err != nil {
-			utils.Log(LogConstant.Error, err)
-			return nil, err
-		}
-		return &GoCloakClientStruct{GoCloakClient: gocloakClient, client_id: *client.ID, client_secret: *client.Secret, client_name: client_name}, err
+		return &GoCloakClientStruct{GoCloakClient: gocloakClient, client_id: *client_id, client_secret: *client_secret, client_name: client_name}, err
 	}
 
 	pingFn := func(conn interface{}) error {
@@ -74,7 +99,7 @@ func InitKeycloakClient(client_name string) error {
 		PingFn:    pingFn,
 	}
 
-	err := keycloakPool.FillPool(poolData)
+	err = keycloakPool.FillPool(poolData)
 
 	return err
 }
