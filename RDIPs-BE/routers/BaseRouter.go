@@ -7,11 +7,14 @@ import (
 )
 
 func InitRouter(router *gin.Engine) {
+	// For health check only
 	router.GET("", func(c *gin.Context) {
 		c.JSON(200, gin.H{
-			"message": "pong",
+			"message": "healthy",
 		})
 	})
+	router.Use(middleware.SetHeader())
+	router.Use(middleware.Validation())
 	router.Use(middleware.ValidatorMiddleware())
 	router.Use(middleware.SetFilter())
 	DevicesRouter(router)

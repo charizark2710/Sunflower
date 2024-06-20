@@ -5,7 +5,6 @@ import (
 
 	"RDIPs-BE/config"
 	LogConstant "RDIPs-BE/constant/LogConst"
-	middleware "RDIPs-BE/middleware"
 	commonModel "RDIPs-BE/model/common"
 	"RDIPs-BE/routers"
 	"RDIPs-BE/utils"
@@ -16,8 +15,6 @@ import (
 func main() {
 	utils.PrepareLog()
 	r := gin.Default()
-	r.Use(middleware.SetHeader())
-	r.Use(middleware.Validation())
 
 	db, err := config.DbConfig()
 	if err != nil {
