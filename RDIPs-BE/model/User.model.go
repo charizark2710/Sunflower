@@ -3,10 +3,6 @@ package model
 type SysUser interface {
 }
 
-type LoginByKeycloakRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
 type TokenConnectResponse struct {
 	Token     string `json:"access_token"`
 	ExpiredIn int    `json:"expires_in"`

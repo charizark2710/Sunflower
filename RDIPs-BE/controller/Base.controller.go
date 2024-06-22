@@ -17,11 +17,13 @@ func Controller(c *gin.Context) {
 	if !ok {
 		utils.Log(LogConstant.Error, "Service", c.Request.Method+c.FullPath(), "is not supported.")
 		c.JSON(501, nil)
+		return
 	}
 	bodyAsByteArray, err := io.ReadAll(c.Request.Body)
 	if err != nil {
 		utils.Log(LogConstant.Error, err)
 		c.JSON(500, err)
+		return
 	}
 	serviceCtx := commonModel.ServiceContext{Ctx: c, Mu: sync.Mutex{}, ServiceModel: commonModel.ServiceModel{
 		Body: bodyAsByteArray,

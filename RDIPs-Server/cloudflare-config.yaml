@@ -1,5 +1,5 @@
 tunnel: bd21bef4-1139-4b0a-be2f-df8887380661
-credentials-file: /home/hieu/.cloudflared/bd21bef4-1139-4b0a-be2f-df8887380661.json
+credentials-file: /home/hieu/.cloudflared/cert.pem
 
 ingress:
   - hostname: sunflower-rdips.tech
@@ -13,5 +13,8 @@ ingress:
 
   - hostname: amqp.sunflower-rdips.tech
     service: http://localhost:8672
+
+  - hostname: auth.sunflower-rdips.tech
+    service: http://localhost:9000
 
   - service: http_status:404

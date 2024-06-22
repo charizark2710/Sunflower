@@ -4,11 +4,9 @@ import {
   useSelector as useReduxSelector,
 } from "react-redux";
 import pageReducers from './slice/pageSlice';
-import authReducers from './slice/authSlice';
 
 const reducer = {
   page: pageReducers,
-  auth: authReducers
 };
 
 export const useSelector = useReduxSelector;

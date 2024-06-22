@@ -3,7 +3,6 @@ FROM rabbitmq:3.10.7-management-alpine as base
 WORKDIR /rabbitmq
 
 RUN addgroup rdips
-RUN addgroup rabbitmq rdips
 
 RUN chown -R rabbitmq:rdips /rabbitmq
 RUN chmod -R gu+rwx /rabbitmq

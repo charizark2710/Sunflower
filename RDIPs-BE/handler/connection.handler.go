@@ -69,7 +69,7 @@ func (p *Pool) FillPool(data PoolData) error {
 		val, err := data.FactoryFn()
 		if err != nil {
 			utils.Log(LogConstant.Error, err)
-			continue
+			return err
 		}
 
 		if data.PingFn != nil {
