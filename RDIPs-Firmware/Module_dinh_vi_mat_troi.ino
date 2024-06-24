@@ -10,8 +10,8 @@ void setup() {
   pinMode(A1, INPUT);
   pinMode(A2, INPUT);
   pinMode(A3, INPUT);
-  pinMode(A4, INPUT);
-  pinMode(A5, INPUT);
+  pinMode(A6, INPUT);
+  pinMode(A7, INPUT);
   pinMode(LDR1, OUTPUT);
   pinMode(LDR2, OUTPUT);
   pinMode(LDR3, OUTPUT);
@@ -32,17 +32,25 @@ void readSensorValues() {
   readSensorValuesForArray(R1, LDR1);
   readSensorValuesForArray(R2, LDR2);
   readSensorValuesForArray(R3, LDR3);
-  readSensorValuesForArray(R4, LDR4);
-  readSensorValuesForArray(R5, LDR5);
+  readSensorValuesForArray1(R4, LDR4);
+  readSensorValuesForArray1(R5, LDR5);
 
 }
 
 void readSensorValuesForArray(int array[], int pin) {
   digitalWrite(pin, HIGH);
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < 3; i++) {
     array[i] = analogRead(A1 + i);  
   }
   digitalWrite(pin, LOW);
+}
+
+void readSensorValuesForArray1(int array1[], int pin1) {
+  digitalWrite(pin1, HIGH);
+  for (int i = 0; i < 2; i++) {
+    array1[i] = analogRead(A6 + i);  
+  }
+  digitalWrite(pin1, LOW);
 }
 
 
