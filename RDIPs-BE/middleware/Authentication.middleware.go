@@ -83,6 +83,12 @@ func Validation() gin.HandlerFunc {
 	}
 }
 
+/*
+In case multiple requests access at the same time, one process will call api to get access_token for KeycloakTokenClient.
+Other will wait until the access_token is retrieved and store to memcache.
+After one request is done, the other processes will continue.
+Other processes will check data in memcache to verify token if it is valid
+*/
 func CheckClientTokenValidation() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		wg.Wait()
