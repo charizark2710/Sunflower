@@ -1,6 +1,3 @@
-# Use postgres/example user/password credentials
-version: '3.1'
-
 services:
   keycloak:
     container_name: "keycloak"
@@ -225,6 +222,8 @@ services:
 
   memcached:
     image: 'bitnami/memcached:latest'
+    ports:
+      - '11211:11211'
     networks:
       pi4:
         aliases:

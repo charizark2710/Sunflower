@@ -114,14 +114,14 @@ var Callback = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate
 			utils.Log(LogConstant.Error, unexpectedErr)
 			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, unexpectedErr
 		}
-		commonModel.CacheSrv.Add(&memcache.Item{
+		err = commonModel.CacheSrv.Add(&memcache.Item{
 			Key:        sub,
 			Value:      []byte(refreshToken),
 			Expiration: 30 * 60,
 		})
-		if !ok {
-			utils.Log(LogConstant.Error, unexpectedErr)
-			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, unexpectedErr
+		if err != nil {
+			utils.Log(LogConstant.Error, err)
+			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
 		}
 		c.Ctx.SetCookie("access_token", accessToken, 30*60, "/", APP_HOST, true, true)
 		c.Ctx.SetCookie("token", uuid.NewString(), 30*60, "/", APP_HOST, true, false)
