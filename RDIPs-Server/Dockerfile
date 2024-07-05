@@ -1,4 +1,4 @@
-FROM sunflower-ui as builder
+FROM charizark2710/sunflower-ui as builder
 WORKDIR /sunflower
 CMD [ "serve", "-s", "build" ]
 

@@ -4,9 +4,6 @@ services:
     restart: unless-stopped
     env_file:
       - .env
-    build:
-      context: ./RDIPs-Server
-      dockerfile: keycloak.Dockerfile
     image: charizark2710/sunflower-keycloak
     # command: bash -c "while :; do echo 'Hit CTRL+C'; sleep 1; done"
     command: [ "start-dev", "--import-realm", "--verbose", "--hostname-strict=false", "--hostname=${KEYCLOAK_AUTHEN_URL}" ]
@@ -21,8 +18,6 @@ services:
       - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
       - KC_HOSTNAME_URL=${KEYCLOAK_AUTHEN_URL}
       - KC_HOSTNAME_ADMIN_URL=${KEYCLOAK_AUTHEN_URL}
-    depends_on:
-      - db
     # ports:
     #   - '9000:8080'
     healthcheck:
@@ -45,9 +40,6 @@ services:
     container_name: "rabbitmq"
     restart: unless-stopped
     # command: tail -F /dev/null
-    build:
-      context: ./RDIPs-Gateway
-      dockerfile: Broker.Dockerfile
     image: charizark2710/sunflower-rabbitmq
     environment:
       - RABBITMQ_ERLANG_COOKIE=/var/lib/rabbitmq/.erlang.cookie
@@ -55,6 +47,8 @@ services:
       - RABBITMQ_MNESIA_BASE=/data/mnesia
       - RABBITMQ_LOG_BASE=/data/log
       - RABBITMQ_ENABLED_PLUGINS_FILE=/etc/rabbitmq/enabled_plugins
+      # Limit memory usage for vm in rabbitmq
+      - vm_memory_high_watermark=0.8
     ports:
       - '5672:5672'
       - '15672:15672'
@@ -82,8 +76,6 @@ services:
   #     - .env
   #   ports:
   #     - '8080:8080'
-  #   depends_on:
-  #     - rabbitmq
   #   volumes:
   #     - './RDIPs-Gateway:/var/lib/gateway'
   #   # command: ["/bin/sh", "-c", "tail -F /dev/null"]
@@ -98,7 +90,7 @@ services:
     image: postgres
     restart: unless-stopped
     ports:
-      - '${POSTGRES_PORT}:${POSTGRES_PORT}'
+      - '5432:5432'
     healthcheck:
       test:
         [
@@ -125,8 +117,6 @@ services:
       - .env
     ports:
       - "9090:80"
-    depends_on:
-      - db
     volumes:
       - pgadmin:/var/lib/pgadmin
     networks:
@@ -138,10 +128,6 @@ services:
     container_name: sunflower_api
     env_file:
       - .env
-    build:
-      context: ./RDIPs-BE
-      dockerfile: Dockerfile
-      target: production
     image: charizark2710/sunflower-api
     healthcheck:
       test: ["CMD-SHELL", "curl", "-f", "localhost:${API_PORT}"]
@@ -149,14 +135,6 @@ services:
       timeout: 30s
       retries: 5
       start_period: 30s
-    depends_on:
-      db:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-      keycloak:
-        condition: service_healthy
-
     ports:
       - '8080:8080'
     volumes:
@@ -171,13 +149,7 @@ services:
     restart: on-failure:3
     env_file:
       - .env
-    build:
-      context: ./RDIPs-BE
-      dockerfile: Dockerfile
-      target: production
     image: charizark2710/sunflower-api
-    depends_on:
-      - api
     ports:
       - '8081:8080'
     volumes:
@@ -187,31 +159,10 @@ services:
         aliases:
           - sunflower-rdips
 
-
-  ui:
-    container_name: sunflower_ui
-    env_file:
-      - .env
-    build:
-      context: ./RDIPs-FE
-      dockerfile: Dockerfile
-    # command: [ "serve", "-s", "build" ]
-    image: charizark2710/sunflower-ui
-    depends_on: [ api ]
-    ports:
-      - '3000:3000'
-    networks:
-      pi4:
-        aliases:
-          - sunflower-rdips
-
   server:
     container_name: sunflower_server
     restart: unless-stopped
-    build:
-      context: ./RDIPs-Server
     image: charizark2710/sunflower-server
-    depends_on: [ api, ui, api_bk ]
     ports:
       - "80:80"
       - "81:81"
@@ -223,6 +174,11 @@ services:
       - './RDIPs-Server/conf.d:/opt/nginx/conf.d'
       - './RDIPs-Server/nginx.conf:/opt/nginx/conf'
       - './RDIPs-Server/stream.conf.d:/opt/nginx/stream.conf.d'
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+
     networks:
       pi4:
 
@@ -241,4 +197,4 @@ volumes:
   keycloak:
 networks:
   pi4:
-    driver: bridge
+    driver: overlay
