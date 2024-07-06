@@ -1,4 +1,42 @@
 services:
+  migration:
+    container_name: migration
+    env_file:
+      - .env
+    image: charizark2710/sunflower-migration
+    build: 
+      context: ./RDIPs-Migration
+
+  db:
+    container_name: postgres
+    env_file:
+      - .env
+    image: charizark2710/sunflower-db
+    build: 
+      context: ./RDIPs-Database
+    restart: unless-stopped
+    ports:
+      - '${POSTGRES_PORT}:${POSTGRES_PORT}'
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "sh -c 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}'"
+        ]
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 80s
+    # entrypoint: /usr/local/bin/entrypoint.sh
+    depends_on:
+      - migration
+    volumes:
+      - db:/var/lib/postgresql/data
+    networks:
+      pi4:
+        aliases:
+          - sunflower-rdips
+
   keycloak:
     container_name: "keycloak"
     restart: unless-stopped
@@ -22,7 +60,8 @@ services:
       - KC_HOSTNAME_URL=${KEYCLOAK_AUTHEN_URL}
       - KC_HOSTNAME_ADMIN_URL=${KEYCLOAK_AUTHEN_URL}
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     # ports:
     #   - '9000:8080'
     healthcheck:
@@ -91,31 +130,6 @@ services:
   #     pi4:
   #       aliases:
   #         - sfBroker
-  db:
-    container_name: postgres
-    env_file:
-      - .env
-    image: postgres
-    restart: unless-stopped
-    ports:
-      - '${POSTGRES_PORT}:${POSTGRES_PORT}'
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "sh -c 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}'"
-        ]
-      interval: 30s
-      timeout: 60s
-      retries: 5
-      start_period: 80s
-    volumes:
-      - db:/var/lib/postgresql/data
-      - ./RDIPs-Migration/init_db.sh:/docker-entrypoint-initdb.d/db_init.sh
-    networks:
-      pi4:
-        aliases:
-          - sunflower-rdips
 
   pgadmin:
     container_name: pgadmin4
@@ -126,7 +140,8 @@ services:
     ports:
       - "9090:80"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     volumes:
       - pgadmin:/var/lib/pgadmin
     networks:
@@ -144,7 +159,7 @@ services:
       target: production
     image: charizark2710/sunflower-api
     healthcheck:
-      test: ["CMD-SHELL", "curl", "-f", "localhost:${API_PORT}"]
+      test: curl localhost:${API_PORT}
       interval: 1m
       timeout: 30s
       retries: 5
@@ -160,7 +175,7 @@ services:
     ports:
       - '8080:8080'
     volumes:
-      - './RDIPs-BE:/srv/www/volume_sunflower'
+      - 'api:/srv/www/volume_sunflower'
     networks:
       pi4:
         aliases:
@@ -177,11 +192,12 @@ services:
       target: production
     image: charizark2710/sunflower-api
     depends_on:
-      - api
+      api:
+        condition: service_healthy
     ports:
       - '8081:8080'
     volumes:
-      - './RDIPs-BE:/srv/www/volume_sunflower'
+      - 'api:/srv/www/volume_sunflower'
     networks:
       pi4:
         aliases:

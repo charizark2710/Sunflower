@@ -1,3 +1,5 @@
+FROM charizark2710/sunflower-migration as migration
+
 FROM quay.io/keycloak/keycloak:25.0 as builder
 
 # Enable health and metrics support
@@ -12,13 +14,13 @@ RUN /opt/keycloak/bin/kc.sh build
 
 FROM quay.io/keycloak/keycloak:25.0
 COPY --from=builder /opt/keycloak/ /opt/keycloak/
+COPY --from=migration /migration/keycloak/ /opt/keycloak/data/import/
 
 USER root
 RUN chown -R keycloak /opt
 RUN chmod -R u+rwx /opt
 
 USER keycloak
-COPY ./RDIPs-realm.json /opt/keycloak/data/import/
 ENV KEYCLOAK_IMPORT=/opt/keycloak/data/import/RDIPs-realm.json
 ENV KC_FEATURES=token-exchange
 # change these values to point to a running postgres instance
