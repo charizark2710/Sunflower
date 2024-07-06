@@ -50,7 +50,7 @@ services:
     command: [ "start-dev", "--import-realm", "--verbose", "--hostname-strict=false", "--hostname=${KEYCLOAK_AUTHEN_URL}" ]
     environment:
       - KC_DB=postgres
-      - KC_DB_URL=jdbc:postgresql://postgres/keycloak
+      - KC_DB_URL=jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/keycloak
       - KC_DB_URL_HOST=${POSTGRES_HOST}
       - KC_DB_URL_PORT=${POSTGRES_PORT}
       - KC_DB_USERNAME=${POSTGRES_USER}
@@ -159,7 +159,7 @@ services:
       target: production
     image: charizark2710/sunflower-api
     healthcheck:
-      test: curl localhost:${API_PORT}
+      test: curl -f localhost:${API_PORT}
       interval: 1m
       timeout: 30s
       retries: 5

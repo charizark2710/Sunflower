@@ -77,7 +77,6 @@ func InitKeycloakClient(client_name string) error {
 		return err
 	}
 	factoryFn := func() (interface{}, error) {
-
 		gocloakClient := gocloak.NewClient(os.Getenv("KEYCLOAK_BASE_URL"))
 		// restyClient := gocloakClient.RestyClient()
 		// restyClient.SetDebug(true)

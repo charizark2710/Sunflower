@@ -1,4 +1,4 @@
-FROM rabbitmq:3.10.7-management-alpine as base
+FROM rabbitmq:3.10.8-management-alpine as base
 
 WORKDIR /rabbitmq
 
