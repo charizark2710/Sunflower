@@ -1,9 +1,9 @@
 import EditIcon from '@mui/icons-material/Edit';
-import { Box, Divider } from '@mui/material';
+import { Box } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { SimpleDialog } from '../../atoms/dialog/Dialog.atom';
-import TextAtomHeader from '../../atoms/text/TextHeader.atom';
+import TitlePageAtom from '../../atoms/text/TitlePgae.atom';
 import './Card.mocules.scss';
 
 interface CardProps {
@@ -13,12 +13,17 @@ interface CardProps {
   status?: string;
 }
 
-const CardMocules: React.FC<CardProps> = ({ title, children, modal, status }) => {
+const CardMocules: React.FC<CardProps> = ({
+  title,
+  children,
+  modal,
+  status,
+}) => {
   const addTitle = 'Update ' + title;
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    if(status === "closed") {
+    if (status === 'closed') {
       handleClose();
     }
   }, [status]);
@@ -31,16 +36,21 @@ const CardMocules: React.FC<CardProps> = ({ title, children, modal, status }) =>
     setOpen(false);
   };
   return (
-    <Divider>
-      <SimpleDialog title={addTitle} children={modal} open={open} onClose={handleClose} />
-      <Box className='card-container'>
+    <Box>
+      <SimpleDialog
+        title={addTitle}
+        children={modal}
+        open={open}
+        onClose={handleClose}
+      />
+      <Box>
         <Box className='mb-10 flex-justify-space-between'>
-          <TextAtomHeader text={title} />
-          <EditIcon onClick={handleClickOpen} />
+          <TitlePageAtom title={title}></TitlePageAtom>
+          <EditIcon sx={{ cursor: 'pointer' }} onClick={handleClickOpen} />
         </Box>
         <Box className='card-body'>{children}</Box>
       </Box>
-    </Divider>
+    </Box>
   );
 };
 

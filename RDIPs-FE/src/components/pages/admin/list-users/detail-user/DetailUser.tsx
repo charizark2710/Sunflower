@@ -1,13 +1,23 @@
 import { Box, Button, Grid } from '@mui/material';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { getAllUsers } from '../../../../../axios/api';
 import chartData from '../../../../../lib/chartData.json';
 import { HighChartCustom } from '../../../../../lib/highchart/HighChartCustom';
+import config from '../../../../../utils/en.json';
 import { TypeChart } from '../../../../../utils/enum';
-import { DeviceChangeHistoryData, DeviceLogHistoryData, HeadCell, StatusEnum } from '../../../../../utils/interface';
+import {
+  DeviceChangeHistoryData,
+  DeviceLogHistoryData,
+  HeadCell,
+  StatusEnum,
+} from '../../../../../utils/interface';
 import CollapseAtom from '../../../../atoms/collapse/Collapse';
 import TableAtom from '../../../../atoms/table/Table.atom';
 import TitlePageAtom from '../../../../atoms/text/TitlePgae.atom';
+import CardMocules from '../../../../molecules/card/Card.mocules';
+import { FormCreateUserMolecules } from '../../../../molecules/form/user-create/FormCreateUser.molecules';
+import { createUserData } from '../ListUsers';
 import DetailDeviceUser from './DetailDeviceUser';
 import './DetailUser.scss';
 import Expense from './history/Expense';
@@ -45,7 +55,11 @@ export const HighChartInDevice = () => {
       <Box>
         {listTimeType.map((t, i) => {
           return (
-            <Button style={{ fontWeight: t === type ? 'bold' : '' }} key={i} onClick={() => setType(t)}>
+            <Button
+              style={{ fontWeight: t === type ? 'bold' : '' }}
+              key={i}
+              onClick={() => setType(t)}
+            >
               {t}
             </Button>
           );
@@ -70,12 +84,16 @@ export const HistoryLogTableInDevice = () => {
   }
 
   const historyListData = [
-    createData('2023-02-18', StatusEnum.Warning, 'great'),
-    createData('2023-02-20', StatusEnum.Error, 'bad'),
-    createData('2023-02-25', StatusEnum.Warning, 'not found'),
+    createUserData('2023-02-18', StatusEnum.Warning, 'great'),
+    createUserData('2023-02-20', StatusEnum.Error, 'bad'),
+    createUserData('2023-02-25', StatusEnum.Warning, 'not found'),
   ];
 
-  function createData(datetime: string, status: StatusEnum, message: string): DeviceLogHistoryData {
+  function createUserData(
+    datetime: string,
+    status: StatusEnum,
+    message: string
+  ): DeviceLogHistoryData {
     return {
       datetime,
       status,
@@ -108,8 +126,6 @@ export const HistoryLogTableInDevice = () => {
   ];
 
   const logHistoryColumns = ['datetime', 'status', 'message'];
-
-  // const [type, setType] = React.useState('1');
   return (
     <TableAtom
       onRowClick={navigateToDetailPage}
@@ -129,12 +145,16 @@ export const HistoryChangeTableInDevice = () => {
   }
 
   const changeHistoryListData = [
-    createData('2023-02-18', 'A', 'great'),
-    createData('2023-02-20', 'B', 'bad'),
-    createData('2023-02-25', 'C', 'not found'),
+    createUserData('2023-02-18', 'A', 'great'),
+    createUserData('2023-02-20', 'B', 'bad'),
+    createUserData('2023-02-25', 'C', 'not found'),
   ];
 
-  function createData(datetime: string, type: string, description: string): DeviceChangeHistoryData {
+  function createUserData(
+    datetime: string,
+    type: string,
+    description: string
+  ): DeviceChangeHistoryData {
     return {
       datetime,
       type,
@@ -179,14 +199,40 @@ export const HistoryChangeTableInDevice = () => {
 };
 
 const DetailUser = () => {
+  const [popupStatus, setPopupStatus] = useState('');
   let { state } = useLocation();
-  const detailUser: any = state;
+  const [detailUser, setDetailUser]: any = useState(state);
+
+  useEffect(() => {
+    getUserById();
+  }, [popupStatus]);
+
+  const getUserById = () => {
+    let id = (state as any).user_id as string;
+    getAllUsers(id)
+      .then((data: { data: any }) => {
+        setDetailUser(createUserData(data.data));
+      })
+      .catch(() => {
+        setDetailUser(state);
+      });
+  };
 
   return (
     <Box className='list-container'>
       <Box className='card-container'>
         <Box>
-          <TitlePageAtom title='User information'></TitlePageAtom>
+          <CardMocules
+            title={config['usersList.infoTitle']}
+            status={popupStatus}
+            modal={
+              <FormCreateUserMolecules
+                state='update'
+                onClosePopUp={() => setPopupStatus('closed')}
+                data={detailUser}
+              />
+            }
+          />
           <br></br>
           <Box sx={{ flexGrow: 1 }}>
             <Grid container spacing={2}>

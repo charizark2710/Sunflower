@@ -3,7 +3,7 @@ import { Field } from 'formik';
 import React from 'react';
 import { addDevice, updateDevice } from '../../../../axios/api';
 import { initValue } from '../../../../utils/function';
-import { DeviceData } from '../../../../utils/interface';
+import { DeviceData, RequestCreateDevices } from '../../../../utils/interface';
 import ErrorMessageAtom from '../../../atoms/error-message/ErrorMessageAtom.atom';
 import { FormikAtom } from '../../../atoms/formik/FormikAtom.atom';
 
@@ -12,25 +12,16 @@ interface FormCreateDeviceMoleculesProps {
   state?: string;
   data?: DeviceData;
 }
-export interface RequestCreateDevices {
-  name: string;
-  type?: string;
-  status?: string;
-  id?: string;
-  region?: string;
-}
 
-export const FormCreateDeviceMolecules: React.FC<FormCreateDeviceMoleculesProps> = ({
-  onClosePopUp,
-  state = 'create',
-  data,
-}) => {
+export const FormCreateDeviceMolecules: React.FC<
+  FormCreateDeviceMoleculesProps
+> = ({ onClosePopUp, state = 'create', data }) => {
   const initialValues: any = {
     name: initValue(data?.device_name),
     type: initValue(data?.type),
     status: initValue(data?.status),
     region: initValue(data?.region),
-    id: initValue(data?.device_id)
+    id: initValue(data?.device_id),
   };
 
   const handleSubmit = (formValue: RequestCreateDevices) => {
@@ -98,11 +89,23 @@ export const FormCreateDeviceMolecules: React.FC<FormCreateDeviceMoleculesProps>
         />
       )}
 
-      <Button className='add-button' type='submit' fullWidth variant='contained' sx={{ mt: 3, mb: 2 }}>
+      <Button
+        className='add-button'
+        type='submit'
+        fullWidth
+        variant='contained'
+        sx={{ mt: 3, mb: 2 }}
+      >
         {state === 'create' ? 'Add' : 'Update'}
       </Button>
     </Box>
   );
 
-  return <FormikAtom initialValues={initialValues} onSubmit={handleSubmit} children={createDeviceForm}></FormikAtom>;
+  return (
+    <FormikAtom
+      initialValues={initialValues}
+      onSubmit={handleSubmit}
+      children={createDeviceForm}
+    ></FormikAtom>
+  );
 };
