@@ -157,29 +157,18 @@ func ReceiveService(deliveries <-chan amqp091.Delivery) {
 			response = result
 		}
 
-		// TODO: Delete else after gateway is implemented
-		// After delete, optimize response
-		if header["Correlation-Id"] != nil && len(header["Correlation-Id"]) != 0 {
-			go Send(delivery.Exchange, response, header["Correlation-Id"][0], "*")
-		} else {
-			res, err := json.Marshal(response)
-			if err != nil {
-				utils.Log(LogConstant.Error, err)
-			}
-			body := make(map[string]interface{})
-			err = json.Unmarshal(delivery.Body, &body)
-			if err != nil {
-				utils.Log(LogConstant.Warning, "Cannot unmarshal delivery body: ", err)
-			}
-			resBody := make(map[string]interface{})
-			err = json.Unmarshal(res, &resBody)
-			if err != nil {
-				utils.Log(LogConstant.Warning, "Cannot unmarshal response body: ", err)
+		resBody, err := getResBody(response)
+		if err != nil && resBody["needResponse"] != nil {
+			// TODO: Delete else after gateway is implemented
+			// After delete, optimize response
+			if header["Correlation-Id"] != nil && len(header["Correlation-Id"]) != 0 {
+				go Send(delivery.Exchange, response, header["Correlation-Id"][0], "*")
 			} else {
+				body := make(map[string]interface{})
 				resBody["CorrelationId"] = body["CorrelationId"]
+				id, _ := body["CorrelationId"].(string)
+				go Send(delivery.Exchange, resBody, id, "*")
 			}
-			id, _ := body["CorrelationId"].(string)
-			go Send(delivery.Exchange, resBody, id, "*")
 		}
 
 		go ack(&delivery)
@@ -249,4 +238,19 @@ func generateRoutingKey(args ...string) string {
 	copy(args[1:], args)
 	args[0] = "server"
 	return strings.Join(args, ".")
+}
+
+func getResBody(response interface{}) (map[string]interface{}, error) {
+	res, err := json.Marshal(response)
+	if err != nil {
+		utils.Log(LogConstant.Error, err)
+		return nil, err
+	}
+	resBody := make(map[string]interface{})
+	err = json.Unmarshal(res, &resBody)
+	if err != nil {
+		utils.Log(LogConstant.Warning, "Cannot unmarshal delivery body: ", err)
+		return nil, err
+	}
+	return resBody, err
 }
