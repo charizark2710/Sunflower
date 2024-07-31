@@ -9,6 +9,7 @@ import (
 type baseAmqpConn interface {
 	Channel() (amqpChannelWrapper, error)
 	Close() error
+	GetAMQPConn() *amqp.Connection
 }
 
 type amqpWrapper struct {
@@ -71,4 +72,8 @@ func (w amqpWrapper) Channel() (amqpChannelWrapper, error) {
 
 func (w amqpWrapper) Close() error {
 	return w.conn.Close()
+}
+
+func (w amqpWrapper) GetAMQPConn() *amqp.Connection {
+	return w.conn
 }

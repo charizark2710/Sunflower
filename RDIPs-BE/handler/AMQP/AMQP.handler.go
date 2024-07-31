@@ -24,17 +24,37 @@ import (
 var rabbitPool handler.Pool
 
 func InitializeAMQP() error {
-	conn, err := commonModel.Dial(
+	amqpConn, err := commonModel.Dial(
 		"amqp://" +
 			os.Getenv("BROKER_USER") +
 			":" + os.Getenv("BROKER_PASSWORD") +
 			"@" + os.Getenv("BROKER_HOST") +
 			":" + os.Getenv("BROKER_PORT") + "/")
 	if err != nil {
-		utils.Log(LogConstant.Fatal, err)
+		utils.Log(LogConstant.Error, err)
+		return err
 	}
+
+	notifyConnCloseCh := amqpConn.GetAMQPConn().NotifyClose(make(chan *amqp091.Error, 1))
+
+	// Reconnect if connection is close
+	go func() {
+		closedErr := <-notifyConnCloseCh
+		if closedErr != nil {
+			utils.Log(LogConstant.Error, closedErr)
+			rabbitPool.Close()
+			err := InitializeAMQP()
+			// Open new channel if it get error
+			for err != nil {
+				utils.Log(LogConstant.Error, err)
+				time.Sleep(10 * time.Second)
+				err = InitializeAMQP()
+			}
+		}
+	}()
+
 	factoryFn := func() (interface{}, error) {
-		amqpCh, err := conn.Channel()
+		amqpCh, err := amqpConn.Channel()
 		return amqpCh, err
 	}
 
@@ -53,11 +73,24 @@ func InitializeAMQP() error {
 			return errors.New("wrong connection")
 		}
 
-		amqpClose := make(chan *amqp091.Error)
-		ch.NotifyClose(amqpClose)
-
+		chClose := ch.NotifyClose(make(chan *amqp091.Error, 1))
+		// Re-initialize channel if this one is closed due to some error
 		go func() {
-			utils.Log(LogConstant.Error, <-amqpClose)
+			closedErr := <-chClose
+			if closedErr != nil {
+				utils.Log(LogConstant.Error, closedErr)
+				if amqpConn.GetAMQPConn().IsClosed() {
+					return
+				}
+				amqpCh, err := amqpConn.Channel()
+				// Open new channel if it get error
+				for err != nil {
+					utils.Log(LogConstant.Error, err)
+					time.Sleep(10 * time.Second)
+					amqpCh, err = amqpConn.Channel()
+				}
+				conn = amqpCh
+			}
 		}()
 		return nil
 	}
@@ -70,6 +103,11 @@ func InitializeAMQP() error {
 
 	err = rabbitPool.FillPool(poolData)
 
+	if err != nil {
+		amqpConn.Close()
+	}
+
+	utils.Log(LogConstant.Info, "Finish Connect Rabbitmq, err:", err)
 	return err
 }
 
