@@ -27,7 +27,7 @@ func InitAmqpRoutes() {
 		utils.Log(LogConstant.Fatal, "Wrong format")
 	}
 
-	channel.Qos(30, 0, false)
+	channel.Qos(10, 0, false)
 
 	queue, err := channel.QueueDeclare("API", true, false, false, false, nil)
 	if err != nil {

@@ -26,7 +26,6 @@ services:
           'CMD-SHELL',
           '[ -f /tmp/HealthCheck.java ] || echo "public class HealthCheck { public static void main(String[] args) throws java.lang.Throwable { System.exit(java.net.HttpURLConnection.HTTP_OK == ((java.net.HttpURLConnection)new java.net.URL(args[0]).openConnection()).getResponseCode() ? 1 : 0); } }" > /tmp/HealthCheck.java && java /tmp/HealthCheck.java http://localhost:8080/health/live'
         ]
-      interval: 10s
       retries: 5
       start_period: 20s
     networks:
@@ -57,7 +56,6 @@ services:
       - '1883:1883'
     healthcheck:
       test: rabbitmq-diagnostics -q ping
-      interval: 30s
       timeout: 30s
       retries: 3
     networks:
@@ -105,7 +103,6 @@ services:
           "CMD-SHELL",
           "sh -c 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}'"
         ]
-      interval: 30s
       timeout: 60s
       retries: 5
       start_period: 80s
@@ -144,7 +141,6 @@ services:
     image: charizark2710/sunflower-api
     healthcheck:
       test: curl -f localhost:${API_PORT}
-      interval: 1m
       timeout: 30s
       retries: 5
       start_period: 30s

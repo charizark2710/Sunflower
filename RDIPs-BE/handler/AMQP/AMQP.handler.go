@@ -51,6 +51,9 @@ func InitializeAMQP() error {
 				err = InitializeAMQP()
 			}
 		}
+		if len(notifyConnCloseCh) > 0 {
+			close(notifyConnCloseCh)
+		}
 	}()
 
 	factoryFn := func() (interface{}, error) {
@@ -90,6 +93,9 @@ func InitializeAMQP() error {
 					amqpCh, err = amqpConn.Channel()
 				}
 				conn = amqpCh
+			}
+			if len(chClose) > 0 {
+				close(chClose)
 			}
 		}()
 		return nil
@@ -183,7 +189,7 @@ func ReceiveService(deliveries <-chan amqp091.Delivery) {
 		fn, ok := ServiceConst.ServicesMap[ServiceConst.ServiceMapMQTT[routingKeyArr[len(routingKeyArr)-1]]]
 		var response interface{}
 		if !ok {
-			utils.Log(LogConstant.Error, "Service"+routingKeyArr[len(routingKeyArr)-1]+"is not exist")
+			utils.Log(LogConstant.Error, "Service "+routingKeyArr[len(routingKeyArr)-1]+" is not exist")
 			response = map[string]string{"ERROR": "Service" + routingKeyArr[len(routingKeyArr)-1] + "is not exist"}
 		} else {
 			result, err := fn(&c)
@@ -238,7 +244,7 @@ func setGinContext(c *commonModel.ServiceContext, body []byte) {
 	res := make(map[string]interface{})
 	err := json.Unmarshal(body, &res)
 	if err != nil {
-		utils.Log(LogConstant.Info, err)
+		utils.Log(LogConstant.Info, body, err)
 		return
 	}
 	if res["param"] != nil {
