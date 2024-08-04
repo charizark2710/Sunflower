@@ -7,6 +7,19 @@ services:
     build: 
       context: ./RDIPs-Migration
 
+  mongo:
+    image: mongo:8.0.0-rc15
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - 27017:27017
+    healthcheck:
+      test: ["CMD","mongosh", "--eval", "db.adminCommand('ping')"]
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
   db:
     container_name: postgres
     env_file:
@@ -168,6 +181,8 @@ services:
       rabbitmq:
         condition: service_healthy
       keycloak:
+        condition: service_healthy
+      mongo:
         condition: service_healthy
 
     ports:
