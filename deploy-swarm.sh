@@ -1,5 +1,18 @@
 #!/bin/sh 
 
+GenerateRandomPw () {
+    declare -a keys=("postgres" "broker" "keycloak" "mongo")
+
+    for key in "${keys[@]}"; do
+        local pw=$(openssl rand -base64 12 | sha1sum | awk '{print $1}')
+        export declare ${key}_pw=$pw
+    done
+    envsubst < ./local.deploy.env > ./env
+}
+
+#Generate random password for production
+GenerateRandomPw
+
 # export all variable in .env
 set -a
 . ./.env
