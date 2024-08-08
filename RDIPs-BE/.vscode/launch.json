@@ -35,7 +35,11 @@
                 "KEYCLOAK_REALM_NAME": "RDIPs",
                 "APP_HOST": "localhost",
                 "REDIRECT_URI": "http://localhost:8080/callback",
-                "CACHE_SERVER": "localhost"
+                "CACHE_SERVER": "localhost",
+                "MONGO_HOST": "localhost",
+                "MONGO_INITDB_ROOT_USERNAME": "admin",
+                "MONGO_INITDB_ROOT_PASSWORD": "admin",
+                "MONGO_INITDB_DATABASE": "sunflower"
             }
         }
     ]

@@ -5,6 +5,7 @@ import (
 	"RDIPs-BE/constant/ServiceConst"
 	"RDIPs-BE/handler"
 	commonModel "RDIPs-BE/model/common"
+	"RDIPs-BE/services"
 	"RDIPs-BE/utils"
 	"context"
 	"encoding/json"
@@ -173,7 +174,7 @@ func ReceiveService(deliveries <-chan amqp091.Delivery) {
 		utils.Log(LogConstant.Info, "Start Exchange: "+delivery.Exchange+" With key: "+delivery.RoutingKey)
 		header := tableToHttpHeader(delivery.Headers)
 		header["Content-Type"] = []string{"application/json"}
-		header["Request-Type"] = []string{"amqp"}
+		header[services.REQUEST_TYPE_HEADER] = []string{"amqp"}
 		c := commonModel.ServiceContext{
 			Ctx: &gin.Context{},
 			Mu:  sync.Mutex{},

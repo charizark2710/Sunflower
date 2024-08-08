@@ -119,6 +119,27 @@ services:
         constraints:
           - node.role == worker
 
+  mongo:
+    image: mongo:8.0.0-rc15
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - 27017:27017
+    healthcheck:
+      test: ["CMD","mongosh", "--eval", "db.adminCommand('ping')"]
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    networks:
+      pi4:
+        aliases:
+          - sunflower-mongo
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+
   pgadmin:
     container_name: pgadmin4
     image: dpage/pgadmin4

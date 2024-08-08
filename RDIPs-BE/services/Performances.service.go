@@ -7,7 +7,11 @@ import (
 	commonModel "RDIPs-BE/model/common"
 	"RDIPs-BE/utils"
 	"encoding/json"
+	"fmt"
+	"time"
 )
+
+const REQUEST_TYPE_HEADER = "Request-Type"
 
 var GetAllPerformances = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
 	utils.Log(LogConstant.Info, "GetAllPerformances Start")
@@ -67,8 +71,14 @@ var PutPerformance = func(c *commonModel.ServiceContext) (commonModel.ResponseTe
 
 	performanceBody := model.Performance{}
 	if err := json.Unmarshal(c.Body, &performanceBody); err == nil {
+		if c.Header[REQUEST_TYPE_HEADER] != nil &&
+			performanceBody.Payload != nil {
+			errMsg := "cannot update log performance"
+			return commonModel.ResponseTemplate{HttpCode: 400, Data: nil, Message: errMsg}, fmt.Errorf(errMsg)
+		}
 		performanceBody.Id = rel.PerformanceID
 		performanceModel := model.SysPerformance{}
+		performanceModel.UpdatedAt = time.Now()
 		performanceBody.ConvertToDB(&performanceModel)
 		err := handler.NewPerformanceHandler(c.Ctx, &performanceModel).Update()
 		if err != nil {

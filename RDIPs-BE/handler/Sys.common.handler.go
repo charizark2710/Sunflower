@@ -2,8 +2,10 @@ package handler
 
 import (
 	commonModel "RDIPs-BE/model/common"
+	"context"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/mongo"
 	"gorm.io/gorm"
 )
 
@@ -16,11 +18,13 @@ type CommonHandler interface {
 }
 
 type commonHandler struct {
-	db *gorm.DB
+	context context.Context
+	db      *gorm.DB
+	mongoDB *mongo.Database
 }
 
 func newCommonHandler(c *gin.Context) CommonHandler {
-	return &commonHandler{db: GetDbFromContext(c)}
+	return &commonHandler{db: GetDbFromContext(c), mongoDB: GetMongoDBFromContext(c), context: c}
 }
 
 func (*commonHandler) Read(interface{}) error {
@@ -56,4 +60,17 @@ func GetDbFromContext(c *gin.Context) *gorm.DB {
 		}
 	}
 	return commonModel.Helper.GetDb()
+}
+
+func GetMongoDBFromContext(c *gin.Context) *mongo.Database {
+	if c != nil {
+		val, _ := c.Get("MongoDB")
+		if val != nil {
+			res, ok := val.(*mongo.Database)
+			if ok {
+				return res
+			}
+		}
+	}
+	return commonModel.Helper.GetMongoDB()
 }

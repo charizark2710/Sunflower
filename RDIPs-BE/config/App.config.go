@@ -1,10 +1,14 @@
 package config
 
 import (
+	"context"
 	"database/sql"
 	"os"
+	"slices"
 	"time"
 
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
@@ -19,6 +23,57 @@ import (
 
 type objDB interface {
 	TableName() string
+}
+
+func MongoConfig() (*mongo.Database, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 2*60*time.Second)
+	defer cancel()
+	client, err := mongo.Connect(ctx, options.Client().
+		ApplyURI("mongodb://"+os.Getenv("MONGO_HOST")+":27017").
+		SetAuth(options.Credential{
+			AuthMechanism: "SCRAM-SHA-256",
+			AuthSource:    "admin",
+			Username:      os.Getenv("MONGO_INITDB_ROOT_USERNAME"),
+			Password:      os.Getenv("MONGO_INITDB_ROOT_PASSWORD"),
+		}))
+	if err != nil {
+		return nil, err
+	}
+
+	mongoDB := client.Database(os.Getenv("MONGO_INITDB_DATABASE"))
+
+	// Create all collection if not exist
+	isNameOnly := true
+	collections := []map[string]string{
+		{
+			"name":      "performance",
+			"metaField": "document_name",
+		},
+	}
+	currentCollection, err := mongoDB.ListCollectionNames(ctx, nil, &options.ListCollectionsOptions{
+		NameOnly: &isNameOnly,
+	})
+
+	if err != nil && err != mongo.ErrNilDocument {
+		return nil, err
+	}
+
+	for _, collection := range collections {
+		if !slices.Contains(currentCollection, collection["name"]) {
+			metaField := collection["metaField"]
+			err = mongoDB.CreateCollection(ctx, collection["name"], &options.CreateCollectionOptions{
+				TimeSeriesOptions: &options.TimeSeriesOptions{
+					TimeField: "timestamp",
+					MetaField: &metaField,
+				},
+			})
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	return mongoDB, err
 }
 
 func DbConfig() (*gorm.DB, error) {
@@ -45,7 +100,6 @@ func DbConfig() (*gorm.DB, error) {
 	err = db.Exec("CREATE SCHEMA IF NOT EXISTS " + os.Getenv("POSTGRES_SCHEMA")).Error
 
 	if err == nil {
-
 		models := []objDB{model.SysDevices{}, model.SysHistory{}, model.SysPerformance{}}
 		relModels := []objDB{model.SysDeviceRel{}}
 		for _, m := range append(models, relModels...) {
