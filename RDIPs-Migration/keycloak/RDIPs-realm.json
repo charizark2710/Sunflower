@@ -94,6 +94,15 @@
         "clientRole": false,
         "containerId": "e1f4a4d5-bf37-4e3f-a697-a76d814608f5",
         "attributes": {}
+      },
+      {
+        "id": "54ddeac3-9ecc-43ca-8a54-cf646e62f02f",
+        "name": "Device",
+        "description": "Device Role",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "e1f4a4d5-bf37-4e3f-a697-a76d814608f5",
+        "attributes": {}
       } ],
       "client" : {
         "realm-management" : [ {

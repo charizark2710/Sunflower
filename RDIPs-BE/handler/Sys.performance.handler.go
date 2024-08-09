@@ -4,6 +4,7 @@ import (
 	LogConstant "RDIPs-BE/constant/LogConst"
 	"RDIPs-BE/model"
 	"RDIPs-BE/utils"
+	"context"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -44,20 +45,23 @@ func (p *performanceHandler) GetById(id string, performanceResponse interface{})
 }
 
 func (p *performanceHandler) Update() error {
-	var body model.SysPerformance
-	err := p.GetById(p.performanceBody.Id, &body)
+	err := p.GetById(p.performanceBody.Id, &model.SysPerformance{})
 	if err != nil {
 		utils.Log(LogConstant.Error, "Cannot find performance with Id = "+p.performanceBody.Id, err)
 		return err
 	}
-	if p.performanceBody.Payload != nil {
+	mongoPayload := p.performanceBody.Payload
+	if mongoPayload != nil {
 		var documentPayload []interface{}
-		for _, payload := range p.performanceBody.Payload {
+		for _, payload := range *mongoPayload {
 			payload["timestamp"] = time.Now()
-			payload["document_name"] = body.DocumentName
+			payload["document_name"] = p.performanceBody.DocumentName
 			documentPayload = append(documentPayload, payload)
 		}
-		p.performanceCollection.InsertMany(p.context, documentPayload)
+		_, err := p.performanceCollection.InsertMany(context.TODO(), documentPayload)
+		if err != nil {
+			return err
+		}
 	}
 	err = p.db.Updates(p.performanceBody).Error
 	// timeFinish := time.Now()

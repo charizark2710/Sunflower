@@ -71,9 +71,9 @@ var PutPerformance = func(c *commonModel.ServiceContext) (commonModel.ResponseTe
 
 	performanceBody := model.Performance{}
 	if err := json.Unmarshal(c.Body, &performanceBody); err == nil {
-		if c.Header[REQUEST_TYPE_HEADER] != nil &&
+		if c.Header[REQUEST_TYPE_HEADER] == nil &&
 			performanceBody.Payload != nil {
-			errMsg := "cannot update log performance"
+			errMsg := "cannot update performance if request is not from mqtt"
 			return commonModel.ResponseTemplate{HttpCode: 400, Data: nil, Message: errMsg}, fmt.Errorf(errMsg)
 		}
 		performanceBody.Id = rel.PerformanceID
