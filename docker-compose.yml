@@ -165,6 +165,21 @@ services:
         aliases:
           - sunflower
 
+  memcached:
+    image: 'bitnami/memcached:1.6.29-debian-12-r4'
+    ports:
+      - '11211:11211'
+    networks:
+      pi4:
+        aliases:
+          - cacheSrv
+    healthcheck:
+      test: "/bin/nc -z 127.0.0.1 11211"
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+
   api:
     container_name: sunflower_api
     env_file:
@@ -243,6 +258,8 @@ services:
     restart: unless-stopped
     build:
       context: ./RDIPs-Server
+    env_file:
+      - .env
     image: charizark2710/sunflower-server
     depends_on: [ api, ui, api_bk ]
     ports:
@@ -259,14 +276,6 @@ services:
     networks:
       pi4:
 
-  memcached:
-    image: 'bitnami/memcached:latest'
-    ports:
-      - '11211:11211'
-    networks:
-      pi4:
-        aliases:
-          - cacheSrv
 volumes:
   db:
   pgadmin:

@@ -40,4 +40,7 @@ const (
 	DeleteKeycloakGroup  = "/groups/:id"
 	PostKeycloakGroup    = "/groups"
 	PutKeycloakGroup     = "/groups/:id"
+
+	// Transmit MQTT
+	TransmitMessage = "/transmit/:id"
 )

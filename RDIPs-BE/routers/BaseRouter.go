@@ -23,4 +23,5 @@ func InitRouter(router *gin.Engine) {
 	HistoryRouter(router)
 	WeatherRouter(router)
 	KeycloakRouter(router)
+	MessageRouter(router)
 }

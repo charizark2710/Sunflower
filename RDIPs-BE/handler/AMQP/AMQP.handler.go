@@ -1,13 +1,13 @@
 package AMQP_handler
 
 import (
+	"RDIPs-BE/constant"
 	LogConstant "RDIPs-BE/constant/LogConst"
 	"RDIPs-BE/constant/ServiceConst"
 	"RDIPs-BE/handler"
+	connection "RDIPs-BE/handler/Connection"
 	commonModel "RDIPs-BE/model/common"
-	"RDIPs-BE/services"
 	"RDIPs-BE/utils"
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -22,7 +22,7 @@ import (
 	"github.com/rabbitmq/amqp091-go"
 )
 
-var rabbitPool handler.Pool
+var rabbitPool connection.Pool
 
 func InitializeAMQP() error {
 	amqpConn, err := commonModel.Dial(
@@ -102,7 +102,7 @@ func InitializeAMQP() error {
 		return nil
 	}
 
-	poolData := handler.PoolData{
+	poolData := connection.PoolData{
 		FactoryFn: factoryFn,
 		CloseFn:   closeFn,
 		PingFn:    pingFn,
@@ -114,42 +114,8 @@ func InitializeAMQP() error {
 		amqpConn.Close()
 	}
 
+	handler.SetRabbitPool(&rabbitPool)
 	utils.Log(LogConstant.Info, "Finish Connect Rabbitmq, err:", err)
-	return err
-}
-
-func GetPool() handler.Pool {
-	return rabbitPool
-}
-
-func Send(exchange string, body interface{}, correlationID string, routingKeyArgs ...string) error {
-	routingKey := generateRoutingKey(routingKeyArgs...)
-	utils.Log(LogConstant.Info, "Sending message to ", exchange, "with ", routingKey)
-	conn, err := rabbitPool.Get()
-	if err != nil {
-		utils.Log(LogConstant.Error, err)
-	} else {
-		defer rabbitPool.Release(conn)
-		channel, ok := conn.(commonModel.BaseAmqpChannel)
-		if !ok {
-			utils.Log(LogConstant.Error, "wrong channel format")
-			return fmt.Errorf("wrong channel format")
-		}
-		var message []byte
-		message, err = json.Marshal(body)
-		if err != nil {
-			utils.Log(LogConstant.Error, err)
-			return err
-		}
-		err = channel.PublishWithContext(context.Background(), exchange, routingKey, true, false, amqp091.Publishing{
-			DeliveryMode: amqp091.Persistent,
-			ContentType:  "text/plain",
-			Body:         message,
-			Headers:      amqp091.Table{"Correlation-ID": correlationID},
-		})
-		utils.Log(LogConstant.Info, "Finish sending message to ", exchange, "with ", routingKey)
-
-	}
 	return err
 }
 
@@ -174,7 +140,7 @@ func ReceiveService(deliveries <-chan amqp091.Delivery) {
 		utils.Log(LogConstant.Info, "Start Exchange: "+delivery.Exchange+" With key: "+delivery.RoutingKey)
 		header := tableToHttpHeader(delivery.Headers)
 		header["Content-Type"] = []string{"application/json"}
-		header[services.REQUEST_TYPE_HEADER] = []string{"amqp"}
+		header[constant.REQUEST_TYPE_HEADER] = []string{"amqp"}
 		c := commonModel.ServiceContext{
 			Ctx: &gin.Context{},
 			Mu:  sync.Mutex{},
@@ -201,18 +167,18 @@ func ReceiveService(deliveries <-chan amqp091.Delivery) {
 			}
 			response = result
 		}
-
+		messageHandler := handler.NewMessageHandler()
 		resBody, err := getResBody(response)
 		if err != nil && resBody["needResponse"] != nil {
 			// TODO: Delete else after gateway is implemented
 			// After delete, optimize response
 			if header["Correlation-Id"] != nil && len(header["Correlation-Id"]) != 0 {
-				go Send(delivery.Exchange, response, header["Correlation-Id"][0], "*")
+				go messageHandler.Send(delivery.Exchange, response, header["Correlation-Id"][0], "*")
 			} else {
 				body := make(map[string]interface{})
 				resBody["CorrelationId"] = body["CorrelationId"]
 				id, _ := body["CorrelationId"].(string)
-				go Send(delivery.Exchange, resBody, id, "*")
+				go messageHandler.Send(delivery.Exchange, resBody, id, "*")
 			}
 		}
 
@@ -276,13 +242,6 @@ func setGinContext(c *commonModel.ServiceContext, body []byte) {
 			c.Body = append(c.Body, body...)
 		}
 	}
-}
-
-func generateRoutingKey(args ...string) string {
-	args = append(args, "")
-	copy(args[1:], args)
-	args[0] = "server"
-	return strings.Join(args, ".")
 }
 
 func getResBody(response interface{}) (map[string]interface{}, error) {

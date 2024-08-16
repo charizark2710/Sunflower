@@ -3,6 +3,7 @@ package routers
 import (
 	LogConstant "RDIPs-BE/constant/LogConst"
 	"RDIPs-BE/constant/ServiceConst"
+	"RDIPs-BE/handler"
 	AMQP_handler "RDIPs-BE/handler/AMQP"
 	commonModel "RDIPs-BE/model/common"
 	"RDIPs-BE/utils"
@@ -15,7 +16,7 @@ import (
 func InitAmqpRoutes() {
 	utils.Log(LogConstant.Info, "Initialize AMQP routes")
 	defer utils.Log(LogConstant.Info, "Finish initialize AMQP routes")
-	amqpPool := AMQP_handler.GetPool()
+	amqpPool := handler.GetRabbitPool()
 	ch, err := amqpPool.Get()
 	if err != nil {
 		utils.Log(LogConstant.Fatal, err)

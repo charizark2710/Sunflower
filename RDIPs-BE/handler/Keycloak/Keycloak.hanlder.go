@@ -2,7 +2,7 @@ package keycloak
 
 import (
 	LogConstant "RDIPs-BE/constant/LogConst"
-	"RDIPs-BE/handler"
+	connection "RDIPs-BE/handler/Connection"
 	"RDIPs-BE/model"
 	"RDIPs-BE/utils"
 	"context"
@@ -32,7 +32,7 @@ type GoCloakClientStruct struct {
 	client_name   string
 }
 
-var keycloakPool handler.Pool
+var keycloakPool connection.Pool
 
 /*
 Get client_id, client_secret from client_name
@@ -92,7 +92,7 @@ func InitKeycloakClient(client_name string) error {
 		return nil
 	}
 
-	poolData := handler.PoolData{
+	poolData := connection.PoolData{
 		FactoryFn: factoryFn,
 		CloseFn:   closeFn,
 		PingFn:    pingFn,

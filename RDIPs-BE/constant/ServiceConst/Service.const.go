@@ -48,6 +48,9 @@ var ServicesMap = map[string]ServiceFn{
 	"DELETE" + urlconst.DeleteKeycloakGroup: services.DeleteKeycloakGroup,
 	"POST" + urlconst.PostKeycloakGroup:     services.PostKeycloakGroup,
 	"PUT" + urlconst.PutKeycloakGroup:       services.PutKeycloakGroup,
+
+	// Transmit MQTT
+	"POST" + urlconst.TransmitMessage: services.TransmitMessage,
 }
 
 var ServiceMapMQTT = map[string]string{
@@ -69,4 +72,7 @@ var ServiceMapMQTT = map[string]string{
 	"PutDetailHistory": "PUT" + urlconst.PutDetailHistory,
 	//Weather
 	"GetWeatherForecast": "GET" + urlconst.GetWeatherForecast,
+
+	// Transmit MQTT
+	"TransmitMessage": "POST" + urlconst.TransmitMessage,
 }

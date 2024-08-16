@@ -155,6 +155,21 @@ services:
         aliases:
           - sunflower
 
+  memcached:
+    image: 'bitnami/memcached:latest'
+    ports:
+      - '11211:11211'
+    networks:
+      pi4:
+        aliases:
+          - cacheSrv
+    healthcheck:
+      test: "/bin/nc -z 127.0.0.1 11211"
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+
   api:
     container_name: sunflower_api
     env_file:
@@ -208,6 +223,8 @@ services:
       - "443:443"
       - "8883:8883"
       - "8672:8672"
+    env_file:
+      - .env
     # volumes:
     #   - './RDIPs-Server/conf.d:/opt/nginx/conf.d'
     #   - './RDIPs-Server/nginx.conf:/opt/nginx/conf'
@@ -219,14 +236,6 @@ services:
     networks:
       pi4:
 
-  memcached:
-    image: 'bitnami/memcached:latest'
-    ports:
-      - '11211:11211'
-    networks:
-      pi4:
-        aliases:
-          - cacheSrv
 # volumes:
 #   db:
 #   pgadmin:

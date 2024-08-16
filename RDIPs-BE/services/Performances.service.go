@@ -1,6 +1,7 @@
 package services
 
 import (
+	"RDIPs-BE/constant"
 	LogConstant "RDIPs-BE/constant/LogConst"
 	"RDIPs-BE/handler"
 	"RDIPs-BE/model"
@@ -10,8 +11,6 @@ import (
 	"fmt"
 	"time"
 )
-
-const REQUEST_TYPE_HEADER = "Request-Type"
 
 var GetAllPerformances = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
 	utils.Log(LogConstant.Info, "GetAllPerformances Start")
@@ -71,7 +70,7 @@ var PutPerformance = func(c *commonModel.ServiceContext) (commonModel.ResponseTe
 
 	performanceBody := model.Performance{}
 	if err := json.Unmarshal(c.Body, &performanceBody); err == nil {
-		if c.Header[REQUEST_TYPE_HEADER] == nil &&
+		if c.Header[constant.REQUEST_TYPE_HEADER] == nil &&
 			performanceBody.Payload != nil {
 			errMsg := "cannot update performance if request is not from mqtt"
 			return commonModel.ResponseTemplate{HttpCode: 400, Data: nil, Message: errMsg}, fmt.Errorf(errMsg)
