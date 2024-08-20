@@ -9,7 +9,10 @@ import (
 	"RDIPs-BE/utils"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 var GetAllPerformances = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
@@ -47,9 +50,49 @@ var PostPerformance = func(c *commonModel.ServiceContext) (commonModel.ResponseT
 var GetDetailPerformance = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
 	utils.Log(LogConstant.Info, "GetDetailPerformance Start")
 	id := c.Param("id")
-	performanceBody := model.SysPerformance{}
-	err := handler.NewPerformanceHandler(c.Ctx, nil).GetById(id, &performanceBody)
+	fromQ := c.Query("from")
+	toQ := c.Query("to")
+	var from time.Time
+	var to time.Time
+	var err error
+	if fromQ != "" {
+		from, err = time.Parse(time.RFC3339, c.Query("from"))
+		if err != nil {
+			utils.Log(LogConstant.Error, err)
+			return commonModel.ResponseTemplate{HttpCode: 400, Data: nil, Message: err.Error()}, err
+		}
+	}
+	if toQ != "" {
+		to, err = time.Parse(time.RFC3339, c.Query("to"))
+		if err != nil {
+			utils.Log(LogConstant.Error, err)
+			return commonModel.ResponseTemplate{HttpCode: 400, Data: nil, Message: err.Error()}, err
+		}
+	}
+
+	var filterOpt map[string]interface{}
+	if toQ != "" || fromQ != "" {
+		filterOpt = map[string]interface{}{
+			"filter": map[string]time.Time{
+				"from": from,
+				"to":   to,
+			},
+		}
+	}
+
+	docLimit, err := strconv.Atoi(c.Query("docLimit"))
 	if err != nil {
+		docLimit = 100
+	}
+
+	limitOpt := map[string]interface{}{
+		"limit": docLimit,
+	}
+
+	performanceBody := model.SysPerformance{}
+	err = handler.NewPerformanceHandler(c.Ctx, nil).GetById(id, &performanceBody, filterOpt, limitOpt)
+	if err != nil {
+		utils.Log(LogConstant.Error, err)
 		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil, Message: err.Error()}, err
 	}
 	resData := model.Performance{}
@@ -63,7 +106,10 @@ var PutPerformance = func(c *commonModel.ServiceContext) (commonModel.ResponseTe
 	deviceId := c.Param("deviceId")
 	rel := model.SysDeviceRel{}
 	err := handler.NewDeviceRelHandler(c.Ctx, nil).GetById(deviceId, &rel)
-	if err != nil {
+	if err == gorm.ErrRecordNotFound {
+		utils.Log(LogConstant.Error, err)
+		return commonModel.ResponseTemplate{HttpCode: 404, Data: nil, Message: err.Error()}, err
+	} else if err != nil {
 		utils.Log(LogConstant.Error, err)
 		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil, Message: err.Error()}, err
 	}

@@ -62,8 +62,10 @@ func Validation() gin.HandlerFunc {
 					c.AbortWithStatusJSON(500, err)
 					return
 				}
-				claims, ok = handler.ClaimsToken(jwt.AccessToken)
+				tokenStr = jwt.AccessToken
+				c.SetCookie("access_token", tokenStr, 30*60, "/", os.Getenv("APP_HOST"), true, true)
 			}
+			claims, ok = handler.ClaimsToken(tokenStr)
 
 			if !ok {
 				utils.Log(LogConstant.Error, "Unauthorized")
@@ -94,7 +96,7 @@ func CheckClientTokenValidation() gin.HandlerFunc {
 		wg.Wait()
 		if isKeyCloakTokenClientExpired(c) {
 			wg.Add(1)
-			err := getTokenByClientAccount(c.Request.Context(), c)
+			err := getTokenAdmin(c.Request.Context(), c)
 			if err != nil {
 				c.AbortWithError(http.StatusInternalServerError, err)
 				return
@@ -104,7 +106,7 @@ func CheckClientTokenValidation() gin.HandlerFunc {
 	}
 }
 
-func getTokenByClientAccount(ctx context.Context, c *gin.Context) error {
+func getTokenAdmin(ctx context.Context, c *gin.Context) error {
 	defer wg.Done()
 	client := gocloak.NewClient(os.Getenv("KEYCLOAK_BASE_URL"))
 	token, err := client.LoginAdmin(

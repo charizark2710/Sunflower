@@ -25,7 +25,7 @@ func NewDeviceHandler(c *gin.Context, deviceModel *model.SysDevices) DeviceHandl
 	return &deviceHandler{commonHandler: commonStruct, deviceBody: deviceModel}
 }
 
-func (d *deviceHandler) Read(devicesRes interface{}) error {
+func (d *deviceHandler) Read(devicesRes interface{}, opts ...map[string]interface{}) error {
 	return d.db.Where("status != ?", model.Disable).Preload("Parent").Find(devicesRes).Error
 }
 
@@ -82,7 +82,7 @@ func (d *deviceHandler) ReadDetail(isDetail bool, id string) error {
 	return err
 }
 
-func (d *deviceHandler) GetById(id string, response interface{}) error {
+func (d *deviceHandler) GetById(id string, response interface{}, opts ...map[string]interface{}) error {
 	return d.db.Where("id = ?", id).First(response).Error
 }
 

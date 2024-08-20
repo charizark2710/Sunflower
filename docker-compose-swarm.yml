@@ -157,6 +157,7 @@ services:
 
   memcached:
     image: 'bitnami/memcached:latest'
+    restart: unless-stopped
     ports:
       - '11211:11211'
     networks:
