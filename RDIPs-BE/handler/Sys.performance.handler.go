@@ -69,6 +69,9 @@ func (p *performanceHandler) handleOpts(docName string, opts ...map[string]inter
 	// Generate pipeline for Aggregate
 	mongoPipeLine := mongo.Pipeline{}
 	for _, opt := range opts {
+		if opt == nil {
+			continue
+		}
 		// limit stage
 		limit, ok := opt["limit"]
 		if ok && limit != "" {
@@ -78,7 +81,7 @@ func (p *performanceHandler) handleOpts(docName string, opts ...map[string]inter
 			continue
 		}
 		// filter stage
-		filter, ok := opt["filter"]
+		filter, ok := opt["filterBytime"]
 		if ok {
 			filterMap, mapOk := filter.(map[string]time.Time)
 			if !mapOk {
@@ -98,6 +101,21 @@ func (p *performanceHandler) handleOpts(docName string, opts ...map[string]inter
 			})
 			continue
 		}
+		for k, v := range opt {
+			valueMap, ok := v.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			value := p.handleCustomOpt(valueMap)
+			if value == nil {
+				continue
+			}
+			mongoPipeLine = append(mongoPipeLine, bson.D{
+				{Key: "$match", Value: bson.D{
+					{Key: k, Value: value},
+				}},
+			})
+		}
 	}
 	// filter timestamp from mongodb
 	payloadCursor, err := p.performanceDB.Collection(docName).Aggregate(context.TODO(), mongoPipeLine)
@@ -106,6 +124,16 @@ func (p *performanceHandler) handleOpts(docName string, opts ...map[string]inter
 		return nil, err
 	}
 	return p.bsonToJson(payloadCursor)
+}
+
+func (p *performanceHandler) handleCustomOpt(valueMap map[string]interface{}) bson.D {
+	var result bson.D
+	for k, v := range valueMap {
+		result = append(result, bson.E{
+			Key: "$" + k, Value: v,
+		})
+	}
+	return result
 }
 
 func (p *performanceHandler) bsonToJson(cursor *mongo.Cursor) (*[]map[string]interface{}, error) {

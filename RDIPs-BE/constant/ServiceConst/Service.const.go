@@ -74,5 +74,5 @@ var ServiceMapMQTT = map[string]string{
 	"GetWeatherForecast": "GET" + urlconst.GetWeatherForecast,
 
 	// Transmit MQTT
-	"TransmitMessage": "POST" + urlconst.TransmitMessage,
+	// "TransmitMessage": "POST" + urlconst.TransmitMessage,
 }

@@ -169,16 +169,10 @@ func ReceiveService(deliveries <-chan amqp091.Delivery) {
 		}
 		messageHandler := handler.NewMessageHandler()
 		resBody, err := getResBody(response)
-		if err != nil && resBody["needResponse"] != nil {
-			// TODO: Delete else after gateway is implemented
+		if err == nil && resBody["needResponse"] == true {
 			// After delete, optimize response
 			if header["Correlation-Id"] != nil && len(header["Correlation-Id"]) != 0 {
 				go messageHandler.Send(delivery.Exchange, response, header["Correlation-Id"][0], "*")
-			} else {
-				body := make(map[string]interface{})
-				resBody["CorrelationId"] = body["CorrelationId"]
-				id, _ := body["CorrelationId"].(string)
-				go messageHandler.Send(delivery.Exchange, resBody, id, "*")
 			}
 		}
 
@@ -211,7 +205,7 @@ func setGinContext(c *commonModel.ServiceContext, body []byte) {
 	res := make(map[string]interface{})
 	err := json.Unmarshal(body, &res)
 	if err != nil {
-		utils.Log(LogConstant.Info, body, err)
+		utils.Log(LogConstant.Error, body, err)
 		return
 	}
 	if res["param"] != nil {
@@ -242,6 +236,17 @@ func setGinContext(c *commonModel.ServiceContext, body []byte) {
 			c.Body = append(c.Body, body...)
 		}
 	}
+
+	if res["header"] != nil {
+		headers, ok := res["header"].(map[string]interface{})
+		if ok {
+			for key, value := range headers {
+				v := fmt.Sprintf("%v", value)
+				c.Header.Add(key, v)
+			}
+		}
+	}
+
 }
 
 func getResBody(response interface{}) (map[string]interface{}, error) {

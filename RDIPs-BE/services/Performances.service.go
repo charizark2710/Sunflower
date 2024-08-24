@@ -52,6 +52,15 @@ var GetDetailPerformance = func(c *commonModel.ServiceContext) (commonModel.Resp
 	id := c.Param("id")
 	fromQ := c.Query("from")
 	toQ := c.Query("to")
+	filterByStr := c.Query("filterDocBy")
+	var opts []map[string]interface{}
+	if filterByStr != "" {
+		if err := json.Unmarshal([]byte(filterByStr), &opts); err != nil {
+			utils.Log(LogConstant.Error, err)
+			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil, Message: err.Error()}, err
+		}
+	}
+
 	var from time.Time
 	var to time.Time
 	var err error
@@ -73,11 +82,12 @@ var GetDetailPerformance = func(c *commonModel.ServiceContext) (commonModel.Resp
 	var filterOpt map[string]interface{}
 	if toQ != "" || fromQ != "" {
 		filterOpt = map[string]interface{}{
-			"filter": map[string]time.Time{
+			"filterBytime": map[string]time.Time{
 				"from": from,
 				"to":   to,
 			},
 		}
+		opts = append(opts, filterOpt)
 	}
 
 	docLimit, err := strconv.Atoi(c.Query("docLimit"))
@@ -89,8 +99,10 @@ var GetDetailPerformance = func(c *commonModel.ServiceContext) (commonModel.Resp
 		"limit": docLimit,
 	}
 
+	opts = append(opts, limitOpt)
+
 	performanceBody := model.SysPerformance{}
-	err = handler.NewPerformanceHandler(c.Ctx, nil).GetById(id, &performanceBody, filterOpt, limitOpt)
+	err = handler.NewPerformanceHandler(c.Ctx, nil).GetById(id, &performanceBody, opts...)
 	if err != nil {
 		utils.Log(LogConstant.Error, err)
 		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil, Message: err.Error()}, err

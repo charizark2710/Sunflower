@@ -33,8 +33,14 @@ func (d *deviceHandler) Create() error {
 	deviceObj := d.deviceBody
 	return d.db.Transaction(func(tx *gorm.DB) error {
 		utils.Log(LogConstant.Info, "Create Device Start")
-		if err := tx.Create(&deviceObj).Error; err != nil {
+		result := tx.Where("name = ?", deviceObj.Name).FirstOrCreate(&deviceObj)
+		if err := result.Error; err != nil {
 			return err
+		}
+
+		// record is already exist with name
+		if result.RowsAffected == 0 {
+			return nil
 		}
 
 		historyObj := &model.SysHistory{
