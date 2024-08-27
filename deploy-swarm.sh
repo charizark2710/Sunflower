@@ -7,7 +7,7 @@ GenerateRandomPw () {
         local pw=$(openssl rand -base64 12 | sha1sum | awk '{print $1}')
         export declare ${key}_pw=$pw
     done
-    envsubst < ./local.deploy.env > ./env
+    envsubst < ./local.deploy.env > ./.env
 }
 
 #Generate random password for production

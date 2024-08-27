@@ -30,7 +30,9 @@ func InitAmqpRoutes() {
 
 	channel.Qos(10, 0, false)
 
-	queue, err := channel.QueueDeclare("API", true, false, false, false, nil)
+	queue, err := channel.QueueDeclare("API", true, false, false, false, amqp091.Table{
+		"x-message-ttl": 600000,
+	})
 	if err != nil {
 		utils.Log(LogConstant.Fatal, err)
 	}
@@ -60,7 +62,9 @@ func InitAmqpRoutes() {
 	}
 
 	// declare queue for server
-	queueServer, err := channel.QueueDeclare("SERVER", true, false, false, false, nil)
+	queueServer, err := channel.QueueDeclare("SERVER", true, false, false, false, amqp091.Table{
+		"x-message-ttl": 600000,
+	})
 	if err != nil {
 		utils.Log(LogConstant.Fatal, err)
 	}
