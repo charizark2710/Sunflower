@@ -36,6 +36,7 @@ services:
       placement:
         constraints:
           - node.role == worker
+      endpoint_mode: dnsrr
     # volumes:
     #   - keycloak:/opt
 
@@ -54,10 +55,16 @@ services:
       - RABBITMQ_ENABLED_PLUGINS_FILE=/etc/rabbitmq/enabled_plugins
       - RABBITMQ_DEFAULT_USER=${BROKER_USER}
       - RABBITMQ_DEFAULT_PASS=${BROKER_PASSWORD}
-    ports:
-      - '5672:5672'
-      - '15672:15672'
-      - '1883:1883'
+    # ports:
+    #   - target: 5672
+    #     published: 5672
+    #     protocol: tcp
+    #     mode: host
+    #   - target: 1883
+    #     published: 1883
+    #     protocol: tcp
+    #     mode: host
+    #   - '15672:15672'
     healthcheck:
       test: rabbitmq-diagnostics -q ping
       timeout: 30s
@@ -72,6 +79,8 @@ services:
       placement:
         constraints:
           - node.role == worker
+      endpoint_mode: dnsrr
+
   # gateway:
   #   container_name: "gateway"
   #   # Maybe there some memory leak that prevent docker to excute command so this is good for now
@@ -97,8 +106,11 @@ services:
       - .env
     image: charizark2710/sunflower-db
     restart: unless-stopped
-    ports:
-      - '${POSTGRES_PORT}:${POSTGRES_PORT}'
+    # ports:
+    #   - target: ${POSTGRES_PORT}
+    #     published: ${POSTGRES_PORT}
+    #     protocol: tcp
+    #     mode: host
     healthcheck:
       test:
         [
@@ -120,14 +132,18 @@ services:
       placement:
         constraints:
           - node.role == worker
+      endpoint_mode: dnsrr
 
   mongo:
     image: mongo:8.0.0-rc15
     restart: unless-stopped
     env_file:
       - .env
-    ports:
-      - 27017:27017
+    # ports:
+    #   - target: 27017
+    #     published: 27017
+    #     protocol: tcp
+    #     mode: host
     healthcheck:
       test: ["CMD","mongosh", "--eval", "db.adminCommand('ping')"]
       timeout: 5s
@@ -141,6 +157,7 @@ services:
       placement:
         constraints:
           - node.role == worker
+      endpoint_mode: dnsrr
 
   pgadmin:
     container_name: pgadmin4
@@ -160,8 +177,11 @@ services:
   memcached:
     image: 'bitnami/memcached:latest'
     restart: unless-stopped
-    ports:
-      - '11211:11211'
+    # ports:
+    #   - target: 11211
+    #     published: 11211
+    #     protocol: tcp
+    #     mode: host
     networks:
       pi4:
         aliases:
@@ -172,6 +192,11 @@ services:
       timeout: 30s
       retries: 5
       start_period: 30s
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+      endpoint_mode: dnsrr
 
   api:
     container_name: sunflower_api
@@ -183,8 +208,8 @@ services:
       timeout: 30s
       retries: 5
       start_period: 30s
-    ports:
-      - '8080:8080'
+    # ports:
+    #   - '8080:8080'
     # volumes:
     #   - './RDIPs-BE:/srv/www/volume_sunflower'
     networks:
@@ -201,9 +226,14 @@ services:
     restart: on-failure:3
     env_file:
       - .env
+    environment:
+      - API_PORT=8081
     image: charizark2710/sunflower-api
     ports:
-      - '8081:8080'
+      - target: 8081
+        published: 8081
+        protocol: tcp
+        mode: host
     # volumes:
     #   - './RDIPs-BE:/srv/www/volume_sunflower'
     networks:

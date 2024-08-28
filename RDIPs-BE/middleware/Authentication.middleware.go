@@ -19,7 +19,7 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
-const KEYCLOAK_TOKEN_CLIENT_KEY = "KeycloakTokenClient"
+const KEYCLOAK_ACCESS_TOKEN = "KeycloakTokenClient"
 
 var wg sync.WaitGroup
 
@@ -120,21 +120,21 @@ func getTokenAdmin(ctx context.Context, c *gin.Context) error {
 		return err
 	}
 	model.CacheSrv.Add(&memcache.Item{
-		Key:        KEYCLOAK_TOKEN_CLIENT_KEY,
+		Key:        KEYCLOAK_ACCESS_TOKEN,
 		Value:      []byte(token.AccessToken),
 		Expiration: 5 * 60,
 	})
-	c.Set(KEYCLOAK_TOKEN_CLIENT_KEY, token.AccessToken)
+	c.Set(KEYCLOAK_ACCESS_TOKEN, token.AccessToken)
 	return nil
 
 }
 
 func isKeyCloakTokenClientExpired(c *gin.Context) bool {
-	keycloakTokenItem, err := model.CacheSrv.Get(KEYCLOAK_TOKEN_CLIENT_KEY)
+	keycloakTokenItem, err := model.CacheSrv.Get(KEYCLOAK_ACCESS_TOKEN)
 	if err != nil {
 		return true
 	}
-	c.Set(KEYCLOAK_TOKEN_CLIENT_KEY, string(keycloakTokenItem.Value))
+	c.Set(KEYCLOAK_ACCESS_TOKEN, string(keycloakTokenItem.Value))
 	return false
 }
 

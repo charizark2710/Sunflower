@@ -592,7 +592,7 @@
       "alwaysDisplayInConsole" : false,
       "clientAuthenticatorType" : "client-secret",
       "secret" : "",
-      "redirectUris" : [ "http://localhost:8080/*", "https://sunflower-rdips.tech/api/*", "http://localhost/api/*" ],
+      "redirectUris" : [ "http://localhost:8080/*", "http://sunflower-rdips.tech/api/*", "http://localhost/api/*" ],
       "webOrigins" : [ "+" ],
       "notBefore" : 0,
       "bearerOnly" : false,
