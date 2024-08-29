@@ -52,7 +52,7 @@ func getClientData(client_name string) (*string, *string, error) {
 
 	// TODO: remove after update migration
 	if err != nil {
-		utils.Log(LogConstant.Error, err, adminUserName, adminPw, ADMIN_KEYCLOAK_REALM_NAME)
+		utils.Log(LogConstant.Warning, err, adminUserName, adminPw, ADMIN_KEYCLOAK_REALM_NAME)
 
 		if gocloak.ParseAPIErrType(err) != gocloak.APIErrTypeInvalidGrant {
 			utils.Log(LogConstant.Error, err, adminUserName, adminPw, ADMIN_KEYCLOAK_REALM_NAME)

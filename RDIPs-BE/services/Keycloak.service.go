@@ -84,10 +84,10 @@ var GetLoginScreen = func(c *commonModel.ServiceContext) (commonModel.ResponseTe
 var Callback = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
 	utils.Log(LogConstant.Debug, "Callback Start")
 	codeVerifier, err := c.Ctx.Cookie("code")
-	c.Ctx.SetCookie("code", "", -1, "/", APP_HOST, true, true)
 	if err != nil {
 		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
 	}
+	c.Ctx.SetCookie("code", "", -1, "/", APP_HOST, true, true)
 	if codeVerifier == "" {
 		return commonModel.ResponseTemplate{HttpCode: 403, Data: "Unauthenticated"}, err
 	}
@@ -120,8 +120,21 @@ var Callback = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate
 			Expiration: 30 * 60,
 		})
 		if err != nil {
-			utils.Log(LogConstant.Error, err)
-			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+			if err == memcache.ErrNotStored {
+				utils.Log(LogConstant.Warning, err)
+				commonModel.CacheSrv.Delete(sub)
+				err = commonModel.CacheSrv.Add(&memcache.Item{
+					Key:        sub,
+					Value:      []byte(refreshToken),
+					Expiration: 30 * 60,
+				})
+				if err != nil {
+					return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+				}
+			} else {
+				utils.Log(LogConstant.Error, err)
+				return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+			}
 		}
 		c.Ctx.SetCookie("access_token", accessToken, 30*60, "/", APP_HOST, true, true)
 		c.Ctx.SetCookie("token", uuid.NewString(), 30*60, "/", APP_HOST, true, false)
