@@ -12,23 +12,19 @@ ENV KC_METRICS_ENABLED=true
 WORKDIR /opt/keycloak
 RUN /opt/keycloak/bin/kc.sh build
 
-FROM quay.io/keycloak/keycloak:25.0
+FROM openjdk:21-bookworm
 COPY --from=builder /opt/keycloak/ /opt/keycloak/
 COPY --from=migration /migration/keycloak/ /opt/keycloak/data/import/
-
+RUN apt-get -y update && apt-get -y install curl
 USER root
+RUN adduser --uid 1000 --disabled-password --gecos "" --no-create-home keycloak
 RUN chown -R keycloak /opt
 RUN chmod -R u+rwx /opt
 
 USER keycloak
 ENV KEYCLOAK_IMPORT=/opt/keycloak/data/import/RDIPs-realm.json
 ENV KC_FEATURES=token-exchange
-# change these values to point to a running postgres instance
-# ENV KC_DB=postgres
-# ENV KC_DB_URL=<DBURL>
-# ENV KC_DB_USERNAME=<DBUSERNAME>
-# ENV KC_DB_PASSWORD=<DBPASSWORD>
-# ENV KC_HOSTNAME=localhost
-# RUN /opt/keycloak/bin/kc.sh export --realm RDIPs --dir /opt --users realm_file
-# cp /var/lib/docker/volumes/sunflower_keycloak/_data/RDIPs-realm.json ~/Desktop/Sunflower
-RUN ["/opt/keycloak/bin/kc.sh"]
+ENV KC_HEALTH_ENABLED=true
+ENV KC_METRICS_ENABLED=true
+
+ENTRYPOINT ["/opt/keycloak/bin/kc.sh"]

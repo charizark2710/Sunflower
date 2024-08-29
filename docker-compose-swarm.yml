@@ -6,7 +6,7 @@ services:
       - .env
     image: charizark2710/sunflower-keycloak
     # command: bash -c "while :; do echo 'Hit CTRL+C'; sleep 1; done"
-    command: [ "start-dev", "--import-realm", "--verbose", "--hostname-strict=false", "--hostname=${KEYCLOAK_AUTHEN_URL}" ]
+    command: [ "start", "--import-realm", "--verbose", "--hostname-strict=false", "--hostname=${KEYCLOAK_AUTHEN_URL}", "--https-certificate-file=/opt/keycloak/certs/ssl.crt", "--https-certificate-key-file=/opt/keycloak/certs/ssl.key" ]
     environment:
       - KC_DB=postgres
       - KC_DB_URL=jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/keycloak
@@ -24,7 +24,7 @@ services:
       test:
         [
           'CMD-SHELL',
-          '[ -f /tmp/HealthCheck.java ] || echo "public class HealthCheck { public static void main(String[] args) throws java.lang.Throwable { System.exit(java.net.HttpURLConnection.HTTP_OK == ((java.net.HttpURLConnection)new java.net.URL(args[0]).openConnection()).getResponseCode() ? 1 : 0); } }" > /tmp/HealthCheck.java && java /tmp/HealthCheck.java http://localhost:8080/health/live'
+          'curl --head -fsS https://localhost:8443 --insecure'
         ]
       retries: 5
       start_period: 20s
@@ -37,6 +37,19 @@ services:
         constraints:
           - node.role == worker
       endpoint_mode: dnsrr
+    secrets:
+      - source: ssl_key
+        target: /opt/keycloak/certs/ssl.key
+        uid: '1000'
+        mode: 400
+      - source: ssl_cert
+        target: /opt/keycloak/certs/ssl.crt
+        uid: '1000'
+        mode: 400
+      - source: ssl_pem
+        target: /opt/keycloak/certs/ssl.pem
+        uid: '1000'
+        mode: 400
     # volumes:
     #   - keycloak:/opt
 
@@ -80,6 +93,13 @@ services:
         constraints:
           - node.role == worker
       endpoint_mode: dnsrr
+    secrets:
+      - source: ssl_key
+        target: /etc/rabbitSSL/ssl.key
+      - source: ssl_cert
+        target: /etc/rabbitSSL/ssl.crt
+      - source: ssl_pem
+        target: /etc/rabbitSSL/dhparam.pem
 
   # gateway:
   #   container_name: "gateway"
@@ -229,11 +249,6 @@ services:
     environment:
       - API_PORT=8081
     image: charizark2710/sunflower-api
-    ports:
-      - target: 8081
-        published: 8081
-        protocol: tcp
-        mode: host
     # volumes:
     #   - './RDIPs-BE:/srv/www/volume_sunflower'
     networks:
@@ -268,6 +283,13 @@ services:
           - node.role == manager
     networks:
       pi4:
+    secrets:
+      - source: ssl_key
+        target: /etc/nginx/ssl.key
+      - source: ssl_cert
+        target: /etc/nginx/ssl.crt
+      - source: ssl_pem
+        target: /etc/nginx/dhparam.pem
 
 # volumes:
 #   db:
@@ -277,3 +299,11 @@ services:
 networks:
   pi4:
     driver: overlay
+
+secrets:
+  ssl_key:
+    file: ./certs/ssl.key
+  ssl_cert:
+    file: ./certs/ssl.crt
+  ssl_pem:
+      file: ./certs/dhparam.pem

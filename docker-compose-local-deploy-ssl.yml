@@ -63,7 +63,7 @@ services:
       dockerfile: keycloak.Dockerfile
     image: charizark2710/sunflower-keycloak
     # command: bash -c "while :; do echo 'Hit CTRL+C'; sleep 1; done"
-    command: [ "start-dev", "--import-realm", "--verbose", "--hostname-strict=false", "--hostname=${KEYCLOAK_AUTHEN_URL}" ]
+    command: [ "start", "--import-realm", "--verbose", "--hostname-strict=false", "--hostname=${KEYCLOAK_AUTHEN_URL}", "--https-certificate-file=/opt/keycloak/certs/ssl.crt", "--https-certificate-key-file=/opt/keycloak/certs/ssl.key" ]
     environment:
       - KC_DB=postgres
       - KC_DB_URL=jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/keycloak
@@ -78,13 +78,13 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    # ports:
-    #   - '9000:8080'
+    ports:
+      - '8443:8443'
     healthcheck:
       test:
         [
           'CMD-SHELL',
-          '[ -f /tmp/HealthCheck.java ] || echo "public class HealthCheck { public static void main(String[] args) throws java.lang.Throwable { System.exit(java.net.HttpURLConnection.HTTP_OK == ((java.net.HttpURLConnection)new java.net.URL(args[0]).openConnection()).getResponseCode() ? 1 : 0); } }" > /tmp/HealthCheck.java && java /tmp/HealthCheck.java http://localhost:8080/health/live'
+          'curl --head -fsS https://localhost:8443 --insecure'
         ]
       retries: 5
       start_period: 20s
@@ -94,6 +94,7 @@ services:
           - auth.sunflower-rdips
     volumes:
       - keycloak:/opt
+      - ./certs:/opt/keycloak/certs/
 
   rabbitmq:
     container_name: "rabbitmq"
@@ -283,6 +284,13 @@ services:
       - './RDIPs-Server/stream.conf.d:/opt/nginx/stream.conf.d'
     networks:
       pi4:
+    secrets:
+      - source: ssl_key
+        target: /etc/nginx/ssl.key
+      - source: ssl_cert
+        target: /etc/nginx/ssl.crt
+      - source: ssl_pem
+        target: /etc/nginx/dhparam.pem
 
 volumes:
   db:
@@ -293,3 +301,10 @@ networks:
   pi4:
     driver: bridge
 
+secrets:
+  ssl_key:
+    file: ./certs/ssl.key
+  ssl_cert:
+    file: ./certs/ssl.crt
+  ssl_pem:
+      file: ./certs/dhparam.pem

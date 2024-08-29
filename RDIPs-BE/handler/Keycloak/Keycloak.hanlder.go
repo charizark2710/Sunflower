@@ -7,6 +7,7 @@ import (
 	"RDIPs-BE/model"
 	"RDIPs-BE/utils"
 	"context"
+	"crypto/tls"
 	"encoding/base64"
 	"fmt"
 	"net/url"
@@ -40,6 +41,8 @@ Get client_id, client_secret from client_name
 */
 func getClientData(client_name string) (*string, *string, error) {
 	gocloakClient := gocloak.NewClient(os.Getenv("KEYCLOAK_BASE_URL"))
+	restyClient := gocloakClient.RestyClient()
+	restyClient.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 	ctx := context.Background()
 	adminUserName := os.Getenv("KEYCLOAK_ADMIN")
 	adminPw := os.Getenv("KEYCLOAK_ADMIN_PASSWORD")
@@ -115,9 +118,8 @@ func InitKeycloakClient(client_name string) error {
 	}
 	factoryFn := func() (interface{}, error) {
 		gocloakClient := gocloak.NewClient(os.Getenv("KEYCLOAK_BASE_URL"))
-		// restyClient := gocloakClient.RestyClient()
-		// restyClient.SetDebug(true)
-		// restyClient.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
+		restyClient := gocloakClient.RestyClient()
+		restyClient.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 		return &GoCloakClientStruct{GoCloakClient: gocloakClient, client_id: *client_id, client_secret: *client_secret, client_name: client_name}, err
 	}
 
