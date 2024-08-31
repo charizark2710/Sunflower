@@ -6,7 +6,7 @@ services:
       - .env
     image: charizark2710/sunflower-keycloak
     # command: bash -c "while :; do echo 'Hit CTRL+C'; sleep 1; done"
-    command: [ "start", "--import-realm", "--verbose", "--hostname-strict=false", "--hostname=${KEYCLOAK_AUTHEN_URL}", "--https-certificate-file=/opt/keycloak/certs/ssl.crt", "--https-certificate-key-file=/opt/keycloak/certs/ssl.key" ]
+    command: [ "start", "--import-realm", "--verbose", "--hostname-strict=false", "--hostname=${KEYCLOAK_AUTHEN_URL}", "--https-certificate-file=/opt/keycloak/certs/rootCA.crt", "--https-certificate-key-file=/opt/keycloak/certs/rootCA.key" ]
     environment:
       - KC_DB=postgres
       - KC_DB_URL=jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/keycloak
@@ -38,16 +38,12 @@ services:
           - node.role == worker
       endpoint_mode: dnsrr
     secrets:
-      - source: ssl_key
-        target: /opt/keycloak/certs/ssl.key
+      - source: rootCA_key
+        target: /opt/keycloak/certs/rootCA.key
         uid: '1000'
         mode: 400
-      - source: ssl_cert
-        target: /opt/keycloak/certs/ssl.crt
-        uid: '1000'
-        mode: 400
-      - source: ssl_pem
-        target: /opt/keycloak/certs/ssl.pem
+      - source: rootCA_cert
+        target: /opt/keycloak/certs/rootCA.crt
         uid: '1000'
         mode: 400
     # volumes:
@@ -62,22 +58,12 @@ services:
       - .env
     environment:
       - RABBITMQ_ERLANG_COOKIE=/var/lib/rabbitmq/.erlang.cookie
-      - RABBITMQ_CONFIG_FILES=/etc/rabbitmq/rabbitmq.conf
+      - RABBITMQ_CONFIG_FILES=/etc/rabbitmq/${BROKER_PROTOCOL}/rabbitmq.conf
       - RABBITMQ_MNESIA_BASE=/data/mnesia
       - RABBITMQ_LOG_BASE=/data/log
       - RABBITMQ_ENABLED_PLUGINS_FILE=/etc/rabbitmq/enabled_plugins
       - RABBITMQ_DEFAULT_USER=${BROKER_USER}
       - RABBITMQ_DEFAULT_PASS=${BROKER_PASSWORD}
-    # ports:
-    #   - target: 5672
-    #     published: 5672
-    #     protocol: tcp
-    #     mode: host
-    #   - target: 1883
-    #     published: 1883
-    #     protocol: tcp
-    #     mode: host
-    #   - '15672:15672'
     healthcheck:
       test: rabbitmq-diagnostics -q ping
       timeout: 30s
@@ -94,12 +80,22 @@ services:
           - node.role == worker
       endpoint_mode: dnsrr
     secrets:
-      - source: ssl_key
-        target: /etc/rabbitSSL/ssl.key
-      - source: ssl_cert
-        target: /etc/rabbitSSL/ssl.crt
-      - source: ssl_pem
-        target: /etc/rabbitSSL/dhparam.pem
+      - source: rootCA_key
+        target: /opt/rabbitmq/certs/rootCA.key
+        gid: '1000'
+        mode: 440
+      - source: rootCA_cert
+        target: /opt/rabbitmq/certs/rootCA.crt
+        gid: '1000'
+        mode: 440
+      - source: client_key
+        target: /opt/rabbitmq/certs/client.key
+        gid: '1000'
+        mode: 440
+      - source: client_cert
+        target: /opt/rabbitmq/certs/client.crt
+        gid: '1000'
+        mode: 440
 
   # gateway:
   #   container_name: "gateway"
@@ -240,6 +236,23 @@ services:
       placement:
         constraints:
           - node.role == worker
+    secrets:
+      - source: rootCA_key
+        target: /sunflower/certs/rootCA.key
+        gid: '1000'
+        mode: 440
+      - source: rootCA_cert
+        target: /sunflower/certs/rootCA.crt
+        gid: '1000'
+        mode: 440
+      - source: client_key
+        target: /sunflower/certs/client.key
+        gid: '1000'
+        mode: 440
+      - source: client_cert
+        target: /sunflower/certs/client.crt
+        gid: '1000'
+        mode: 440
 
   api_bk:
     container_name: sunflower_api_bk
@@ -259,6 +272,23 @@ services:
       placement:
         constraints:
           - node.role == manager
+    secrets:
+      - source: rootCA_key
+        target: /sunflower/certs/rootCA.key
+        gid: '1000'
+        mode: 440
+      - source: rootCA_cert
+        target: /sunflower/certs/rootCA.crt
+        gid: '1000'
+        mode: 440
+      - source: client_key
+        target: /sunflower/certs/client.key
+        gid: '1000'
+        mode: 440
+      - source: client_cert
+        target: /sunflower/certs/client.crt
+        gid: '1000'
+        mode: 440
 
   server:
     container_name: sunflower_server
@@ -284,11 +314,15 @@ services:
     networks:
       pi4:
     secrets:
-      - source: ssl_key
-        target: /etc/nginx/ssl.key
-      - source: ssl_cert
-        target: /etc/nginx/ssl.crt
-      - source: ssl_pem
+      - source: rootCA_key
+        target: /etc/nginx/rootCA.key
+      - source: rootCA_cert
+        target: /etc/nginx/rootCA.crt
+      - source: client_cert
+        target: /etc/nginx/client.crt
+      - source: client_key
+        target: /etc/nginx/client.key
+      - source: dhparam_pem
         target: /etc/nginx/dhparam.pem
 
 # volumes:
@@ -301,9 +335,13 @@ networks:
     driver: overlay
 
 secrets:
-  ssl_key:
-    file: ./certs/ssl.key
-  ssl_cert:
-    file: ./certs/ssl.crt
-  ssl_pem:
-      file: ./certs/dhparam.pem
+  rootCA_key:
+    file: ./certs/rootCA.key
+  rootCA_cert:
+    file: ./certs/rootCA.crt
+  dhparam_pem:
+    file: ./certs/dhparam.pem
+  client_key:
+    file: ./certs/client.key
+  client_cert:
+    file: ./certs/client.crt

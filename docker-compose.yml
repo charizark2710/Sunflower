@@ -78,8 +78,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    # ports:
-    #   - '9000:8080'
+    ports:
+      - '9000:8080'
     healthcheck:
       test:
         [
@@ -110,7 +110,7 @@ services:
       - .env
     environment:
       - RABBITMQ_ERLANG_COOKIE=/var/lib/rabbitmq/.erlang.cookie
-      - RABBITMQ_CONFIG_FILES=/etc/rabbitmq/rabbitmq.conf
+      - RABBITMQ_CONFIG_FILES=/etc/rabbitmq/${BROKER_PROTOCOL}/rabbitmq.conf
       - RABBITMQ_MNESIA_BASE=/data/mnesia
       - RABBITMQ_LOG_BASE=/data/log
       - RABBITMQ_ENABLED_PLUGINS_FILE=/etc/rabbitmq/enabled_plugins
@@ -273,7 +273,7 @@ services:
     ports:
       - "80:80"
       - "81:81"
-      - "9000:9000"
+      - "9001:9000"
       - "443:443"
       - "8883:8883"
       - "8672:8672"

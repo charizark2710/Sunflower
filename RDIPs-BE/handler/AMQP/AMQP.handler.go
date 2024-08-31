@@ -26,7 +26,7 @@ var rabbitPool connection.Pool
 
 func InitializeAMQP() error {
 	amqpConn, err := commonModel.Dial(
-		"amqp://" +
+		os.Getenv("BROKER_PROTOCOL") + "://" +
 			os.Getenv("BROKER_USER") +
 			":" + os.Getenv("BROKER_PASSWORD") +
 			"@" + os.Getenv("BROKER_HOST") +
@@ -172,7 +172,12 @@ func ReceiveService(deliveries <-chan amqp091.Delivery) {
 		if err == nil && resBody["needResponse"] == true {
 			// After delete, optimize response
 			if header["Correlation-Id"] != nil && len(header["Correlation-Id"]) != 0 {
-				go messageHandler.Send(delivery.Exchange, response, header["Correlation-Id"][0], "*")
+				deliveryMode, ok := resBody["deliveryMode"].(uint8)
+				if !ok {
+					deliveryMode = amqp091.Transient
+				}
+				// Response to the request device
+				go messageHandler.Send(delivery.Exchange, response, deliveryMode, header["Correlation-Id"][0], routingKeyArr[1])
 			}
 		}
 
