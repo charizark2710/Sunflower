@@ -223,7 +223,6 @@ services:
       test: curl -f localhost:${API_PORT}
       timeout: 30s
       retries: 5
-      start_period: 30s
     # ports:
     #   - '8080:8080'
     # volumes:
@@ -257,6 +256,7 @@ services:
   api_bk:
     container_name: sunflower_api_bk
     restart: on-failure:3
+    # command: tail -F /dev/null
     env_file:
       - .env
     environment:

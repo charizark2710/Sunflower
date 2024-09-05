@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"os"
-	"slices"
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -39,39 +38,7 @@ func MongoConfig() (*mongo.Database, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	mongoDB := client.Database(os.Getenv("MONGO_INITDB_DATABASE"))
-
-	// Create all collection if not exist
-	isNameOnly := true
-	collections := []map[string]string{
-		{
-			"name":      "performance",
-			"metaField": "document_name",
-		},
-	}
-	currentCollection, err := mongoDB.ListCollectionNames(ctx, nil, &options.ListCollectionsOptions{
-		NameOnly: &isNameOnly,
-	})
-
-	if err != nil && err != mongo.ErrNilDocument {
-		return nil, err
-	}
-
-	for _, collection := range collections {
-		if !slices.Contains(currentCollection, collection["name"]) {
-			metaField := collection["metaField"]
-			err = mongoDB.CreateCollection(ctx, collection["name"], &options.CreateCollectionOptions{
-				TimeSeriesOptions: &options.TimeSeriesOptions{
-					TimeField: "timestamp",
-					MetaField: &metaField,
-				},
-			})
-			if err != nil {
-				return nil, err
-			}
-		}
-	}
 
 	return mongoDB, err
 }

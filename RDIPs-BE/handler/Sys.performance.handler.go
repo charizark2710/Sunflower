@@ -20,7 +20,7 @@ type PerformanceHandler interface {
 }
 
 type performanceHandler struct {
-	performanceDB   *mongo.Database
+	mongoDb         *mongo.Database
 	performanceBody *model.SysPerformance
 	*commonHandler
 }
@@ -31,7 +31,7 @@ func NewPerformanceHandler(c *gin.Context, performanceModel *model.SysPerformanc
 	return &performanceHandler{
 		commonHandler:   commonStruct,
 		performanceBody: performanceModel,
-		performanceDB:   commonStruct.mongoDB,
+		mongoDb:         commonStruct.mongoDB,
 	}
 }
 
@@ -118,7 +118,7 @@ func (p *performanceHandler) handleOpts(docName string, opts ...map[string]inter
 		}
 	}
 	// filter timestamp from mongodb
-	payloadCursor, err := p.performanceDB.Collection(docName).Aggregate(context.TODO(), mongoPipeLine)
+	payloadCursor, err := p.mongoDb.Collection(docName).Aggregate(context.TODO(), mongoPipeLine)
 
 	if err != nil {
 		return nil, err
@@ -177,7 +177,7 @@ func (p *performanceHandler) Update() error {
 			payload["timestamp"] = time.Now()
 			documentPayload = append(documentPayload, payload)
 		}
-		_, err := p.performanceDB.Collection(p.performanceBody.DocumentName).
+		_, err := p.mongoDb.Collection(p.performanceBody.DocumentName).
 			InsertMany(context.TODO(), documentPayload, &options.InsertManyOptions{})
 		if err != nil {
 			return err
@@ -188,7 +188,7 @@ func (p *performanceHandler) Update() error {
 	// // Rollback if error
 	// defer func() {
 	// 	if err != nil {
-	// 		p.performanceDB.DeleteMany(p.context, bson.D{{
+	// 		p.mongoDb.DeleteMany(p.context, bson.D{{
 	// 			Key: "timestamp", Value: bson.D{{Key: "$lt", Value: timeFinish}},
 	// 		}})
 	// 	}
