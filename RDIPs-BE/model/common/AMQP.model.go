@@ -1,7 +1,13 @@
 package model
 
 import (
+	LogConstant "RDIPs-BE/constant/LogConst"
+	"RDIPs-BE/utils"
 	"context"
+	"crypto/tls"
+	"crypto/x509"
+	"fmt"
+	"os"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -9,6 +15,7 @@ import (
 type baseAmqpConn interface {
 	Channel() (amqpChannelWrapper, error)
 	Close() error
+	GetAMQPConn() *amqp.Connection
 }
 
 type amqpWrapper struct {
@@ -58,8 +65,35 @@ type amqpChannelWrapper struct {
 }
 
 var Dial = func(url string) (baseAmqpConn, error) {
+	var tlsCfg tls.Config
+	if os.Getenv("BROKER_PROTOCOL") == "amqps" {
+		rootCAs := x509.NewCertPool()
+		caCert, err := os.ReadFile("/sunflower/certs/rootCA.crt")
+		if err != nil {
+			utils.Log(LogConstant.Error, err)
+			return nil, err
+		}
+		cert, err := tls.LoadX509KeyPair("/sunflower/certs/client.crt", "/sunflower/certs/client.key")
+		if err != nil {
+			utils.Log(LogConstant.Error, err)
+			return nil, err
+		}
+		ok := rootCAs.AppendCertsFromPEM(caCert)
+		if !ok {
+			err = fmt.Errorf("something went wrong with caCert ")
+			utils.Log(LogConstant.Error, err, caCert)
+			return nil, err
+		}
+		tlsCfg = tls.Config{
+			RootCAs:            rootCAs,
+			Certificates:       []tls.Certificate{cert},
+			MinVersion:         tls.VersionTLS12,
+			InsecureSkipVerify: true,
+		}
+	}
 	conn, err := amqp.DialConfig(url, amqp.Config{
-		Heartbeat: 5000,
+		Heartbeat:       5000,
+		TLSClientConfig: &tlsCfg,
 	})
 	return amqpWrapper{conn}, err
 }
@@ -71,4 +105,8 @@ func (w amqpWrapper) Channel() (amqpChannelWrapper, error) {
 
 func (w amqpWrapper) Close() error {
 	return w.conn.Close()
+}
+
+func (w amqpWrapper) GetAMQPConn() *amqp.Connection {
+	return w.conn
 }

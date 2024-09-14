@@ -4,8 +4,11 @@ import (
 	LogConstant "RDIPs-BE/constant/LogConst"
 	"RDIPs-BE/model"
 	"RDIPs-BE/utils"
+	"context"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"gorm.io/gorm"
 )
 
@@ -16,16 +19,21 @@ type DeviceHandler interface {
 
 type deviceHandler struct {
 	deviceBody *model.SysDevices
+	mongoDb    *mongo.Database
 	*commonHandler
 }
 
 func NewDeviceHandler(c *gin.Context, deviceModel *model.SysDevices) DeviceHandler {
 	commonHanlerInstance := newCommonHandler(c)
 	commonStruct := commonHanlerInstance.(*commonHandler)
-	return &deviceHandler{commonHandler: commonStruct, deviceBody: deviceModel}
+	return &deviceHandler{
+		commonHandler: commonStruct,
+		deviceBody:    deviceModel,
+		mongoDb:       commonStruct.mongoDB,
+	}
 }
 
-func (d *deviceHandler) Read(devicesRes interface{}) error {
+func (d *deviceHandler) Read(devicesRes interface{}, opts ...map[string]interface{}) error {
 	return d.db.Where("status != ?", model.Disable).Preload("Parent").Find(devicesRes).Error
 }
 
@@ -33,8 +41,14 @@ func (d *deviceHandler) Create() error {
 	deviceObj := d.deviceBody
 	return d.db.Transaction(func(tx *gorm.DB) error {
 		utils.Log(LogConstant.Info, "Create Device Start")
-		if err := tx.Create(&deviceObj).Error; err != nil {
+		result := tx.Where("name = ?", deviceObj.Name).FirstOrCreate(&deviceObj)
+		if err := result.Error; err != nil {
 			return err
+		}
+
+		// record is already exist with name
+		if result.RowsAffected == 0 {
+			return nil
 		}
 
 		historyObj := &model.SysHistory{
@@ -67,7 +81,14 @@ func (d *deviceHandler) Create() error {
 		if err := tx.Create(&deviceRelObj).Error; err != nil {
 			return err
 		}
-		return nil
+		metaField := "document_name"
+		err := d.mongoDB.CreateCollection(context.TODO(), deviceObj.Name, &options.CreateCollectionOptions{
+			TimeSeriesOptions: &options.TimeSeriesOptions{
+				TimeField: "timestamp",
+				MetaField: &metaField,
+			},
+		})
+		return err
 	})
 }
 
@@ -82,7 +103,7 @@ func (d *deviceHandler) ReadDetail(isDetail bool, id string) error {
 	return err
 }
 
-func (d *deviceHandler) GetById(id string, response interface{}) error {
+func (d *deviceHandler) GetById(id string, response interface{}, opts ...map[string]interface{}) error {
 	return d.db.Where("id = ?", id).First(response).Error
 }
 

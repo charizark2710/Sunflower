@@ -20,6 +20,10 @@ func main() {
 	if err != nil {
 		utils.Log(LogConstant.Fatal, err)
 	}
+	mongoDB, err := config.MongoConfig()
+	if err != nil {
+		utils.Log(LogConstant.Fatal, err)
+	}
 	err = config.RabbitMqConfig()
 	if err != nil {
 		utils.Log(LogConstant.Fatal, err)
@@ -29,6 +33,7 @@ func main() {
 		utils.Log(LogConstant.Fatal, err)
 	}
 	commonModel.Helper.SetDb(db)
+	commonModel.Helper.SetMongoDB(mongoDB)
 	routers.InitRouter(r)
 	routers.InitAmqpRoutes()
 	r.Run(":" + os.Getenv("API_PORT"))

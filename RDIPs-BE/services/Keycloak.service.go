@@ -32,7 +32,7 @@ var PostKeycloakUser = func(c *commonModel.ServiceContext) (commonModel.Response
 	err := json.Unmarshal(c.Body, &userBody)
 
 	if err == nil {
-		_, userErr := keycloak.CreateUser(c.Ctx, c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY), userBody)
+		_, userErr := keycloak.CreateUser(c.Ctx, c.Ctx.GetString(middleware.KEYCLOAK_ACCESS_TOKEN), userBody)
 		if userErr != nil {
 			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, userErr
 		}
@@ -43,7 +43,7 @@ var PostKeycloakUser = func(c *commonModel.ServiceContext) (commonModel.Response
 
 var GetKeycloakUsers = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
 	utils.Log(LogConstant.Info, "GetKeycloakUsers Start")
-	users, err := keycloak.GetUsers(c.Ctx, c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY), gocloak.GetUsersParams{})
+	users, err := keycloak.GetUsers(c.Ctx, c.Ctx.GetString(middleware.KEYCLOAK_ACCESS_TOKEN), gocloak.GetUsersParams{})
 	if err == nil {
 		utils.Log(LogConstant.Info, "GetKeycloakUsers End")
 		return commonModel.ResponseTemplate{HttpCode: 200, Data: users}, nil
@@ -55,7 +55,7 @@ var GetKeycloakUsers = func(c *commonModel.ServiceContext) (commonModel.Response
 var GetKeycloakUserById = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
 	utils.Log(LogConstant.Info, "GetKeycloakUserById Start")
 	userId := c.Param("id")
-	user, err := keycloak.GetUserByID(c.Ctx, c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY), userId)
+	user, err := keycloak.GetUserByID(c.Ctx, c.Ctx.GetString(middleware.KEYCLOAK_ACCESS_TOKEN), userId)
 	if err == nil {
 		utils.Log(LogConstant.Info, "GetKeycloakUserById End")
 		return commonModel.ResponseTemplate{HttpCode: 200, Data: user}, nil
@@ -84,10 +84,10 @@ var GetLoginScreen = func(c *commonModel.ServiceContext) (commonModel.ResponseTe
 var Callback = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
 	utils.Log(LogConstant.Debug, "Callback Start")
 	codeVerifier, err := c.Ctx.Cookie("code")
-	c.Ctx.SetCookie("code", "", -1, "/", APP_HOST, true, true)
 	if err != nil {
 		return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
 	}
+	c.Ctx.SetCookie("code", "", -1, "/", APP_HOST, true, true)
 	if codeVerifier == "" {
 		return commonModel.ResponseTemplate{HttpCode: 403, Data: "Unauthenticated"}, err
 	}
@@ -120,8 +120,21 @@ var Callback = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate
 			Expiration: 30 * 60,
 		})
 		if err != nil {
-			utils.Log(LogConstant.Error, err)
-			return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+			if err == memcache.ErrNotStored {
+				utils.Log(LogConstant.Warning, err)
+				commonModel.CacheSrv.Delete(sub)
+				err = commonModel.CacheSrv.Add(&memcache.Item{
+					Key:        sub,
+					Value:      []byte(refreshToken),
+					Expiration: 30 * 60,
+				})
+				if err != nil {
+					return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+				}
+			} else {
+				utils.Log(LogConstant.Error, err)
+				return commonModel.ResponseTemplate{HttpCode: 500, Data: nil}, err
+			}
 		}
 		c.Ctx.SetCookie("access_token", accessToken, 30*60, "/", APP_HOST, true, true)
 		c.Ctx.SetCookie("token", uuid.NewString(), 30*60, "/", APP_HOST, true, false)
@@ -143,7 +156,7 @@ var PostRoleToUser = func(c *commonModel.ServiceContext) (commonModel.ResponseTe
 	if err == nil {
 		addRolesErr := keycloak.AddRealmRoleToUser(
 			c.Ctx,
-			c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY),
+			c.Ctx.GetString(middleware.KEYCLOAK_ACCESS_TOKEN),
 			userId,
 			rolesRequest)
 		if addRolesErr == nil {
@@ -162,7 +175,7 @@ var PutKeycloakUser = func(c *commonModel.ServiceContext) (commonModel.ResponseT
 	if err := json.Unmarshal(c.Body, &userRequest); err == nil {
 		err := keycloak.PutKeycloakUser(
 			c.Ctx,
-			c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY),
+			c.Ctx.GetString(middleware.KEYCLOAK_ACCESS_TOKEN),
 			userId,
 			userRequest)
 		if err != nil {
@@ -179,7 +192,7 @@ var DeleteKeycloakUser = func(c *commonModel.ServiceContext) (commonModel.Respon
 	userId := c.Param("id")
 	err := keycloak.DeleteKeycloakUser(
 		c.Ctx,
-		c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY),
+		c.Ctx.GetString(middleware.KEYCLOAK_ACCESS_TOKEN),
 		userId)
 
 	if err != nil {
@@ -193,7 +206,7 @@ var GetKeycloakGroups = func(c *commonModel.ServiceContext) (commonModel.Respons
 	defer utils.Log(LogConstant.Info, "GetKeycloakGroups End")
 	groups, err := keycloak.GetGroups(
 		c.Ctx,
-		c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY),
+		c.Ctx.GetString(middleware.KEYCLOAK_ACCESS_TOKEN),
 		gocloak.GetGroupsParams{})
 	if err != nil {
 		utils.Log(LogConstant.Error, err)
@@ -208,7 +221,7 @@ var GetKeycloakGroupById = func(c *commonModel.ServiceContext) (commonModel.Resp
 	id := c.Param("id")
 	group, err := keycloak.GetGroupById(
 		c.Ctx,
-		c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY),
+		c.Ctx.GetString(middleware.KEYCLOAK_ACCESS_TOKEN),
 		id,
 	)
 	if err != nil {
@@ -224,7 +237,7 @@ var DeleteKeycloakGroup = func(c *commonModel.ServiceContext) (commonModel.Respo
 	id := c.Param("id")
 	err := keycloak.DeleteGroup(
 		c.Ctx,
-		c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY),
+		c.Ctx.GetString(middleware.KEYCLOAK_ACCESS_TOKEN),
 		id,
 	)
 	if err != nil {
@@ -248,7 +261,7 @@ var PostKeycloakGroup = func(c *commonModel.ServiceContext) (commonModel.Respons
 
 		err := keycloak.CreateGroup(
 			c.Ctx,
-			c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY),
+			c.Ctx.GetString(middleware.KEYCLOAK_ACCESS_TOKEN),
 			groupRequest,
 			groupBody,
 		)
@@ -275,7 +288,7 @@ var PutKeycloakGroup = func(c *commonModel.ServiceContext) (commonModel.Response
 	if err := json.Unmarshal(c.Body, &groupRequest); err == nil {
 		err := keycloak.EditGroup(
 			c.Ctx,
-			c.Ctx.GetString(middleware.KEYCLOAK_TOKEN_CLIENT_KEY),
+			c.Ctx.GetString(middleware.KEYCLOAK_ACCESS_TOKEN),
 			groupID,
 			groupRequest,
 		)

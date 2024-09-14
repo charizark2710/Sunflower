@@ -63,7 +63,7 @@ services:
       dockerfile: keycloak.Dockerfile
     image: charizark2710/sunflower-keycloak
     # command: bash -c "while :; do echo 'Hit CTRL+C'; sleep 1; done"
-    command: [ "start-dev", "--import-realm", "--verbose", "--hostname-strict=false", "--hostname=${KEYCLOAK_AUTHEN_URL}" ]
+    command: [ "start", "--import-realm", "--verbose", "--hostname-strict=false", "--hostname=${KEYCLOAK_AUTHEN_URL}", "--https-certificate-file=/opt/keycloak/certs/rootCA.crt", "--https-certificate-key-file=/opt/keycloak/certs/rootCA.key" ]
     environment:
       - KC_DB=postgres
       - KC_DB_URL=jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/keycloak
@@ -79,12 +79,12 @@ services:
       db:
         condition: service_healthy
     ports:
-      - '9000:8080'
+      - '8443:8443'
     healthcheck:
       test:
         [
           'CMD-SHELL',
-          '[ -f /tmp/HealthCheck.java ] || echo "public class HealthCheck { public static void main(String[] args) throws java.lang.Throwable { System.exit(java.net.HttpURLConnection.HTTP_OK == ((java.net.HttpURLConnection)new java.net.URL(args[0]).openConnection()).getResponseCode() ? 1 : 0); } }" > /tmp/HealthCheck.java && java /tmp/HealthCheck.java http://localhost:8080/health/live'
+          'curl --head -fsS https://localhost:8443 --insecure'
         ]
       retries: 5
       start_period: 20s
@@ -94,6 +94,7 @@ services:
           - auth.sunflower-rdips
     volumes:
       - keycloak:/opt
+      - ./certs:/opt/keycloak/certs/
 
   rabbitmq:
     container_name: "rabbitmq"
@@ -117,9 +118,8 @@ services:
       - RABBITMQ_DEFAULT_USER=${BROKER_USER}
       - RABBITMQ_DEFAULT_PASS=${BROKER_PASSWORD}
     ports:
-      - '5672:5672'
-      - '15672:15672'
-      - '1883:1883'
+      - '5671:5671'
+      - '15671:15671'
     healthcheck:
       test: rabbitmq-diagnostics -q ping
       timeout: 30s
@@ -132,6 +132,8 @@ services:
           - amqp-management.sunflower-rdips
           - mqtt.sunflower-rdips
           - amqp.sunflower-rdips
+    volumes:
+      - ./certs:/opt/rabbitmq/certs/
   # gateway:
   #   container_name: "gateway"
   #   # Maybe there some memory leak that prevent docker to excute command so this is good for now
@@ -216,11 +218,12 @@ services:
       - '8080:8080'
     volumes:
       - 'api:/srv/www/volume_sunflower'
+      - ./certs/:/sunflower/certs/
     networks:
       pi4:
         aliases:
           - sunflower-rdips
-  
+
   api_bk:
     container_name: sunflower_api_bk
     restart: on-failure:3
@@ -238,11 +241,11 @@ services:
       - '8081:8080'
     volumes:
       - 'api:/srv/www/volume_sunflower'
+      - ./certs/:/sunflower/certs/
     networks:
       pi4:
         aliases:
           - sunflower-rdips
-
 
   ui:
     container_name: sunflower_ui
@@ -273,7 +276,7 @@ services:
     ports:
       - "80:80"
       - "81:81"
-      - "9001:9000"
+      - "9000:9000"
       - "443:443"
       - "8883:8883"
       - "8672:8672"
@@ -283,6 +286,17 @@ services:
       - './RDIPs-Server/stream.conf.d:/opt/nginx/stream.conf.d'
     networks:
       pi4:
+    secrets:
+      - source: rootCA_key
+        target: /etc/nginx/rootCA.key
+      - source: rootCA_cert
+        target: /etc/nginx/rootCA.crt
+      - source: client_cert
+        target: /etc/nginx/client.crt
+      - source: client_key
+        target: /etc/nginx/client.key
+      - source: dhparam_pem
+        target: /etc/nginx/dhparam.pem
 
 volumes:
   db:
@@ -293,3 +307,14 @@ networks:
   pi4:
     driver: bridge
 
+secrets:
+  rootCA_key:
+    file: ./certs/rootCA.key
+  rootCA_cert:
+    file: ./certs/rootCA.crt
+  dhparam_pem:
+      file: ./certs/dhparam.pem
+  client_key:
+    file: ./certs/client.key
+  client_cert:
+    file: ./certs/client.crt

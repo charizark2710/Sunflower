@@ -1,4 +1,4 @@
-package handler
+package connection
 
 import (
 	LogConstant "RDIPs-BE/constant/LogConst"
@@ -149,14 +149,19 @@ Loop:
 		select {
 		case c, ok := <-p.conn:
 			if !ok { //ch is closed
+				utils.Log(LogConstant.Info, "Channel is closed")
 				break Loop
 			}
+			utils.Log(LogConstant.Info, "Close all child channel")
 			err := p.p.CloseFn(c)
 			if err != nil {
 				utils.Log(LogConstant.Error, err)
 			}
-			close(p.p.ping)
+			if p.p.ping != nil {
+				close(p.p.ping)
+			}
 		default: //all other case not-ready: means nothing in ch for now
+			utils.Log(LogConstant.Info, "Nothing is in channel")
 			break Loop
 		}
 	}

@@ -3,9 +3,11 @@ package keycloak
 import (
 	LogConstant "RDIPs-BE/constant/LogConst"
 	"RDIPs-BE/handler"
+	connection "RDIPs-BE/handler/Connection"
 	"RDIPs-BE/model"
 	"RDIPs-BE/utils"
 	"context"
+	"crypto/tls"
 	"encoding/base64"
 	"fmt"
 	"net/url"
@@ -32,20 +34,57 @@ type GoCloakClientStruct struct {
 	client_name   string
 }
 
-var keycloakPool handler.Pool
+var keycloakPool connection.Pool
 
 /*
 Get client_id, client_secret from client_name
 */
 func getClientData(client_name string) (*string, *string, error) {
 	gocloakClient := gocloak.NewClient(os.Getenv("KEYCLOAK_BASE_URL"))
+	restyClient := gocloakClient.RestyClient()
+	restyClient.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 	ctx := context.Background()
-	jwt, err := gocloakClient.LoginAdmin(ctx, os.Getenv("KEYCLOAK_ADMIN"),
-		os.Getenv("KEYCLOAK_ADMIN_PASSWORD"),
+	adminUserName := os.Getenv("KEYCLOAK_ADMIN")
+	adminPw := os.Getenv("KEYCLOAK_ADMIN_PASSWORD")
+	jwt, err := gocloakClient.LoginAdmin(ctx, adminUserName,
+		adminPw,
 		ADMIN_KEYCLOAK_REALM_NAME)
 
+	// TODO: remove after update migration
 	if err != nil {
-		return nil, nil, err
+		utils.Log(LogConstant.Warning, err, adminUserName, adminPw, ADMIN_KEYCLOAK_REALM_NAME)
+
+		if gocloak.ParseAPIErrType(err) != gocloak.APIErrTypeInvalidGrant {
+			utils.Log(LogConstant.Error, err, adminUserName, adminPw, ADMIN_KEYCLOAK_REALM_NAME)
+			return nil, nil, err
+		}
+
+		// GET jwt from admin master
+		jwt, err = gocloakClient.LoginAdmin(ctx, adminUserName,
+			"admin", // default
+			ADMIN_KEYCLOAK_REALM_NAME)
+		if err != nil {
+			utils.Log(LogConstant.Error, err)
+			return nil, nil, err
+		}
+		claim, ok := handler.ClaimsToken(jwt.AccessToken)
+		if !ok {
+			return nil, nil, fmt.Errorf("something went wrong")
+		}
+		err = gocloakClient.SetPassword(ctx, jwt.AccessToken, claim["sub"].(string), ADMIN_KEYCLOAK_REALM_NAME, adminPw, false)
+
+		if err != nil {
+			utils.Log(LogConstant.Error, err)
+			return nil, nil, err
+		}
+
+		jwt, err = gocloakClient.LoginAdmin(ctx, adminUserName,
+			adminPw,
+			ADMIN_KEYCLOAK_REALM_NAME)
+		if err != nil {
+			utils.Log(LogConstant.Error, err, adminUserName, adminPw, ADMIN_KEYCLOAK_REALM_NAME)
+			return nil, nil, err
+		}
 	}
 
 	client, err := gocloakClient.GetClientRepresentation(ctx, jwt.AccessToken, ADMIN_KEYCLOAK_REALM_NAME, client_name)
@@ -74,14 +113,13 @@ func InitKeycloakClient(client_name string) error {
 	}
 	client_id, client_secret, err := getClientData(client_name)
 	if err != nil {
+		utils.Log(LogConstant.Error, err)
 		return err
 	}
 	factoryFn := func() (interface{}, error) {
-
 		gocloakClient := gocloak.NewClient(os.Getenv("KEYCLOAK_BASE_URL"))
-		// restyClient := gocloakClient.RestyClient()
-		// restyClient.SetDebug(true)
-		// restyClient.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
+		restyClient := gocloakClient.RestyClient()
+		restyClient.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 		return &GoCloakClientStruct{GoCloakClient: gocloakClient, client_id: *client_id, client_secret: *client_secret, client_name: client_name}, err
 	}
 
@@ -93,7 +131,7 @@ func InitKeycloakClient(client_name string) error {
 		return nil
 	}
 
-	poolData := handler.PoolData{
+	poolData := connection.PoolData{
 		FactoryFn: factoryFn,
 		CloseFn:   closeFn,
 		PingFn:    pingFn,

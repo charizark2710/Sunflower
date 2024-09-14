@@ -3,6 +3,7 @@ package routers
 import (
 	LogConstant "RDIPs-BE/constant/LogConst"
 	"RDIPs-BE/constant/ServiceConst"
+	"RDIPs-BE/handler"
 	AMQP_handler "RDIPs-BE/handler/AMQP"
 	commonModel "RDIPs-BE/model/common"
 	"RDIPs-BE/utils"
@@ -15,7 +16,7 @@ import (
 func InitAmqpRoutes() {
 	utils.Log(LogConstant.Info, "Initialize AMQP routes")
 	defer utils.Log(LogConstant.Info, "Finish initialize AMQP routes")
-	amqpPool := AMQP_handler.GetPool()
+	amqpPool := handler.GetRabbitPool()
 	ch, err := amqpPool.Get()
 	if err != nil {
 		utils.Log(LogConstant.Fatal, err)
@@ -27,7 +28,11 @@ func InitAmqpRoutes() {
 		utils.Log(LogConstant.Fatal, "Wrong format")
 	}
 
-	queue, err := channel.QueueDeclare("API", true, false, false, false, nil)
+	channel.Qos(10, 0, false)
+
+	queue, err := channel.QueueDeclare("API", true, false, false, false, amqp091.Table{
+		"x-message-ttl": 600000,
+	})
 	if err != nil {
 		utils.Log(LogConstant.Fatal, err)
 	}
@@ -57,11 +62,9 @@ func InitAmqpRoutes() {
 	}
 
 	// declare queue for server
-	queueServer, err := channel.QueueDeclare("SERVER", true, false, false, false, nil)
-	if err != nil {
-		utils.Log(LogConstant.Fatal, err)
-	}
-	err = channel.QueueBind(queueServer.Name, "server.*", "amq."+amqp091.ExchangeTopic, false, nil)
+	_, err = channel.QueueDeclare("SERVER", true, false, false, false, amqp091.Table{
+		"x-message-ttl": 600000,
+	})
 	if err != nil {
 		utils.Log(LogConstant.Fatal, err)
 	}
