@@ -7,6 +7,8 @@ import (
 	AMQP_handler "RDIPs-BE/handler/AMQP"
 	commonModel "RDIPs-BE/model/common"
 	"RDIPs-BE/utils"
+	"os"
+	"strconv"
 
 	"github.com/rabbitmq/amqp091-go"
 )
@@ -17,7 +19,7 @@ func InitAmqpRoutes() {
 	utils.Log(LogConstant.Info, "Initialize AMQP routes")
 	defer utils.Log(LogConstant.Info, "Finish initialize AMQP routes")
 	amqpPool := handler.GetRabbitPool()
-	ch, err := amqpPool.Get()
+	ch, _, err := amqpPool.Get()
 	if err != nil {
 		utils.Log(LogConstant.Fatal, err)
 	}
@@ -37,6 +39,12 @@ func InitAmqpRoutes() {
 		utils.Log(LogConstant.Fatal, err)
 	}
 
+	priority, err := strconv.Atoi(os.Getenv("CONSUMER_PRIORITY"))
+	if err != nil {
+		utils.Log(LogConstant.Error, err)
+		priority = 0 // default priority
+	}
+
 	deliveries, err := channel.Consume(
 		queue.Name, // name
 		"",         // consumerTag,
@@ -44,8 +52,9 @@ func InitAmqpRoutes() {
 		false,      // exclusive
 		false,      // noLocal
 		false,      // noWait
-		nil,        // arguments
-	)
+		amqp091.Table{
+			"x-priority": priority,
+		})
 	if err != nil {
 		utils.Log(LogConstant.Fatal, err)
 	}

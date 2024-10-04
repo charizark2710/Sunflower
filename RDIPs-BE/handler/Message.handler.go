@@ -30,11 +30,11 @@ func NewMessageHandler() MessageHandler {
 func (m *messageStruct) Send(exchange string, body interface{}, deliveryMode uint8, correlationID string, routingKeyArgs ...string) error {
 	routingKey := m.generateRoutingKey(routingKeyArgs...)
 	utils.Log(LogConstant.Info, "Sending message to ", exchange, "with ", routingKey)
-	conn, err := rabbitPool.Get()
+	conn, ctx, err := rabbitPool.Get()
 	if err != nil {
 		utils.Log(LogConstant.Error, err)
 	} else {
-		defer rabbitPool.Release(conn)
+		defer rabbitPool.Release(conn, ctx)
 		channel, ok := conn.(commonModel.BaseAmqpChannel)
 		if !ok {
 			utils.Log(LogConstant.Error, "wrong channel format")

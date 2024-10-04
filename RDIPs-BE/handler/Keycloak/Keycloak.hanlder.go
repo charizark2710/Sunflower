@@ -142,23 +142,23 @@ func InitKeycloakClient(client_name string) error {
 	return err
 }
 
-func GetGocloakObj() (*GoCloakClientStruct, error) {
-	keycloakObj, err := keycloakPool.Get()
+func GetGocloakObj() (*GoCloakClientStruct, context.Context, error) {
+	keycloakObj, ctx, err := keycloakPool.Get()
 	if err != nil {
 		utils.Log(LogConstant.Error, err)
-		return nil, err
+		return nil, nil, err
 	}
 
-	return keycloakObj.(*GoCloakClientStruct), nil
+	return keycloakObj.(*GoCloakClientStruct), ctx, nil
 }
 
 func CreateUser(ctx context.Context, clientKey string, userBody gocloak.User) (string, error) {
-	goCloakObj, err := GetGocloakObj()
+	goCloakObj, poolCtx, err := GetGocloakObj()
 	if err != nil {
 		utils.Log(LogConstant.Error, err)
 		return "", err
 	}
-	defer keycloakPool.Release(goCloakObj)
+	defer keycloakPool.Release(goCloakObj, poolCtx)
 	client := goCloakObj.GoCloakClient
 	userId, userRrr := client.CreateUser(
 		ctx,
@@ -170,12 +170,12 @@ func CreateUser(ctx context.Context, clientKey string, userBody gocloak.User) (s
 }
 
 func GetUsers(ctx context.Context, clientKey string, params gocloak.GetUsersParams) ([]*gocloak.User, error) {
-	goCloakObj, err := GetGocloakObj()
+	goCloakObj, poolCtx, err := GetGocloakObj()
 	if err != nil {
 		utils.Log(LogConstant.Error, err)
 		return nil, err
 	}
-	defer keycloakPool.Release(goCloakObj)
+	defer keycloakPool.Release(goCloakObj, poolCtx)
 	client := goCloakObj.GoCloakClient
 	users, userRrr := client.GetUsers(
 		ctx,
@@ -187,12 +187,12 @@ func GetUsers(ctx context.Context, clientKey string, params gocloak.GetUsersPara
 }
 
 func GetUserByID(ctx context.Context, clientKey string, id string) (*gocloak.User, error) {
-	goCloakObj, err := GetGocloakObj()
+	goCloakObj, poolCtx, err := GetGocloakObj()
 	if err != nil {
 		utils.Log(LogConstant.Error, err)
 		return nil, err
 	}
-	defer keycloakPool.Release(goCloakObj)
+	defer keycloakPool.Release(goCloakObj, poolCtx)
 	client := goCloakObj.GoCloakClient
 	user, userRrr := client.GetUserByID(
 		ctx,
@@ -203,7 +203,7 @@ func GetUserByID(ctx context.Context, clientKey string, id string) (*gocloak.Use
 	return user, userRrr
 }
 
-func GetLoginScreen() (string, string, error) {
+func GetLoginScreen(redirect string) (string, string, error) {
 	codeVerifier := oauth2.GenerateVerifier()
 	codeChallenge := oauth2.S256ChallengeFromVerifier(codeVerifier)
 	codeVerifyMethod := "S256"
@@ -211,10 +211,13 @@ func GetLoginScreen() (string, string, error) {
 	if KEYCLOAK_AUTHEN_URL != "" {
 		kcEndpoint = KEYCLOAK_AUTHEN_URL
 	}
+	if redirect == "" {
+		redirect = REDIRECT_URI
+	}
 	authURL := kcEndpoint + "/realms/" + ADMIN_KEYCLOAK_REALM_NAME +
 		"/protocol/openid-connect/auth?response_type=code" +
 		"&client_id=" + CLIENT_ID +
-		"&redirect_uri=" + url.PathEscape(REDIRECT_URI) +
+		"&redirect_uri=" + url.PathEscape(redirect) +
 		"&scope=" + "openid" +
 		"&state=" + uuid.NewString() +
 		"&code_challenge=" + codeChallenge +
@@ -224,12 +227,12 @@ func GetLoginScreen() (string, string, error) {
 }
 
 func GetTokenObject(ctx context.Context, code, codeVerify string) (map[string]interface{}, error) {
-	goCloakObj, err := GetGocloakObj()
+	goCloakObj, poolCtx, err := GetGocloakObj()
 	if err != nil {
 		utils.Log(LogConstant.Error, err)
 		return nil, err
 	}
-	defer keycloakPool.Release(goCloakObj)
+	defer keycloakPool.Release(goCloakObj, poolCtx)
 	authorizationToken := base64.RawURLEncoding.EncodeToString([]byte(goCloakObj.client_id + ":" + goCloakObj.client_secret))
 
 	// TODO: http client should be in another handler
@@ -268,13 +271,13 @@ func GetTokenObject(ctx context.Context, code, codeVerify string) (map[string]in
 }
 
 func RefreshAccessToken(ctx context.Context, refreshToken string) (jwt *gocloak.JWT, err error) {
-	goCloakObj, err := GetGocloakObj()
+	goCloakObj, poolCtx, err := GetGocloakObj()
 	if err != nil {
 		utils.Log(LogConstant.Error, err)
 		return nil, err
 	}
 	gkClient := goCloakObj.GoCloakClient
-	defer keycloakPool.Release(goCloakObj)
+	defer keycloakPool.Release(goCloakObj, poolCtx)
 	if refreshToken != "" {
 		jwt, err := gkClient.RefreshToken(ctx, refreshToken, goCloakObj.client_name, goCloakObj.client_secret, ADMIN_KEYCLOAK_REALM_NAME)
 		if err != nil {
@@ -287,12 +290,12 @@ func RefreshAccessToken(ctx context.Context, refreshToken string) (jwt *gocloak.
 }
 
 func PutKeycloakUser(ctx context.Context, clientKey string, id string, userBody gocloak.User) error {
-	goCloakObj, err := GetGocloakObj()
+	goCloakObj, poolCtx, err := GetGocloakObj()
 	if err != nil {
 		utils.Log(LogConstant.Error, err)
 		return err
 	}
-	defer keycloakPool.Release(goCloakObj)
+	defer keycloakPool.Release(goCloakObj, poolCtx)
 	gkClient := goCloakObj.GoCloakClient
 	user, userRrr := gkClient.GetUserByID(
 		ctx,
@@ -319,13 +322,13 @@ func PutKeycloakUser(ctx context.Context, clientKey string, id string, userBody 
 }
 
 func AddRealmRoleToUser(ctx context.Context, clientKey string, id string, roles []gocloak.Role) error {
-	goCloakObj, err := GetGocloakObj()
+	goCloakObj, poolCtx, err := GetGocloakObj()
 	if err != nil {
 		utils.Log(LogConstant.Error, err)
 		return err
 	}
 	gkClient := goCloakObj.GoCloakClient
-	defer keycloakPool.Release(goCloakObj)
+	defer keycloakPool.Release(goCloakObj, poolCtx)
 
 	addRoleErr := gkClient.AddRealmRoleToUser(ctx, clientKey, ADMIN_KEYCLOAK_REALM_NAME, id, roles)
 
@@ -333,12 +336,12 @@ func AddRealmRoleToUser(ctx context.Context, clientKey string, id string, roles 
 }
 
 func DeleteKeycloakUser(ctx context.Context, clientKey string, id string) error {
-	goCloakObj, err := GetGocloakObj()
+	goCloakObj, poolCtx, err := GetGocloakObj()
 	if err != nil {
 		utils.Log(LogConstant.Error, err)
 		return err
 	}
-	defer keycloakPool.Release(goCloakObj)
+	defer keycloakPool.Release(goCloakObj, poolCtx)
 	gkClient := goCloakObj.GoCloakClient
 	user, userRrr := gkClient.GetUserByID(
 		ctx,
@@ -362,12 +365,12 @@ func DeleteKeycloakUser(ctx context.Context, clientKey string, id string) error 
 }
 
 func GetGroups(ctx context.Context, clientKey string, params gocloak.GetGroupsParams) ([]*gocloak.Group, error) {
-	goCloakObj, err := GetGocloakObj()
+	goCloakObj, poolCtx, err := GetGocloakObj()
 	if err != nil {
 		utils.Log(LogConstant.Error, err)
 		return nil, err
 	}
-	defer keycloakPool.Release(goCloakObj)
+	defer keycloakPool.Release(goCloakObj, poolCtx)
 	client := goCloakObj.GoCloakClient
 	groups, err := client.GetGroups(
 		ctx,
@@ -379,12 +382,12 @@ func GetGroups(ctx context.Context, clientKey string, params gocloak.GetGroupsPa
 }
 
 func GetGroupById(ctx context.Context, clientKey string, id string) (*gocloak.Group, error) {
-	goCloakObj, err := GetGocloakObj()
+	goCloakObj, poolCtx, err := GetGocloakObj()
 	if err != nil {
 		utils.Log(LogConstant.Error, err)
 		return nil, err
 	}
-	defer keycloakPool.Release(goCloakObj)
+	defer keycloakPool.Release(goCloakObj, poolCtx)
 	client := goCloakObj.GoCloakClient
 	group, err := client.GetGroup(
 		ctx,
@@ -396,12 +399,12 @@ func GetGroupById(ctx context.Context, clientKey string, id string) (*gocloak.Gr
 }
 
 func DeleteGroup(ctx context.Context, clientKey string, id string) error {
-	goCloakObj, err := GetGocloakObj()
+	goCloakObj, poolCtx, err := GetGocloakObj()
 	if err != nil {
 		utils.Log(LogConstant.Error, err)
 		return err
 	}
-	defer keycloakPool.Release(goCloakObj)
+	defer keycloakPool.Release(goCloakObj, poolCtx)
 	client := goCloakObj.GoCloakClient
 	err = client.DeleteGroup(
 		ctx,
@@ -414,12 +417,12 @@ func DeleteGroup(ctx context.Context, clientKey string, id string) error {
 
 func CreateGroup(ctx context.Context, clientKey string,
 	groupRequest model.GroupRequest, groupBody gocloak.Group) error {
-	goCloakObj, err := GetGocloakObj()
+	goCloakObj, poolCtx, err := GetGocloakObj()
 	if err != nil {
 		utils.Log(LogConstant.Error, err)
 		return err
 	}
-	defer keycloakPool.Release(goCloakObj)
+	defer keycloakPool.Release(goCloakObj, poolCtx)
 	client := goCloakObj.GoCloakClient
 	roles, err := getRealmRoles(ctx, clientKey, client, groupBody)
 	if err != nil {
@@ -458,12 +461,12 @@ func CreateGroup(ctx context.Context, clientKey string,
 
 func EditGroup(ctx context.Context, clientKey string, groupID string,
 	groupRequest model.GroupRequest) error {
-	goCloakObj, err := GetGocloakObj()
+	goCloakObj, poolCtx, err := GetGocloakObj()
 	if err != nil {
 		utils.Log(LogConstant.Error, err)
 		return err
 	}
-	defer keycloakPool.Release(goCloakObj)
+	defer keycloakPool.Release(goCloakObj, poolCtx)
 	client := goCloakObj.GoCloakClient
 
 	group, err := client.GetGroup(

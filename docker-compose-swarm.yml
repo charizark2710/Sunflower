@@ -252,6 +252,8 @@ services:
         target: /sunflower/certs/client.crt
         gid: '1000'
         mode: 440
+    environment:
+      - CONSUMER_PRIORITY=10
 
   api_bk:
     container_name: sunflower_api_bk
@@ -259,8 +261,6 @@ services:
     # command: tail -F /dev/null
     env_file:
       - .env
-    environment:
-      - API_PORT=8081
     image: charizark2710/sunflower-api
     # volumes:
     #   - './RDIPs-BE:/srv/www/volume_sunflower'

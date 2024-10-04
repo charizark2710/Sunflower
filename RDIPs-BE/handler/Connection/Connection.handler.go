@@ -3,37 +3,43 @@ package connection
 import (
 	LogConstant "RDIPs-BE/constant/LogConst"
 	"RDIPs-BE/utils"
+	"context"
 	"fmt"
-	"math"
 	"sync"
 	"time"
 )
 
 const (
-	defaultRetry     = 30
-	defautWaitTime   = 30 * time.Second
-	defaultIndleTime = 10 * time.Second
-	defaultPoolSize  = 5
+	defaultRetry    = 30
+	defaultWaitTime = 30 * time.Second // time to get from channel
+	defaultIdleTime = 5 * time.Minute  // time limit for one idle channel
+	defaultPoolSize = 5
 )
 
 type PoolData struct {
-	IndleTimeout time.Duration
-	WaitTimeout  time.Duration
-	Size         int
-	Max          int
-	FactoryFn    func() (interface{}, error) // Handle data before add to pool
-	CloseFn      func(interface{}) error     // Close data before return back to pool
-	PingFn       func(interface{}) error     // Control signal data in pool
-	ForceClose   bool
-	ping         chan interface{}
+	IdleTimeout time.Duration
+	WaitTimeout time.Duration
+	Size        int
+	Max         int
+	FactoryFn   func() (interface{}, error) // Handle data before add to pool
+	CloseFn     func(interface{}) error     // Close data before return back to pool
+	PingFn      func(interface{}) error     // Control signal data in pool
+	ForceClose  bool
+	ping        chan interface{}
 }
 
 type Pool struct {
 	p          *PoolData
 	mu         *sync.Mutex
-	conn       chan interface{}
+	conn       chan PoolDetail
 	availConn  int
 	forceClose bool
+}
+
+type PoolDetail struct {
+	data  interface{}
+	ctx   context.Context
+	timer *time.Timer // timer for idle data
 }
 
 func (p *Pool) FillPool(data PoolData) error {
@@ -44,19 +50,19 @@ func (p *Pool) FillPool(data PoolData) error {
 		return fmt.Errorf("get function is undefined")
 	}
 	if data.WaitTimeout == 0 {
-		data.WaitTimeout = defautWaitTime
+		data.WaitTimeout = defaultWaitTime
 	}
-	if data.IndleTimeout == 0 {
-		data.IndleTimeout = defaultIndleTime
+	if data.IdleTimeout == 0 {
+		data.IdleTimeout = defaultIdleTime
 	}
 	if data.Max == 0 {
-		data.Max = int(math.MaxInt)
+		data.Max = 100
 	}
 	if data.Size == 0 {
 		data.Size = defaultPoolSize
 	}
 	p.forceClose = data.ForceClose
-	p.conn = make(chan interface{}, data.Size)
+	p.conn = make(chan PoolDetail, data.Max)
 	p.mu = &sync.Mutex{}
 	p.p = &data
 	start := time.Now()
@@ -79,66 +85,88 @@ func (p *Pool) FillPool(data PoolData) error {
 				return err
 			}
 		}
-		p.conn <- val
+		p.conn <- PoolDetail{data: val, ctx: context.Background()}
 		p.availConn++
 	}
 	return nil
 }
 
-func (p *Pool) Get(retry ...int) (interface{}, error) {
+func (p *Pool) Get(retry ...int) (interface{}, context.Context, error) {
 	retryTimes := 0
 	if retry == nil {
 		retryTimes = defaultRetry
 	}
 	if p.conn == nil {
-		return nil, fmt.Errorf("connection is not initialize")
+		return nil, nil, fmt.Errorf("connection is not initialize")
 	}
-
+	p.mu.Lock()
+	defer p.mu.Unlock()
 	for i := 0; i < retryTimes; i += 1 {
 		select {
-		case conn, ok := <-p.conn:
-			p.mu.Lock()
+		case poolDetail, ok := <-p.conn:
 			if !ok {
-				return nil, fmt.Errorf("channel is closed")
+				return nil, nil, fmt.Errorf("channel is closed")
 			}
-			defer p.mu.Unlock()
 			p.availConn--
-			return conn, nil
+			if poolDetail.ctx.Err() != nil {
+				// ctx is closed, skip this data
+				continue
+			}
+			if poolDetail.timer != nil {
+				if !poolDetail.timer.Stop() {
+					<-poolDetail.timer.C
+				}
+				poolDetail.timer.Reset(p.p.IdleTimeout)
+			}
+			return poolDetail.data, poolDetail.ctx, nil
 		case time := <-time.After(p.p.WaitTimeout):
+			// in case of channel is nil
 			timeoutErr := fmt.Errorf("timeout after: %v seconds", time.Second())
-			return nil, timeoutErr
+			return nil, nil, timeoutErr
 		default:
 			// If there are no data in pool and haven't reach max
 			// Then create new connection
-			if p.availConn < p.p.Max {
+			if len(p.conn) < p.p.Max {
+				newCtx, cancel := context.WithCancel(context.Background())
+
+				// Create timer to cancel this context after idle time
+				timer := time.AfterFunc(p.p.IdleTimeout, cancel)
 				res, err := p.p.FactoryFn()
+				data := PoolDetail{ctx: newCtx, data: res, timer: timer}
+				p.conn <- data
 				// The newly created connection should not be opened forever
-				// wait for indle time out before running close function
-				go func() {
-					time.Sleep(p.p.IndleTimeout)
-					p.p.CloseFn(res)
-				}()
-				return res, err
+				// wait for idle time out before running close function
+				go p.handleTimeoutCtx(data.data, newCtx)
+				p.availConn++
+				return res, newCtx, err
 			}
-			time.Sleep(p.p.IndleTimeout)
+			time.Sleep(1 * time.Second)
 		}
 	}
-	return nil, fmt.Errorf("exceed max connection pool")
+	return nil, nil, fmt.Errorf("exceed max connection pool")
 }
 
-func (p *Pool) Release(data interface{}) error {
+func (p *Pool) handleTimeoutCtx(data interface{}, ctx context.Context) error {
+	<-ctx.Done()
+	utils.Log(LogConstant.Info, "Exceed Idle time:", p.p.IdleTimeout.Seconds(), ", begin close this resource: ")
+	p.p.CloseFn(data)
+	return ctx.Err()
+}
+
+// return back to Pool
+func (p *Pool) Release(data interface{}, ctx context.Context) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	if p.forceClose {
 		err := p.p.CloseFn(data)
 		if err == nil {
 			p.availConn++
-			p.conn <- data
+			p.conn <- PoolDetail{data: data, ctx: ctx}
 		}
 		return err
 	} else {
 		p.availConn++
-		p.conn <- data
+		p.conn <- PoolDetail{data: data, ctx: ctx}
 	}
 	return nil
 }
@@ -153,7 +181,7 @@ Loop:
 				break Loop
 			}
 			utils.Log(LogConstant.Info, "Close all child channel")
-			err := p.p.CloseFn(c)
+			err := p.p.CloseFn(c.data)
 			if err != nil {
 				utils.Log(LogConstant.Error, err)
 			}

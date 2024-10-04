@@ -20,7 +20,6 @@ type PerformanceHandler interface {
 }
 
 type performanceHandler struct {
-	mongoDb         *mongo.Database
 	performanceBody *model.SysPerformance
 	*commonHandler
 }
@@ -31,7 +30,6 @@ func NewPerformanceHandler(c *gin.Context, performanceModel *model.SysPerformanc
 	return &performanceHandler{
 		commonHandler:   commonStruct,
 		performanceBody: performanceModel,
-		mongoDb:         commonStruct.mongoDB,
 	}
 }
 
@@ -118,7 +116,7 @@ func (p *performanceHandler) handleOpts(docName string, opts ...map[string]inter
 		}
 	}
 	// filter timestamp from mongodb
-	payloadCursor, err := p.mongoDb.Collection(docName).Aggregate(context.TODO(), mongoPipeLine)
+	payloadCursor, err := p.mongoDB.Collection(docName).Aggregate(context.TODO(), mongoPipeLine)
 
 	if err != nil {
 		return nil, err
@@ -177,7 +175,7 @@ func (p *performanceHandler) Update() error {
 			payload["timestamp"] = time.Now()
 			documentPayload = append(documentPayload, payload)
 		}
-		_, err := p.mongoDb.Collection(p.performanceBody.DocumentName).
+		_, err := p.mongoDB.Collection(p.performanceBody.DocumentName).
 			InsertMany(context.TODO(), documentPayload, &options.InsertManyOptions{})
 		if err != nil {
 			return err

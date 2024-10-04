@@ -7,7 +7,6 @@ import (
 	"context"
 
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"gorm.io/gorm"
 )
@@ -19,7 +18,6 @@ type DeviceHandler interface {
 
 type deviceHandler struct {
 	deviceBody *model.SysDevices
-	mongoDb    *mongo.Database
 	*commonHandler
 }
 
@@ -29,7 +27,6 @@ func NewDeviceHandler(c *gin.Context, deviceModel *model.SysDevices) DeviceHandl
 	return &deviceHandler{
 		commonHandler: commonStruct,
 		deviceBody:    deviceModel,
-		mongoDb:       commonStruct.mongoDB,
 	}
 }
 

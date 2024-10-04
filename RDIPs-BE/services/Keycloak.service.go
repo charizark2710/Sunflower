@@ -68,8 +68,8 @@ var GetKeycloakUserById = func(c *commonModel.ServiceContext) (commonModel.Respo
  */
 var GetLoginScreen = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate, error) {
 	utils.Log(LogConstant.Debug, "GetLoginScreen Start")
-	loginPage, codeVerify, err := keycloak.GetLoginScreen()
-
+	redirect := c.Header.Get("redirect")
+	loginPage, codeVerify, err := keycloak.GetLoginScreen(redirect)
 	if err == nil {
 		c.Ctx.SetCookie("code", codeVerify, 5*60, "/", APP_HOST, true, true)
 		c.Ctx.Header("Location", loginPage)

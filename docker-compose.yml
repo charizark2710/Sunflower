@@ -211,7 +211,8 @@ services:
         condition: service_healthy
       mongo:
         condition: service_healthy
-
+    environment:
+      - CONSUMER_PRIORITY=10
     ports:
       - '8080:8080'
     volumes:
@@ -242,7 +243,6 @@ services:
       pi4:
         aliases:
           - sunflower-rdips
-
 
   ui:
     container_name: sunflower_ui

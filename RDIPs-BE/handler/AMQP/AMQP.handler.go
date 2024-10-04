@@ -121,14 +121,14 @@ func InitializeAMQP() error {
 
 func ReceiveService(deliveries <-chan amqp091.Delivery) {
 	utils.Log(LogConstant.Info, "Start Receiver")
-	var ack func(d *amqp091.Delivery)
-	ack = func(d *amqp091.Delivery) {
+	var ack func(d *amqp091.Delivery, sysErr error)
+	ack = func(d *amqp091.Delivery, sysErr error) {
 		utils.Log(LogConstant.Info, "Start ACK Delivery: "+d.Exchange+" With key: "+d.RoutingKey)
 		err := d.Ack(false)
 		if err != nil {
 			utils.Log(LogConstant.Error, err)
 			time.Sleep(10 * time.Second)
-			ack(d)
+			ack(d, sysErr)
 		} else {
 			utils.Log(LogConstant.Info, "Finish ACK Delivery: "+d.Exchange+" With key: "+d.RoutingKey)
 		}
@@ -155,12 +155,14 @@ func ReceiveService(deliveries <-chan amqp091.Delivery) {
 		routingKeyArr := strings.Split(delivery.RoutingKey, ".")
 		fn, ok := ServiceConst.ServicesMap[ServiceConst.ServiceMapMQTT[routingKeyArr[len(routingKeyArr)-1]]]
 		var response interface{}
+		var sysErr error
 		if !ok {
 			utils.Log(LogConstant.Error, "Service "+routingKeyArr[len(routingKeyArr)-1]+" is not exist")
 			response = map[string]string{"ERROR": "Service" + routingKeyArr[len(routingKeyArr)-1] + "is not exist"}
 		} else {
 			result, err := fn(&c)
 			if err != nil {
+				sysErr = err
 				utils.Log(LogConstant.Error, err)
 				result.Error = err
 				result.SetMessage(err.Error())
@@ -181,7 +183,7 @@ func ReceiveService(deliveries <-chan amqp091.Delivery) {
 			}
 		}
 
-		go ack(&delivery)
+		go ack(&delivery, sysErr)
 		utils.Log(LogConstant.Info, "Finish Exchange: "+delivery.Exchange+" With key: "+delivery.RoutingKey)
 	}
 	utils.Log(LogConstant.Info, "Done")
@@ -224,9 +226,9 @@ func setGinContext(c *commonModel.ServiceContext, body []byte) {
 	}
 
 	if res["query"] != nil {
-		querys, ok := res["query"].(map[string]interface{})
+		queries, ok := res["query"].(map[string]interface{})
 		if ok {
-			for key, value := range querys {
+			for key, value := range queries {
 				v := fmt.Sprintf("%v", value)
 				c.SetQuery(key, v)
 			}
