@@ -1,15 +1,22 @@
 import { Box } from '@mui/material';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
+import { getAllUsers } from '../../../../axios/api';
 import { setNavbarTitle } from '../../../../redux/slice/pageSlice';
 import { useDispatch } from '../../../../redux/store';
 import config from '../../../../utils/en.json';
-import { HeadCell, TypeUserEnum, UserData } from '../../../../utils/interface';
+import {
+  HeadCell,
+  TypeUserEnum,
+  UserData,
+  UserResponse,
+} from '../../../../utils/interface';
 import TableAtom from '../../../atoms/table/Table.atom';
 import BreakcrumbMocules from '../../../molecules/breakcrumb/Breakcrumb.mocules';
 import './Campaign.scss';
 
 const Campaign = () => {
+  const [userListData, setUserListData] = useState([]);
   function navigateToDetailPage() {
     return;
   }
@@ -20,31 +27,46 @@ const Campaign = () => {
     dispatch(setNavbarTitle(config['campaignList.title']));
   }, [dispatch]);
 
-  const userListData = [
-    createData('U001', 'Ly Nguyen', '123 Thien Duong', '09876543212', 'thienduong@gmail.com', TypeUserEnum.Regular),
-    createData('U002', 'Anh Phan', '502 Thien Duong', '09876543213', 'thienduong1@gmail.com', TypeUserEnum.Industrial),
-    createData('U003', 'Canh Ngo', '503 Thien Duong', '098765432132', 'thienduong2@gmail.com', TypeUserEnum.Regular),
-    createData('U004', 'Thanh Bui', '504 Thien Duong', '09876543215', 'thienduong3@gmail.com', TypeUserEnum.Regular),
-    createData('U005', 'Minh Hung', '505 Thien Duong', '09876543212', 'thienduon4g@gmail.com', TypeUserEnum.Regular),
-    createData('U006', 'Huong Nguyen', '506 Thien Duong', '09876543212', 'thienduong5@gmail.com', TypeUserEnum.Industrial),
-    createData('U007', 'Huy Doan', '507 Thien Duong', '09876543212', 'thienduong6@gmail.com', TypeUserEnum.Regular),
-  ];
+  useEffect(() => {
+    getListUser();
+  }, []);
 
-  function createData(
-    user_id: string,
-    user_name: string,
-    address: string,
-    phone_num: string,
-    email: string,
-    type: TypeUserEnum
-  ): UserData {
-    return {
-      user_id,
-      user_name,
+  const getListUser = () => {
+    getAllUsers()
+      .then((data: { data: any }) => {
+        let users = data.data;
+        setUserListData(
+          users
+            .filter((user: UserData) => user.enabled)
+            .reverse()
+            .map((user: UserResponse) => createData(user))
+        );
+      })
+      .catch(() => {
+        setUserListData([]);
+      });
+  };
+
+  function createData(data: UserResponse): UserData {
+    const {
+      id,
+      username,
       address,
       phone_num,
       email,
       type,
+      emailVerified,
+      enabled,
+    } = data;
+    return {
+      user_id: id,
+      user_name: username,
+      address: address ? address : '',
+      phone_num: phone_num ? phone_num : '',
+      email: email ? email : '',
+      type: type ? type : TypeUserEnum.Regular,
+      emailVerified,
+      enabled,
     };
   }
 
@@ -85,7 +107,11 @@ const Campaign = () => {
   return (
     <Box className='list-container'>
       <Box className='card-container'>
-        <BreakcrumbMocules title={config['campaignList.name']} icon={''} link={config['campaignList.pathLink']} />
+        <BreakcrumbMocules
+          title={config['campaignList.name']}
+          icon={''}
+          link={config['campaignList.pathLink']}
+        />
         <TableAtom
           onRowClick={navigateToDetailPage}
           rows={userListData}

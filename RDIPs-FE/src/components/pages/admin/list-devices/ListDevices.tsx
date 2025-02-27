@@ -27,8 +27,9 @@ interface DeviceResponse {
   region: string;
 }
 
-export function createData(data: DeviceResponse): DeviceData {
-  const { id, name, firmware_ver, app_ver, type, status, life_time, region } = data;
+export function createDeviceData(data: DeviceResponse): DeviceData {
+  const { id, name, firmware_ver, app_ver, type, status, life_time, region } =
+    data;
   return {
     device_id: id,
     device_name: name,
@@ -41,7 +42,10 @@ export function createData(data: DeviceResponse): DeviceData {
   };
 }
 
-const ListDevices: React.FC<ListDevicesProps> = ({ dispatch, showTableOnly = false }) => {
+const ListDevices: React.FC<ListDevicesProps> = ({
+  dispatch,
+  showTableOnly = false,
+}) => {
   const [deviceListData, setDeviceListData] = useState([]);
   const [popupStatus, setPopupStatus] = useState('');
 
@@ -58,7 +62,11 @@ const ListDevices: React.FC<ListDevicesProps> = ({ dispatch, showTableOnly = fal
     getAllDevices()
       .then((data: { data: any }) => {
         let devices = data.data;
-        setDeviceListData(devices.reverse().map((device: DeviceResponse) => createData(device)));
+        setDeviceListData(
+          devices
+            .reverse()
+            .map((device: DeviceResponse) => createDeviceData(device))
+        );
       })
       .catch(() => {
         setDeviceListData([]);
@@ -102,7 +110,14 @@ const ListDevices: React.FC<ListDevicesProps> = ({ dispatch, showTableOnly = fal
     },
   ];
 
-  const deviceColumns = ['device_name', 'user_name', 'region', 'lifetime', 'status', ''];
+  const deviceColumns = [
+    'device_name',
+    'user_name',
+    'region',
+    'lifetime',
+    'status',
+    '',
+  ];
 
   function onClosePopUp() {
     getListDevice();

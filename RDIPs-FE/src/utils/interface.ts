@@ -24,10 +24,27 @@ export interface DeviceChangeHistoryData {
 export interface UserData {
   user_id: string;
   user_name: string;
+  firstName?: string;
+  lastName?: string;
   address: string;
   phone_num: string;
   email: string;
   type: TypeUserEnum;
+  emailVerified: boolean;
+  enabled: boolean;
+}
+
+export interface UserResponse {
+  id: string,
+  username: string,
+  address: string,
+  phone_num: string,
+  email: string,
+  type: TypeUserEnum,
+  emailVerified: boolean,
+  enabled: boolean,
+  firstName?: string;
+  lastName?: string;
 }
 
 export interface AdminData {
@@ -62,4 +79,21 @@ export interface HeadCell {
   id?: any;
   label: string;
   numeric: boolean | any;
+}
+
+
+export interface RequestCreateDevices {
+  name: string;
+  type?: string;
+  status?: string;
+  id?: string;
+  region?: string;
+}
+
+export interface RequestCreateUsers {
+  firstName: string;
+  lastName: string;
+  email: string;
+  username?: string;
+  id?: string;
 }
