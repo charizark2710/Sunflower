@@ -1,0 +1,56 @@
+<div class="navi-container">
+  <div class="sunflower-logo flex flex-row items-center justify-center">
+    <div class="sunflower-icon"></div>
+    {{ "labels.app.name" | translate }}
+  </div>
+  <div class="nav-body">
+    <div class="menu-list">
+      <div
+        *ngFor="let item of menuItems"
+        class="menu-item flex flex-row items-center"
+        [routerLink]="item.url"
+        [attr.aria-label]="'menu item ' + item.url"
+        [class.active]="item === activeMenuItem"
+        (click)="setActiveMenuItem(item)"
+      >
+        <div
+          class="menu-icon"
+          id="item.name"
+          [style.background-image]="'url(' + item.icon + ')'"
+        ></div>
+        <div>{{ item.name | translate }}</div>
+      </div>
+    </div>
+    <div class="menu-list">
+      <div
+        *ngFor="let item of subMenuItems"
+        class="menu-item flex flex-row items-center"
+        [routerLink]="item.url"
+        [attr.aria-label]="'menu item ' + item.url"
+        [class.active]="item === activeMenuItem"
+        (click)="setActiveMenuItem(item)"
+      >
+        <div
+          class="menu-icon"
+          id="item.name"
+          [style.background-image]="'url(' + item.icon + ')'"
+        ></div>
+        <div>{{ item.name | translate }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="nav-footer">
+    <div class="nav-footer_left">
+      <div class="avt-box"></div>
+      <div class="name-box">
+        <div class="name_user-name">Ly Nguyen</div>
+        <div class="name_email">
+          {{ "lynguyen@rdips.com" }}
+        </div>
+      </div>
+    </div>
+    <div class="nav-footer_right">
+      <div class="logout-icon"></div>
+    </div>
+  </div>
+</div>

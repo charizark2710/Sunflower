@@ -1,0 +1,17 @@
+{
+  "labels": {
+    "app": {
+      "name": "SUNFLOWER"
+    },
+    "menu": {
+      "home": "Trang chủ",
+      "listDevices": "Danh sách thiết bị",
+      "listUsers": "Danh sách người dùng",
+      "listAdmins": "Danh sách quản trị viên",
+      "campaign": "Chiến dịch",
+      "support": "Hỗ trợ",
+      "settings": "Cài đặt"
+    }
+  },
+  "contentBlocks": {}
+}

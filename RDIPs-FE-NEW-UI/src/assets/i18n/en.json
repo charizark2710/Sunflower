@@ -1,0 +1,17 @@
+{
+  "labels": {
+    "app": {
+      "name": "SUNFLOWER"
+    },
+    "menu": {
+      "home": "Home",
+      "listDevices": "List Device",
+      "listUsers": "List Users",
+      "listAdmins": "List Admins",
+      "campaign": "Campaign",
+      "support": "Support",
+      "settings": "Settings"
+    }
+  },
+  "contentBlocks": {}
+}
