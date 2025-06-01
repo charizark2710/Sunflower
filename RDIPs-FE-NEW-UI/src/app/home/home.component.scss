@@ -1,9 +1,24 @@
 .home-container {
-    app-navigation {
-        width: 20%; 
-    }
+  app-navigation {
+    width: 20%;
+  }
 
-    // .dashboard-area {
-    //     max-width: 80%;
-    // }
+  .dashboard-area {
+    padding: 24px;
+    width: 100%;
+    .card-container {
+      display: flex;
+      gap: 24px;
+      @media screen and (max-width: 1024px) {
+        flex-direction: column;
+      }
+
+      .card-detail {
+        width: 33%;
+        @media screen and (max-width: 1024px) {
+          width: 100%;
+        }
+      }
+    }
+  }
 }

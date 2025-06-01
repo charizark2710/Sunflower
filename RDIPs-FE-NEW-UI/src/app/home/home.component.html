@@ -2,5 +2,14 @@
   <div class="navigation-area">
     <app-navigation></app-navigation>
   </div>
-  <div class="dashboard-area">home dashboard</div>
+  <div class="dashboard-area">
+    <app-breadcrumb [title]="'labels.menu.home'"></app-breadcrumb>
+    <div class="card-container">
+      <ng-container *ngFor="let card of CARD_DATA; trackBy: trackByFn">
+        <div class="card-detail">
+          <app-data-card [card]="card"></app-data-card>
+        </div>
+      </ng-container>
+    </div>
+  </div>
 </div>

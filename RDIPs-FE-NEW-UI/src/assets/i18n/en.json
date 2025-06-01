@@ -11,7 +11,14 @@
       "campaign": "Campaign",
       "support": "Support",
       "settings": "Settings"
-    }
+    },
+    "button": {
+      "customize": "Customize",
+      "export": "Export"
+    },
+    "dashboard.card.totalNewUser": "Total New Users",
+    "dashboard.card.totalNewDevice": "Total New Devices",
+    "dashboard.card.totalActivityTime": "Total Time Activity"
   },
   "contentBlocks": {}
 }

@@ -1,0 +1,44 @@
+.breadcumb-container {
+  margin-bottom: 24px;
+  .page-title {
+    font-size: 24px;
+    font-weight: 550;
+  }
+
+  .button-clutter {
+    gap: 10px;
+    .button {
+      cursor: pointer;
+      text-align: center;
+      background: rgba(22, 27, 38, 1);
+      width: 129;
+      height: 40;
+      padding-top: 10px;
+      padding-right: 14px;
+      padding-bottom: 10px;
+      padding-left: 14px;
+      border-radius: 10px;
+      color: rgba(206, 207, 210, 1);
+      border: 1px solid rgba(51, 55, 65, 1);
+
+      .customize {
+        background-image: url("/assets/icons/customize.svg");
+        background-repeat: no-repeat;
+        width: 20px;
+        height: 20px;
+      }
+
+      .export {
+        background-image: url("/assets/icons/export.svg");
+        background-repeat: no-repeat;
+        width: 20px;
+        height: 20px;
+      }
+
+      &:hover {
+        background-color: rgba(51, 55, 65, 1);
+        color: rgba(255, 255, 255, 1);
+      }
+    }
+  }
+}

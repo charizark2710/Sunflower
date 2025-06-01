@@ -3,6 +3,10 @@
   min-width: 12rem;
   height: 90%;
   padding: 30px 15px;
+  display: block;
+  @media screen and (max-width: 745px) {
+    display: none;
+  }
 
   .sunflower-logo {
     gap: 10px;

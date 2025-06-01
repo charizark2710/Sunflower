@@ -11,7 +11,14 @@
       "campaign": "Chiến dịch",
       "support": "Hỗ trợ",
       "settings": "Cài đặt"
-    }
+    },
+    "button": {
+      "customize": "Tùy chỉnh",
+      "export": "Xuất dữ liệu"
+    },
+    "dashboard.card.totalNewUser": "Số lượng người dùng mới",
+    "dashboard.card.totalNewDevice": "Tổng số lượng thiết bị mới được ",
+    "dashboard.card.totalActivityTime": "Tổng thời gian hoạt động "
   },
   "contentBlocks": {}
 }
