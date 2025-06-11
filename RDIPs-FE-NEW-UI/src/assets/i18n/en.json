@@ -16,6 +16,10 @@
       "customize": "Customize",
       "export": "Export"
     },
+    "chart": {
+      "title": "Energy Rate",
+      "legend": "My Devices"
+    },
     "dashboard.card.totalNewUser": "Total New Users",
     "dashboard.card.totalNewDevice": "Total New Devices",
     "dashboard.card.totalActivityTime": "Total Time Activity"

@@ -5,6 +5,8 @@ import { Dashboard_Data } from '../constant';
 import { BreadcrumbComponent } from '../shared/breadcrumb/breadcrumb.component';
 import { NavigationComponent } from '../shared/navigation/navigation.component';
 import { DataCardComponent } from './data-card/data-card.component';
+import { BarChartComponent } from '../shared/bar-chart/bar-chart.component';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-home',
@@ -15,6 +17,8 @@ import { DataCardComponent } from './data-card/data-card.component';
     DataCardComponent,
     NgFor,
     BreadcrumbComponent,
+    BarChartComponent,
+    TranslateModule
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',

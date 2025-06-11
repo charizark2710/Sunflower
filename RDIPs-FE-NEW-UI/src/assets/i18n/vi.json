@@ -16,6 +16,14 @@
       "customize": "Tùy chỉnh",
       "export": "Xuất dữ liệu"
     },
+    "chart": {
+      "title": "Phần trăm năng lượng",
+      "legend": "Thiết bị của tôi"
+    },
+    "home": {
+      "chart.activity.title": "Hoạt động",
+      "chart.activity.description": "Lưu trữ thông tin, thời lượng pin của từng thiết bị"
+    },
     "dashboard.card.totalNewUser": "Số lượng người dùng mới",
     "dashboard.card.totalNewDevice": "Tổng số lượng thiết bị mới được ",
     "dashboard.card.totalActivityTime": "Tổng thời gian hoạt động "

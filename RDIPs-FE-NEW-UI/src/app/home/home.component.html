@@ -11,5 +11,27 @@
         </div>
       </ng-container>
     </div>
+    <div class="home-device-list">
+      <div class="home-device-chart-left">
+        <div class="home-activity">
+          <div class="home-activity_left">
+            <div class="home-avt-box"></div>
+            <div class="home-chart-act-title">
+              <div class="act-title">{{ 'labels.home.chart.activity.title' | translate }} </div>
+              <div class="act-description">
+                {{ 'labels.home.chart.activity.description' | translate }}
+              </div>
+            </div>
+          </div>
+          <div class="home-activity_right">
+            <div class="three-dot-icon"></div>
+          </div>
+        </div>
+        <div class="home-bar-chart">
+          <app-bar-chart></app-bar-chart>
+        </div>
+      </div>
+      <div class="home-device-chart-right">Tổng thời gian</div>
+    </div>
   </div>
 </div>
