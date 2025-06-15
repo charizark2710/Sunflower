@@ -7,6 +7,7 @@ import { NavigationComponent } from '../shared/navigation/navigation.component';
 import { DataCardComponent } from './data-card/data-card.component';
 import { BarChartComponent } from '../shared/bar-chart/bar-chart.component';
 import { TranslateModule } from '@ngx-translate/core';
+import { DeviceActivityStatisticComponent } from '../shared/device-activity-statistic/device-activity-statistic.component';
 
 @Component({
   selector: 'app-home',
@@ -17,7 +18,7 @@ import { TranslateModule } from '@ngx-translate/core';
     DataCardComponent,
     NgFor,
     BreadcrumbComponent,
-    BarChartComponent,
+    DeviceActivityStatisticComponent,
     TranslateModule
   ],
   templateUrl: './home.component.html',

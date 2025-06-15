@@ -2,5 +2,14 @@
   <div class="navigation-area">
     <app-navigation></app-navigation>
   </div>
-  <div class="devices-area">Device works</div>
+  <div class="devices-area">
+    <app-breadcrumb [title]="'labels.menu.listDevices'"></app-breadcrumb>
+    <div class="home-body">
+      <app-device-activity-statistic></app-device-activity-statistic>
+      <div class="device-banner">Thiết bị của tôi</div>
+      <div class="device-table">
+        <app-data-table></app-data-table>
+      </div>
+    </div>
+  </div>
 </div>

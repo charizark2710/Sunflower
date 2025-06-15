@@ -1,37 +1,18 @@
-<div class="home-container flex flex-row w-screen h-full">
+<div class="home-container flex flex-row h-full">
   <div class="navigation-area">
     <app-navigation></app-navigation>
   </div>
   <div class="dashboard-area">
     <app-breadcrumb [title]="'labels.menu.home'"></app-breadcrumb>
-    <div class="card-container">
-      <ng-container *ngFor="let card of CARD_DATA; trackBy: trackByFn">
-        <div class="card-detail">
-          <app-data-card [card]="card"></app-data-card>
-        </div>
-      </ng-container>
-    </div>
-    <div class="home-device-list">
-      <div class="home-device-chart-left">
-        <div class="home-activity">
-          <div class="home-activity_left">
-            <div class="home-avt-box"></div>
-            <div class="home-chart-act-title">
-              <div class="act-title">{{ 'labels.home.chart.activity.title' | translate }} </div>
-              <div class="act-description">
-                {{ 'labels.home.chart.activity.description' | translate }}
-              </div>
-            </div>
+    <div class="home-body">
+      <div class="card-container">
+        <ng-container *ngFor="let card of CARD_DATA; trackBy: trackByFn">
+          <div class="card-detail">
+            <app-data-card [card]="card"></app-data-card>
           </div>
-          <div class="home-activity_right">
-            <div class="three-dot-icon"></div>
-          </div>
-        </div>
-        <div class="home-bar-chart">
-          <app-bar-chart></app-bar-chart>
-        </div>
+        </ng-container>
       </div>
-      <div class="home-device-chart-right">Tổng thời gian</div>
+      <app-device-activity-statistic></app-device-activity-statistic>
     </div>
   </div>
 </div>

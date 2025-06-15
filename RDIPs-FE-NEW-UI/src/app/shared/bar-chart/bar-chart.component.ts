@@ -61,7 +61,7 @@ export class BarChartComponent implements OnInit {
               '79',
             ],
             backgroundColor: 'rgba(214, 187, 251, 1)',
-            borderRadius: 10
+            borderRadius: 5
           },
           {
             label: 'data2',
@@ -80,7 +80,7 @@ export class BarChartComponent implements OnInit {
               '541',
             ],
             backgroundColor: ' rgba(158, 119, 237, 1)',
-            borderRadius: 10
+            borderRadius: 5
           },
           {
             label: 'data3',
@@ -99,7 +99,7 @@ export class BarChartComponent implements OnInit {
               '0.00',
             ],
             backgroundColor: 'rgba(51, 55, 65, 1)',
-            borderRadius: 10
+            borderRadius: 5
           },
         ],
       },

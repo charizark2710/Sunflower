@@ -22,7 +22,9 @@
     },
     "home": {
       "chart.activity.title": "Hoạt động",
-      "chart.activity.description": "Lưu trữ thông tin, thời lượng pin của từng thiết bị"
+      "chart.activity.description": "Lưu trữ thông tin, thời lượng pin của từng thiết bị",
+      "chart.timeActivity.title": "Tổng thời lượng hoạt động",
+      "chart.timeActivity.description": "Thời lượng các thiết bị của bạn là 80%"
     },
     "dashboard.card.totalNewUser": "Số lượng người dùng mới",
     "dashboard.card.totalNewDevice": "Tổng số lượng thiết bị mới được ",

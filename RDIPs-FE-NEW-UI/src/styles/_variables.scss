@@ -1,3 +1,6 @@
+// Screen size
+$screen-medium: 1024px;
+
 // Colors
 $primary-color: #0C111D;
 $secondary-color: white;
@@ -5,6 +8,9 @@ $accent-color: #F5F5F6;
 $accent-color-hover: #1F242F;
 $text-small-color: #94969c;
 $border-grey-color: #1f242f;
+$background-grey-color: rgba(22, 27, 38, 1);
+$border-grey-color: rgba(51, 55, 65, 1);
+$text-grey-color: rgba(206, 207, 210, 1);
 
 // Sizes
 $navigation-width: 12rem;

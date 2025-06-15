@@ -1,11 +1,37 @@
+@import "../../styles/variables";
 .devices-container {
-    app-navigation {
-        width: 20%; 
-        // flex-shrink: 0;
-    }
+  app-navigation {
+    width: 20%;
+  }
 
-    .devices-area {
-        padding: 30px;
-        width: 100%;
+  .devices-area {
+    gap: 10px;
+    padding: 24px;
+    width: 100%;
+
+    .home-body {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      .card-container {
+        display: flex;
+        gap: 24px;
+        height: max-content;
+        @media screen and (max-width: $screen-medium) {
+          flex-direction: column;
+        }
+
+        .card-detail {
+          width: 33%;
+          @media screen and (max-width: $screen-medium) {
+            width: 100%;
+          }
+        }
+      }
+
+      .device-banner, .device-table {
+        // width: 100%;
+      }
     }
+  }
 }

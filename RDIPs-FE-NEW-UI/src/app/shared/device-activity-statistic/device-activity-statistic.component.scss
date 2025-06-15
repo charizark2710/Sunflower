@@ -1,0 +1,97 @@
+@import "../../../styles/variables";
+
+
+  .home-device-list {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    width: 100%;
+
+    .border-rounded {
+      border-radius: 10px;
+      border: 1px solid $border-grey-color;
+
+      .upper-box {
+        display: flex;
+        justify-content: space-between;
+        border-bottom: 1px solid $border-grey-color;
+        padding: 30px 30px;
+        font-size: $font-size-sm;
+        font-weight: $font-weight-medium;
+        min-height: 58px;
+
+        .upper-box_left {
+          display: flex;
+          gap: 15px;
+          justify-content: center;
+          align-items: center;
+
+          &:hover {
+            cursor: pointer;
+          }
+
+          .home-chart-act-title {
+            .act-title {
+              margin-bottom: 5px;
+              font-size: $font-size-md;
+              font-weight: $font-weight-medium;
+            }
+
+            .act-description {
+              font-size: $font-size-sm;
+              color: $text-small-color;
+              font-weight: $font-weight-regular;
+            }
+          }
+        }
+
+        .upper-box_right {
+          .three-dot-icon {
+            width: 20px;
+            height: 20px;
+            background-image: url("/assets/icons/three-dots.svg");
+
+            &:hover {
+              background-color: $accent-color-hover;
+              cursor: pointer;
+            }
+          }
+        }
+      }
+    }
+    .home-device-chart-left {
+      width: 66%;
+
+      .home-activity {
+        display: flex;
+        gap: 10px;
+        text-decoration: none;
+
+        .upper-box_left {
+          .home-avt-box-out {
+            border: 1px solid $border-grey-color;
+            border-radius: 50%;
+            .home-avt-box {
+              width: 56px;
+              height: 56px;
+            }
+          }
+        }
+      }
+
+      .home-bar-chart {
+        padding: 20px;
+      }
+    }
+    .home-device-chart-right {
+      width: 32%;
+    }
+
+    @media screen and (max-width: $screen-medium) {
+      flex-direction: column;
+      .home-device-chart-left,
+      .home-device-chart-right {
+        width: 100%;
+      }
+    }
+  }

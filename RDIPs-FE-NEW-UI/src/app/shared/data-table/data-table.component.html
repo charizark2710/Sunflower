@@ -1,0 +1,23 @@
+<div class="overflow-x-auto">
+  <table class="w-full border-collapse border border-gray-300 bg-white shadow-lg rounded-lg">
+    <thead class="bg-gray-100">
+      <tr>
+        <th class="border border-gray-300 px-4 py-2 text-left font-semibold text-gray-700">No.</th>
+        <th class="border border-gray-300 px-4 py-2 text-left font-semibold text-gray-700">Name</th>
+        <th class="border border-gray-300 px-4 py-2 text-left font-semibold text-gray-700">Weight</th>
+        <th class="border border-gray-300 px-4 py-2 text-left font-semibold text-gray-700">Symbol</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let element of dataSource; let i = index" 
+          class="hover:bg-gray-50 transition-colors duration-200"
+          [class.bg-gray-25]="i % 2 === 0">
+        <td class="border border-gray-300 px-4 py-2">{{ element.position }}</td>
+        <td class="border border-gray-300 px-4 py-2">{{ element.name }}</td>
+        <td class="border border-gray-300 px-4 py-2">{{ element.weight }}</td>
+        <td class="border border-gray-300 px-4 py-2">{{ element.symbol }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
