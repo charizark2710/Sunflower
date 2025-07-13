@@ -46,7 +46,7 @@ const ListDevices: React.FC<ListDevicesProps> = ({
   dispatch,
   showTableOnly = false,
 }) => {
-  const [deviceListData, setDeviceListData] = useState([]);
+  const [deviceListData, setDeviceListData] = useState<DeviceData[]>([]);
   const [popupStatus, setPopupStatus] = useState('');
 
   const navigate = useNavigate();
@@ -69,7 +69,95 @@ const ListDevices: React.FC<ListDevicesProps> = ({
         );
       })
       .catch(() => {
-        setDeviceListData([]);
+        // Mock data for development/testing when API is unavailable
+        const mockDevices: DeviceResponse[] = [
+          {
+            id: '1',
+            name: 'Ephemeral Device',
+            firmware_ver: 2.1,
+            app_ver: 1.0,
+            type: 'IoT Sensor',
+            status: 'active',
+            life_time: '36s',
+            region: 'Europe'
+          },
+          {
+            id: '2',
+            name: 'Stack3d Lab Gateway',
+            firmware_ver: 2.0,
+            app_ver: 1.2,
+            type: 'Gateway',
+            status: 'sleep',
+            life_time: '1w',
+            region: 'South America'
+          },
+          {
+            id: '3',
+            name: 'Warpspeed Controller',
+            firmware_ver: 1.9,
+            app_ver: 1.1,
+            type: 'Controller',
+            status: 'warning',
+            life_time: '6d',
+            region: 'Africa'
+          },
+          {
+            id: '4',
+            name: 'CloudWatch Monitor',
+            firmware_ver: 2.2,
+            app_ver: 1.3,
+            type: 'Monitor',
+            status: 'error',
+            life_time: '1d',
+            region: 'Oceania'
+          },
+          {
+            id: '5',
+            name: 'ContrastAI Device',
+            firmware_ver: 1.8,
+            app_ver: 0.9,
+            type: 'AI Device',
+            status: 'critical',
+            life_time: '38s',
+            region: 'North America'
+          },
+          {
+            id: '6',
+            name: 'Smart Sensor Alpha',
+            firmware_ver: 2.3,
+            app_ver: 1.4,
+            type: 'IoT Sensor',
+            status: 'active',
+            life_time: '2d',
+            region: 'Asia'
+          },
+          {
+            id: '7',
+            name: 'Edge Gateway Beta',
+            firmware_ver: 2.1,
+            app_ver: 1.2,
+            type: 'Gateway',
+            status: 'active',
+            life_time: '5h',
+            region: 'Europe'
+          },
+          {
+            id: '8',
+            name: 'Industrial Controller',
+            firmware_ver: 1.7,
+            app_ver: 1.0,
+            type: 'Controller',
+            status: 'sleep',
+            life_time: '12h',
+            region: 'North America'
+          }
+        ];
+
+        setDeviceListData(
+          mockDevices
+            .reverse()
+            .map((device: DeviceResponse) => createDeviceData(device))
+        );
       });
   };
 

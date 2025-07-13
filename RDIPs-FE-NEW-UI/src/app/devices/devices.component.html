@@ -11,7 +11,7 @@
           [title]="'labels.device.mydevice'"
           [description]="'labels.device.description'"
         ></app-text-group>
-        <button class="add-device-button">
+        <button class="add-device-button" (click)="openAddDeviceModal()">
           <div class="add-device-icon"></div>
           <div>{{ 'labels.device.addDevice' | translate }}</div>
         </button>
@@ -19,9 +19,20 @@
       <div class="device-table">
         <app-data-table 
           [columns]="tableColumns"
-          [dataSource]="deviceListData">
+          [dataSource]="deviceListData"
+          (onEdit)="openEditDeviceModal($event)">
         </app-data-table>
       </div>
     </div>
   </div>
+
+  <!-- Add/Edit Device Modal -->
+  <app-add-device-modal 
+    [isVisible]="showAddDeviceModal"
+    [isEditMode]="isEditMode"
+    [deviceToEdit]="deviceToEdit"
+    (close)="closeAddDeviceModal()"
+    (addDevice)="onAddDevice($event)"
+    (updateDevice)="onUpdateDevice($event)">
+  </app-add-device-modal>
 </div>

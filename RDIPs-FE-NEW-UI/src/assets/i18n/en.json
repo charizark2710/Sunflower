@@ -23,7 +23,16 @@
     "device": {
       "mydevice": "My Devices",
       "description": "Check your device frequently to ensure it is working properly.",
-      "addDevice": "Add Device"
+      "addDevice": "Add Device",
+      "editDevice": "Edit Device",
+      "updateDevice": "Update Device",
+      "deviceName": "Device Name",
+      "deviceNamePlaceholder": "Enter device name",
+      "deviceType": "Device Type",
+      "selectType": "Select device type",
+      "deviceRegion": "Region",
+      "selectRegion": "Select region",
+      "deviceStatus": "Status"
     },
     "dashboard": {
       "card": {
@@ -66,6 +75,9 @@
       "drainText": "Battery drain: 10%",
       "maintenanceTitle": "Your device is due for maintenance",
       "maintenanceDetail": "Note: Battery drain over 20% will greatly affect the battery and device, please replace or maintain when battery drain exceeds 20%"
+    },
+    "common": {
+      "cancel": "Cancel"
     }
   },
   "contentBlocks": {}

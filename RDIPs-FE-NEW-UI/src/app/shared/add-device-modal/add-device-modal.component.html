@@ -1,0 +1,87 @@
+<div class="modal-overlay" *ngIf="isVisible" (click)="onOverlayClick()">
+  <div class="modal-container" (click)="onModalClick($event)">
+    <div class="modal-header">
+      <h2>{{ isEditMode ? ('labels.device.editDevice' | translate) : ('labels.device.addDevice' | translate) }}</h2>
+      <button class="close-btn" (click)="closeModal()">
+        ×
+      </button>
+    </div>
+    
+    <form class="modal-body" (ngSubmit)="onSubmit()" #addDeviceForm="ngForm">
+      <div class="form-group">
+        <label for="deviceName">{{ 'labels.device.deviceName' | translate }}</label>
+        <input 
+          type="text" 
+          id="deviceName" 
+          name="deviceName"
+          [(ngModel)]="newDevice.name"
+          required
+          class="form-input"
+          placeholder="{{ 'labels.device.deviceNamePlaceholder' | translate }}">
+      </div>
+      
+      <div class="form-group">
+        <label for="deviceType">{{ 'labels.device.deviceType' | translate }}</label>
+        <select 
+          id="deviceType" 
+          name="deviceType"
+          [(ngModel)]="newDevice.type"
+          [required]="!isEditMode"
+          [disabled]="isEditMode"
+          class="form-select">
+          <option value="">{{ 'labels.device.selectType' | translate }}</option>
+          <option value="IoT Sensor">IoT Sensor</option>
+          <option value="Gateway">Gateway</option>
+          <option value="Controller">Controller</option>
+          <option value="Monitor">Monitor</option>
+          <option value="AI Device">AI Device</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="deviceRegion">{{ 'labels.device.deviceRegion' | translate }}</label>
+        <select 
+          id="deviceRegion" 
+          name="deviceRegion"
+          [(ngModel)]="newDevice.region"
+          [required]="!isEditMode"
+          [disabled]="isEditMode"
+          class="form-select">
+          <option value="">{{ 'labels.device.selectRegion' | translate }}</option>
+          <option value="North America">North America</option>
+          <option value="South America">South America</option>
+          <option value="Europe">Europe</option>
+          <option value="Africa">Africa</option>
+          <option value="Asia">Asia</option>
+          <option value="Oceania">Oceania</option>
+        </select>
+      </div>
+      
+      <!-- Status field only for edit mode -->
+      <div class="form-group" *ngIf="isEditMode">
+        <label for="deviceStatus">{{ 'labels.device.deviceStatus' | translate }}</label>
+        <select 
+          id="deviceStatus" 
+          name="deviceStatus"
+          [(ngModel)]="newDevice.status"
+          required
+          class="form-select">
+          <option value="Active">Active</option>
+          <option value="Sleep">Sleep</option>
+          <option value="Warning">Warning</option>
+          <option value="Error">Error</option>
+          <option value="Critical">Critical</option>
+        </select>
+      </div>
+      
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" (click)="closeModal()">
+          {{ 'labels.common.cancel' | translate }}
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="!addDeviceForm.valid">
+          {{ isEditMode ? ('labels.device.updateDevice' | translate) : ('labels.device.addDevice' | translate) }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

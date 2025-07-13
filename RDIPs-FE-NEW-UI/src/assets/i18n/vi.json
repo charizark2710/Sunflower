@@ -29,7 +29,16 @@
     "device": {
       "mydevice": "Thiết bị của tôi",
       "description": "Kiếm tra và bảo hành máy móc thường xuyên sẽ đem lại hiệu suất cao nhất",
-      "addDevice": "Thêm thiết bị"
+      "addDevice": "Thêm thiết bị",
+      "editDevice": "Chỉnh sửa thiết bị",
+      "updateDevice": "Cập nhật thiết bị",
+      "deviceName": "Tên thiết bị",
+      "deviceNamePlaceholder": "Nhập tên thiết bị",
+      "deviceType": "Loại thiết bị",
+      "selectType": "Chọn loại thiết bị",
+      "deviceRegion": "Khu vực",
+      "selectRegion": "Chọn khu vực",
+      "deviceStatus": "Trạng thái"
     },
     "dashboard": {
       "card": {
@@ -72,6 +81,9 @@
       "drainText": "Hao hụt: 10%",
       "maintenanceTitle": "Thiết bị của bạn sắp đến hạn bảo dưỡng",
       "maintenanceDetail": "Lưu ý: Lượng pin hao hụt trên 20% sẽ gây ảnh hưởng lớn đến pin và thiết bị, vui lòng thay hoặc bảo dưỡng khi lượng pin hao hụt trên 20%"
+    },
+    "common": {
+      "cancel": "Hủy"
     }
   },
   "contentBlocks": {}
