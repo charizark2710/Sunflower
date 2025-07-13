@@ -34,5 +34,24 @@
         <div class="three-dot-icon"></div>
       </div>
     </div>
+    <div class="pin-remaining">
+      <div class="battery-status-container">
+        <div class="circular-progress">
+          <div class="progress-circle">
+            <img src="/assets/images/progress_circle.svg" alt="battery icon" class="battery-icon">
+          </div>
+          <div class="battery-drain-indicator">
+            <img src="/assets/icons/trend-up.svg" alt="trend up" class="drain-icon">
+            <span class="drain-text">{{'labels.battery.drainText' | translate }}</span>
+          </div>
+        </div>
+        <div class="battery-description">
+          <h3 class="battery-title">{{ 'labels.battery.maintenanceTitle' | translate }}</h3>
+          <p class="battery-detail">
+            {{ 'labels.battery.maintenanceDetail' | translate }}
+          </p>
+        </div>
+      </div>
+    </div>
   </div>
 </div>

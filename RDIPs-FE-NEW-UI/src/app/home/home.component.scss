@@ -1,13 +1,23 @@
 @use "../../styles/variables" as *;
 .home-container {
+  height: 100vh;
+
   app-navigation {
     width: 20%;
+    height: 100%;
   }
 
   .dashboard-area {
     gap: 10px;
     padding: 24px;
-    width: 100%;
+    left: 17rem;
+    width: 75%;
+    position: relative;
+
+    @media screen and (max-width: $screen-small) {
+      left: 0;
+      width: 100%;
+    }
 
     .home-body {
       display: flex;

@@ -61,6 +61,11 @@
         "family": "Family",
         "package": "Package"
       }
+    },
+    "battery": {
+      "drainText": "Battery drain: 10%",
+      "maintenanceTitle": "Your device is due for maintenance",
+      "maintenanceDetail": "Note: Battery drain over 20% will greatly affect the battery and device, please replace or maintain when battery drain exceeds 20%"
     }
   },
   "contentBlocks": {}

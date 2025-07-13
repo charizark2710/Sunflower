@@ -85,6 +85,55 @@
     }
     .home-device-chart-right {
       width: 32%;
+
+      .pin-remaining {
+        padding: 20px;
+
+        .battery-status-container {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+
+          .circular-progress {
+            position: relative;
+            display: flex;
+            flex-direction: row;
+            margin-bottom: 20px;
+
+            .progress-circle {
+              height: 100px;
+            }
+
+            .battery-drain-indicator {
+              gap: 2px;
+              color: rgba(71, 205, 137, 1);
+              font-size: 11px;
+              display: flex;
+              justify-content: flex-start;
+              align-items: flex-start;
+            }
+          }
+
+          .battery-description {
+            .battery-title {
+              color: white;
+              font-size: $font-size-md;
+              font-weight: $font-weight-medium;
+              margin-bottom: 10px;
+              line-height: 1.4;
+            }
+
+            .battery-detail {
+              color: $text-small-color;
+              font-size: $font-size-sm;
+              font-weight: $font-weight-regular;
+              line-height: 1.5;
+              margin: 0;
+            }
+          }
+        }
+      }
     }
 
     @media screen and (max-width: $screen-medium) {
@@ -92,6 +141,18 @@
       .home-device-chart-left,
       .home-device-chart-right {
         width: 100%;
+      }
+      
+      .home-device-chart-right .pin-remaining .battery-status-container {
+        .circular-progress .progress-circle {
+          width: 120px;
+          height: 70px;
+          
+          .progress-text {
+            font-size: 1.8rem;
+            top: 30px;
+          }
+        }
       }
     }
   }

@@ -1,19 +1,35 @@
+@use "../../styles/variables" as *;
 .admins-container {
+  height: 100vh;
+  max-width: 80vw;
+
+  @media screen and (max-width: $screen-medium) {
+    max-width: 100vw;
+  }
+
   app-navigation {
     width: 20%;
+    height: 100%;
   }
 
   .content-area {
     gap: 10px;
     padding: 24px;
-    width: 100%;
+    left: 17rem;
+    width: 75%;
+    position: relative;
+
+    @media screen and (max-width: $screen-small) {
+      left: 0;
+      width: 100%;
+    }
   }
 
-  .main-content {
+  .home-body {
     display: flex;
     flex-direction: column;
     gap: 16px;
-    
+
     .table-container {
       background: white;
       border-radius: 8px;

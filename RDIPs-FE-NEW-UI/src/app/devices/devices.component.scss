@@ -1,14 +1,22 @@
 @use "../../styles/variables" as *;
 .devices-container {
+  height: 100vh;
   app-navigation {
     width: 20%;
+    height: 100%;
   }
 
   .devices-area {
     gap: 10px;
     padding: 24px;
-    width: 100%;
+    left: 17rem;
+    width: 75%;
+    position: relative;
 
+    @media screen and (max-width: $screen-small) {
+      left: 0;
+      width: 100%;
+    }
     .home-body {
       display: flex;
       flex-direction: column;
@@ -34,7 +42,7 @@
         flex-direction: row;
         justify-content: space-between;
         align-items: center;
-        
+
         .add-device-button {
           display: flex;
           flex-direction: row;

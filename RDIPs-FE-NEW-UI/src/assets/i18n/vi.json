@@ -67,6 +67,11 @@
         "family": "Gia đình",
         "package": "Gói"
       }
+    },
+    "battery": {
+      "drainText": "Hao hụt: 10%",
+      "maintenanceTitle": "Thiết bị của bạn sắp đến hạn bảo dưỡng",
+      "maintenanceDetail": "Lưu ý: Lượng pin hao hụt trên 20% sẽ gây ảnh hưởng lớn đến pin và thiết bị, vui lòng thay hoặc bảo dưỡng khi lượng pin hao hụt trên 20%"
     }
   },
   "contentBlocks": {}
