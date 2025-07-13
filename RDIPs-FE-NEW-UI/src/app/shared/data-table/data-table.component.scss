@@ -1,0 +1,186 @@
+.data-table-container {
+  background-color: #0C111D;
+  border-radius: 8px;
+  overflow: hidden;
+  
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    
+    .data-table-header {
+      border-color: rgba(31, 36, 47, 1);
+      background-color: rgba(22, 27, 38, 1);
+      color: rgba(148, 150, 156, 1);
+      border: 1px solid rgba(31, 36, 47, 1);
+      padding: 12px 16px;
+      text-align: left;
+      font-weight: 500;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .data-table-row {
+      background-color: #0C111D;
+      border-bottom: 1px solid rgba(31, 36, 47, 0.5);
+      transition: background-color 0.2s ease;
+      
+      &:hover {
+        background-color: rgba(31, 36, 47, 0.3);
+      }
+      
+      .data-table-cell {
+        padding: 16px;
+        color: #FFFFFF;
+        font-size: 14px;
+        border-right: 1px solid rgba(31, 36, 47, 0.3);
+        
+        &:last-child {
+          border-right: none;
+        }
+        
+        .device-info {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          
+          .device-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            
+            &.active { background-color: #8B5CF6; }
+            &.sleep { background-color: #6B7280; }
+            &.warning { background-color: #F59E0B; }
+            &.error { background-color: #EF4444; }
+            &.critical { background-color: #DC2626; }
+          }
+          
+          .device-details {
+            .device-name {
+              color: #FFFFFF;
+              font-weight: 500;
+              margin-bottom: 2px;
+            }
+            .device-id {
+              color: #9CA3AF;
+              font-size: 12px;
+            }
+          }
+        }
+        
+        .progress-container {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          
+          .progress-bar {
+            flex: 1;
+            height: 6px;
+            background-color: rgba(31, 36, 47, 1);
+            border-radius: 3px;
+            overflow: hidden;
+            
+            .progress-fill {
+              height: 100%;
+              border-radius: 3px;
+              transition: width 0.3s ease;
+              
+              &.high { background-color: #10B981; }
+              &.medium { background-color: #F59E0B; }
+              &.low { background-color: #EF4444; }
+            }
+          }
+          
+          .progress-text {
+            color: #9CA3AF;
+            font-size: 12px;
+            min-width: 40px;
+          }
+        }
+        
+        .status-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 4px 8px;
+          border-radius: 12px;
+          font-size: 11px;
+          font-weight: 500;
+          text-transform: uppercase;
+          
+          .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+          }
+          
+          &.active {
+            background-color: rgba(34, 197, 94, 0.15);
+            color: #22C55E;
+            .status-dot { background-color: #22C55E; }
+          }
+          
+          &.sleep {
+            background-color: rgba(107, 114, 128, 0.15);
+            color: #6B7280;
+            .status-dot { background-color: #6B7280; }
+          }
+          
+          &.warning {
+            background-color: rgba(245, 158, 11, 0.15);
+            color: #F59E0B;
+            .status-dot { background-color: #F59E0B; }
+          }
+          
+          &.error {
+            background-color: rgba(239, 68, 68, 0.15);
+            color: #EF4444;
+            .status-dot { background-color: #EF4444; }
+          }
+          
+          &.critical {
+            background-color: rgba(220, 38, 38, 0.15);
+            color: #DC2626;
+            .status-dot { background-color: #DC2626; }
+          }
+        }
+        
+        .metric-value {
+          color: #FFFFFF;
+          font-weight: 500;
+          
+          &.positive { color: #22C55E; }
+          &.negative { color: #EF4444; }
+        }
+        
+        .action-buttons {
+          display: flex;
+          gap: 8px;
+          
+          .action-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 6px;
+            background-color: rgba(31, 36, 47, 0.5);
+            color: #9CA3AF;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            
+            &:hover {
+              background-color: rgba(31, 36, 47, 0.8);
+              color: #FFFFFF;
+            }
+          }
+        }
+      }
+    }
+  }
+}

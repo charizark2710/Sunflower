@@ -3,7 +3,7 @@
     <thead>
       <tr>
         <th *ngFor="let column of columns" class="data-table-header">
-          {{ column.label | translate }}
+          {{ column.label }}
         </th>
       </tr>
     </thead>
@@ -14,12 +14,12 @@
           
           <!-- Device Info Display -->
           <div *ngIf="column.type === 'device-info'" class="device-info">
-            <div class="device-icon" [ngClass]="getStatusClass(element['status'])">
+            <div class="device-icon" [ngClass]="getStatusClass(element.status)">
               <i class="fas fa-desktop"></i>
             </div>
             <div class="device-details">
-              <div class="device-name">{{ element['name'] }}</div>
-              <div class="device-id">{{ element['email'] || element['username'] || element['id'] }}</div>
+              <div class="device-name">{{ element.name }}</div>
+              <div class="device-id">{{ element.email || element.username || element.id }}</div>
             </div>
           </div>
           
@@ -27,25 +27,25 @@
           <div *ngIf="column.type === 'progress'" class="progress-container">
             <div class="progress-bar">
               <div class="progress-fill" 
-                   [ngClass]="getProgressClass(element['progress'])"
-                   [style.width.%]="element['progress'] || 60">
+                   [ngClass]="getProgressClass(element.progress)"
+                   [style.width.%]="element.progress || 60">
               </div>
             </div>
-            <span class="progress-text">{{ element['progress'] || 60 }}%</span>
+            <span class="progress-text">{{ element.progress || 60 }}%</span>
           </div>
           
           <!-- Status Badge Display -->
-          <div *ngIf="column.type === 'status'" class="status-badge" [ngClass]="getStatusClass(element['status'])">
+          <div *ngIf="column.type === 'status'" class="status-badge" [ngClass]="getStatusClass(element.status)">
             <div class="status-dot"></div>
-            {{ getStatusText(element['status']) }}
+            {{ getStatusText(element.status) }}
           </div>
           
           <!-- Action Buttons Display -->
           <div *ngIf="column.type === 'actions'" class="action-buttons">
-            <button class="action-btn" title="Delete" (click)="deleteItem(element)">
+            <button class="action-btn" title="Delete" (click)="onDelete(element)">
               <img src="assets/icons/trash.svg" alt="Delete" width="16" height="16">
             </button>
-            <button class="action-btn" title="Edit" (click)="editItem(element)">
+            <button class="action-btn" title="Edit" (click)="onEdit(element)">
               <img src="assets/icons/edit.svg" alt="Edit" width="16" height="16">
             </button>
           </div>
@@ -61,4 +61,3 @@
     </tbody>
   </table>
 </div>
-

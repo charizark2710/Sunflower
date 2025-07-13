@@ -6,9 +6,21 @@
     <app-breadcrumb [title]="'labels.menu.listDevices'"></app-breadcrumb>
     <div class="home-body">
       <app-device-activity-statistic></app-device-activity-statistic>
-      <div class="device-banner">Thiết bị của tôi</div>
+      <div class="device-banner">
+        <app-text-group
+          [title]="'labels.device.mydevice'"
+          [description]="'labels.device.description'"
+        ></app-text-group>
+        <button class="add-device-button">
+          <div class="add-device-icon"></div>
+          <div>{{ 'labels.device.addDevice' | translate }}</div>
+        </button>
+      </div>
       <div class="device-table">
-        <app-data-table></app-data-table>
+        <app-data-table 
+          [columns]="tableColumns"
+          [dataSource]="deviceListData">
+        </app-data-table>
       </div>
     </div>
   </div>

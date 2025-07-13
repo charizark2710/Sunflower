@@ -2,5 +2,20 @@
   <div class="navigation-area">
     <app-navigation></app-navigation>
   </div>
-  <div class="campain-area">campaign works</div>
+  <div class="content-area flex flex-col flex-1 p-6 bg-gray-50">
+    <app-breadcrumb [title]="'labels.menu.campaign'"></app-breadcrumb>
+    <div class="main-content bg-white rounded-lg shadow-sm p-6">
+      <div class="table-container">
+        <app-data-table 
+          [columns]="tableColumns" 
+          [dataSource]="campaignListData"
+          [showDeviceInfo]="false"
+          [showProgress]="false"
+          [showActions]="true"
+          (onEdit)="onEdit($event)"
+          (onDelete)="onDelete($event)">
+        </app-data-table>
+      </div>
+    </div>
+  </div>
 </div>

@@ -1,4 +1,4 @@
-@import "../../styles/variables";
+@use "../../styles/variables" as *;
 .home-container {
   app-navigation {
     width: 20%;
@@ -13,14 +13,14 @@
       display: flex;
       flex-direction: column;
       gap: 50px;
+      app-device-activity-statistic {
+        margin-top: 30px;
+      }
       .card-container {
         display: flex;
         gap: 24px;
         height: max-content;
 
-        app-device-activity-statistic {
-          margin-top: 30px;
-        }
         @media screen and (max-width: $screen-medium) {
           flex-direction: column;
         }

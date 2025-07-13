@@ -26,9 +26,48 @@
       "chart.timeActivity.title": "Tổng thời lượng hoạt động",
       "chart.timeActivity.description": "Thời lượng các thiết bị của bạn là 80%"
     },
+    "device": {
+      "mydevice": "Thiết bị của tôi",
+      "description": "Kiếm tra và bảo hành máy móc thường xuyên sẽ đem lại hiệu suất cao nhất",
+      "addDevice": "Thêm thiết bị"
+    },
+    "dashboard": {
+      "card": {
+        "totalNewUser": "Số lượng người dùng mới",
+        "totalNewDevice": "Tổng số lượng thiết bị mới được",
+        "totalActivityTime": "Tổng thời gian hoạt động"
+      }
+    },
     "dashboard.card.totalNewUser": "Số lượng người dùng mới",
     "dashboard.card.totalNewDevice": "Tổng số lượng thiết bị mới được ",
-    "dashboard.card.totalActivityTime": "Tổng thời gian hoạt động "
+    "dashboard.card.totalActivityTime": "Tổng thời gian hoạt động ",
+    "table": {
+      "columns": {
+        "device": "Thiết bị",
+        "progress": "Tiến độ",
+        "username": "Tên người dùng",
+        "region": "Khu vực",
+        "lifetime": "Thời gian sống",
+        "status": "Trạng thái",
+        "actions": "Hành động",
+        "stt": "STT",
+        "userName": "Tên người dùng",
+        "address": "Địa chỉ",
+        "phoneNumber": "Số điện thoại",
+        "email": "Email",
+        "type": "Loại",
+        "totalDevices": "Tổng thiết bị",
+        "adminName": "Tên quản trị viên",
+        "role": "Vai trò",
+        "authentication": "Xác thực",
+        "historyActive": "Lịch sử hoạt động",
+        "memberUser": "Thành viên/Người dùng",
+        "planFee": "Phí kế hoạch",
+        "element": "Yếu tố",
+        "family": "Gia đình",
+        "package": "Gói"
+      }
+    }
   },
   "contentBlocks": {}
 }

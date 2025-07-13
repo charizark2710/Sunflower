@@ -1,5 +1,6 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, ViewChild, ElementRef, AfterViewInit, Inject, PLATFORM_ID } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
+import { isPlatformBrowser } from '@angular/common';
 import Chart from 'chart.js/auto';
 
 @Component({
@@ -8,24 +9,46 @@ import Chart from 'chart.js/auto';
   templateUrl: './bar-chart.component.html',
   styleUrl: './bar-chart.component.scss',
 })
-export class BarChartComponent implements OnInit {
+export class BarChartComponent implements OnInit, AfterViewInit {
   chart: any;
   @Input() titleChart: string = 'labels.chart.title';
   @Input() legendChart: string = 'labels.chart.legend';
+  @ViewChild('chartCanvas', { static: false }) chartCanvas!: ElementRef<HTMLCanvasElement>;
 
-  constructor(private translateService: TranslateService) {}
+  constructor(
+    private translateService: TranslateService,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {}
 
   ngOnInit(): void {
-    this.createChart();
+  }
+
+  ngAfterViewInit(): void {
+    // Only create chart in browser environment
+    if (isPlatformBrowser(this.platformId)) {
+      setTimeout(() => {
+        this.createChart();
+      }, 100);
+    }
   }
 
   createChart() {
+    // Double-check we're in browser environment
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+    
+    if (!this.chartCanvas?.nativeElement) {
+      console.warn('Chart canvas not available');
+      return;
+    }
+
     const titleChartConverted = this.translateService.instant(this.titleChart);
     const legendChartConverted = this.translateService.instant(
       this.legendChart
     );
 
-    this.chart = new Chart('MyChart', {
+    this.chart = new Chart(this.chartCanvas.nativeElement, {
       type: 'bar', //this denotes tha type of chart
       data: {
         // values on X-Axis

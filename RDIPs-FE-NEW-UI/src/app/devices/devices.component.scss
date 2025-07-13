@@ -1,4 +1,4 @@
-@import "../../styles/variables";
+@use "../../styles/variables" as *;
 .devices-container {
   app-navigation {
     width: 20%;
@@ -29,8 +29,33 @@
         }
       }
 
-      .device-banner, .device-table {
-        // width: 100%;
+      .device-banner {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        
+        .add-device-button {
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          gap: 10px;
+          color: rgba(245, 245, 246, 1);
+          background-color: rgba(127, 86, 217, 1);
+          border-radius: 10px;
+          border: 0px;
+          width: max-content;
+          padding: 10px 20px;
+          height: 40px;
+          cursor: pointer;
+
+          .add-device-icon {
+            background-image: url("/assets/icons/plus-white.svg");
+            background-repeat: no-repeat;
+            width: 20px;
+            height: 20px;
+          }
+        }
       }
     }
   }

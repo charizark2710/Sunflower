@@ -2,5 +2,17 @@
   <div class="navigation-area">
     <app-navigation></app-navigation>
   </div>
-  <div class="dashboard-area">USER works</div>
+  <div class="users-area">
+    <app-breadcrumb [title]="'labels.menu.listUsers'"></app-breadcrumb>
+    <div class="home-body">
+      <div class="users-table">
+        <app-data-table 
+          [columns]="tableColumns" 
+          [dataSource]="userListData"
+          (onEdit)="onEdit($event)"
+          (onDelete)="onDelete($event)">
+        </app-data-table>
+      </div>
+    </div>
+  </div>
 </div>
