@@ -122,9 +122,10 @@ var Callback = func(c *commonModel.ServiceContext) (commonModel.ResponseTemplate
 		if err != nil {
 			if err == memcache.ErrNotStored {
 				utils.Log(LogConstant.Warning, err)
-				commonModel.CacheSrv.Delete(sub)
+				ip := c.Ctx.ClientIP()
+				commonModel.CacheSrv.Delete(ip + "#" + sub)
 				err = commonModel.CacheSrv.Add(&memcache.Item{
-					Key:        sub,
+					Key:        ip + "#" + sub,
 					Value:      []byte(refreshToken),
 					Expiration: 30 * 60,
 				})

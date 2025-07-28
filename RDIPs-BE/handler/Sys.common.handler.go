@@ -18,9 +18,10 @@ type CommonHandler interface {
 }
 
 type commonHandler struct {
-	context context.Context
-	db      *gorm.DB
-	mongoDB *mongo.Database
+	context    context.Context
+	db         *gorm.DB
+	mongoDB    *mongo.Database
+	deviceBody interface{}
 }
 
 func newCommonHandler(c *gin.Context) CommonHandler {

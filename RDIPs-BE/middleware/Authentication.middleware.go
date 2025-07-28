@@ -50,7 +50,8 @@ func Validation() gin.HandlerFunc {
 				return
 			}
 			if isTokenExpired(claims) {
-				refreshToken, err := model.CacheSrv.Get(sub)
+				ip := c.ClientIP()
+				refreshToken, err := model.CacheSrv.Get(ip + "#" + sub)
 				if err != nil {
 					utils.Log(LogConstant.Error, err)
 					c.AbortWithStatusJSON(http.StatusUnauthorized, err)
@@ -99,6 +100,7 @@ func CheckClientTokenValidation() gin.HandlerFunc {
 			err := getTokenAdmin(c.Request.Context(), c)
 			if err != nil {
 				c.AbortWithError(http.StatusInternalServerError, err)
+				wg.Done()
 				return
 			}
 		}

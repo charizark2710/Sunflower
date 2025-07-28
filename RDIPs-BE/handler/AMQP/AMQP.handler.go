@@ -179,7 +179,7 @@ func ReceiveService(deliveries <-chan amqp091.Delivery) {
 					deliveryMode = amqp091.Transient
 				}
 				// Response to the request device
-				go messageHandler.Send(delivery.Exchange, response, deliveryMode, header["Correlation-Id"][0], routingKeyArr[1])
+				go messageHandler.Send(delivery.Exchange, response, deliveryMode, header["Correlation-Id"][0], "", routingKeyArr[1])
 			}
 		}
 

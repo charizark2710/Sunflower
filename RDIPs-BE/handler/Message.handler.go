@@ -17,7 +17,7 @@ import (
 var rabbitPool *connection.Pool
 
 type MessageHandler interface {
-	Send(exchange string, body interface{}, deliveryMode uint8,
+	Send(exchange string, body interface{}, deliveryMode uint8, replyTo string,
 		correlationID string, routingKeyArgs ...string) error
 }
 
@@ -27,7 +27,7 @@ func NewMessageHandler() MessageHandler {
 	return &messageStruct{}
 }
 
-func (m *messageStruct) Send(exchange string, body interface{}, deliveryMode uint8, correlationID string, routingKeyArgs ...string) error {
+func (m *messageStruct) Send(exchange string, body interface{}, deliveryMode uint8, replyTo string, correlationID string, routingKeyArgs ...string) error {
 	routingKey := m.generateRoutingKey(routingKeyArgs...)
 	utils.Log(LogConstant.Info, "Sending message to ", exchange, "with ", routingKey)
 	conn, ctx, err := rabbitPool.Get()
@@ -50,6 +50,7 @@ func (m *messageStruct) Send(exchange string, body interface{}, deliveryMode uin
 			DeliveryMode: deliveryMode,
 			ContentType:  "text/plain",
 			Body:         message,
+			ReplyTo:      correlationID,
 			Headers:      amqp091.Table{"Correlation-ID": correlationID},
 		})
 		utils.Log(LogConstant.Info, "Finish sending message to ", exchange, "with ", routingKey)
