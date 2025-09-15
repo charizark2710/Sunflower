@@ -1,0 +1,14 @@
+/* You can add global styles to this file, and also import other style files */
+@use './styles/variables' as *;
+@import './tailwind-config.css';
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: #0C111D;
+  font-family: 'Verdana';
+  color: $accent-color;
+}
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

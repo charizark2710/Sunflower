@@ -1,0 +1,158 @@
+@use "../../../styles/variables" as *;
+.navi-container {
+  position: fixed;
+  min-width: 12rem;
+  height: 100vh; // Use full viewport height
+  padding: 30px 15px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; // Prevent scrolling in navigation
+  box-sizing: border-box;
+  @media screen and (max-width: $screen-small) {
+    display: none;
+  }
+
+  .sunflower-logo {
+    gap: 10px;
+    cursor: pointer;
+
+    .sunflower-icon {
+      width: 28px;
+      height: 28px;
+      background-image: url("/assets/icons/sunflower.svg");
+    }
+  }
+
+  .nav-body {
+    flex: 1; // Takes up remaining space after logo
+    display: flex;
+    flex-direction: column;
+    
+    .main-menu-section {
+      flex: 1; // Takes up remaining space
+      
+      .menu-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        margin-top: 20px;
+
+        .menu-item {
+          color: $accent-color;
+          font-size: $font-size-md;
+          font-weight: $font-weight-medium;
+          gap: 10px;
+          text-decoration: none;
+          border-radius: 5px;
+          padding: 10px 15px;
+          .menu-icon {
+            width: 22px;
+            height: 22px;
+          }
+
+          &:hover {
+            background-color: $accent-color-hover;
+            cursor: pointer;
+          }
+
+          &.active {
+            background-color: $accent-color-hover;
+            font-weight: bold;
+          }
+        }
+      }
+    }
+    
+    .bottom-menu-section {
+      margin-top: auto; // Pushes this section to the bottom
+      
+      .menu-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        margin-top: 10px; // Smaller margin for bottom section
+
+        .menu-item {
+          color: $accent-color;
+          font-size: $font-size-md;
+          font-weight: $font-weight-medium;
+          gap: 10px;
+          text-decoration: none;
+          border-radius: 5px;
+          padding: 10px 15px;
+          .menu-icon {
+            width: 22px;
+            height: 22px;
+          }
+
+          &:hover {
+            background-color: $accent-color-hover;
+            cursor: pointer;
+          }
+
+          &.active {
+            background-color: $accent-color-hover;
+            font-weight: bold;
+          }
+        }
+      }
+    }
+  }
+
+  .nav-footer {
+    display: flex;
+    justify-content: space-between;
+    border-top: 1px solid $border-grey-color;
+    margin-top: 10px;
+    padding: 15px 5px 0px 5px;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    gap: 10px;
+    text-decoration: none;
+
+    .nav-footer_left {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      align-items: center;
+
+      &:hover {
+        cursor: pointer;
+      }
+
+      .avt-box {
+        width: 36px;
+        height: 36px;
+        background-image: url("/assets/icons/avatar.svg");
+        border: 1px solid $border-grey-color;
+        border-radius: 50%;
+      }
+
+      .name-box {
+        .name_user-name {
+          font-size: $font-size-md;
+          font-weight: $font-weight-medium;
+        }
+
+        .name_email {
+          font-size: $font-size-sm;
+          color: $text-small-color;
+          font-weight: $font-weight-regular;
+        }
+      }
+    }
+
+    .nav-footer_right {
+      .logout-icon {
+        width: 36px;
+        height: 36px;
+        background-image: url("/assets/icons/logout.svg");
+
+        &:hover {
+          background-color: $accent-color-hover;
+          cursor: pointer;
+        }
+      }
+    }
+  }
+}

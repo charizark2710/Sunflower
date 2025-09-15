@@ -21,6 +21,7 @@ const (
 var logicOperator = map[string]string{AndOp: "&&", OrOp: "||"}
 
 // Middleware for filter
+// Filter by value ofinput fieldName
 // format: filterBy=encodeURL(name==abc&&type==common||app_ver!=2&&firware_ver!=1)
 // Filter Logic is (name == abc && type == common) || (app_ver != 2 && firmware_ver != 1)
 // Ex: filterBy=name%3D%3Dabc%26type%3D%3Dcommon%7C%7Capp_ver%21%3D2%26firware_ver%21%3D1
@@ -43,13 +44,12 @@ func SetFilter() gin.HandlerFunc {
 }
 
 func handleOrLogic(filter string) string {
-	var result string
 	orStatements := strings.Split(filter, logicOperator[OrOp])
-	for _, orStatement := range orStatements {
-		result += handleAndLogic(orStatement)
-		result += " " + OrOp + " "
+	var result = make([]string, len(orStatements))
+	for i, orStatement := range orStatements {
+		result[i] = "(" + handleAndLogic(orStatement) + ")"
 	}
-	return strings.TrimSuffix(result, " "+OrOp+" ")
+	return strings.Join(result, " "+OrOp+" ")
 }
 
 func handleAndLogic(filter string) string {

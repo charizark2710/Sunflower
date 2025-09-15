@@ -1,0 +1,158 @@
+@use "../../../styles/variables" as *;
+
+
+  .home-device-list {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    width: 100%;
+
+    .border-rounded {
+      border-radius: 10px;
+      border: 1px solid $border-grey-color;
+
+      .upper-box {
+        display: flex;
+        justify-content: space-between;
+        border-bottom: 1px solid $border-grey-color;
+        padding: 30px 30px;
+        font-size: $font-size-sm;
+        font-weight: $font-weight-medium;
+        min-height: 58px;
+
+        .upper-box_left {
+          display: flex;
+          gap: 15px;
+          justify-content: center;
+          align-items: center;
+
+          &:hover {
+            cursor: pointer;
+          }
+
+          .home-chart-act-title {
+            .act-title {
+              margin-bottom: 5px;
+              font-size: $font-size-md;
+              font-weight: $font-weight-medium;
+            }
+
+            .act-description {
+              font-size: $font-size-sm;
+              color: $text-small-color;
+              font-weight: $font-weight-regular;
+            }
+          }
+        }
+
+        .upper-box_right {
+          .three-dot-icon {
+            width: 20px;
+            height: 20px;
+            background-image: url("/assets/icons/three-dots.svg");
+
+            &:hover {
+              background-color: $accent-color-hover;
+              cursor: pointer;
+            }
+          }
+        }
+      }
+    }
+    .home-device-chart-left {
+      width: 66%;
+
+      .home-activity {
+        display: flex;
+        gap: 10px;
+        text-decoration: none;
+
+        .upper-box_left {
+          .home-avt-box-out {
+            border: 1px solid $border-grey-color;
+            border-radius: 50%;
+            .home-avt-box {
+              width: 56px;
+              height: 56px;
+            }
+          }
+        }
+      }
+
+      .home-bar-chart {
+        padding: 20px;
+      }
+    }
+    .home-device-chart-right {
+      width: 32%;
+
+      .pin-remaining {
+        padding: 20px;
+
+        .battery-status-container {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+
+          .circular-progress {
+            position: relative;
+            display: flex;
+            flex-direction: row;
+            margin-bottom: 20px;
+
+            .progress-circle {
+              height: 100px;
+            }
+
+            .battery-drain-indicator {
+              gap: 2px;
+              color: rgba(71, 205, 137, 1);
+              font-size: 11px;
+              display: flex;
+              justify-content: flex-start;
+              align-items: flex-start;
+            }
+          }
+
+          .battery-description {
+            .battery-title {
+              color: white;
+              font-size: $font-size-md;
+              font-weight: $font-weight-medium;
+              margin-bottom: 10px;
+              line-height: 1.4;
+            }
+
+            .battery-detail {
+              color: $text-small-color;
+              font-size: $font-size-sm;
+              font-weight: $font-weight-regular;
+              line-height: 1.5;
+              margin: 0;
+            }
+          }
+        }
+      }
+    }
+
+    @media screen and (max-width: $screen-medium) {
+      flex-direction: column;
+      .home-device-chart-left,
+      .home-device-chart-right {
+        width: 100%;
+      }
+      
+      .home-device-chart-right .pin-remaining .battery-status-container {
+        .circular-progress .progress-circle {
+          width: 120px;
+          height: 70px;
+          
+          .progress-text {
+            font-size: 1.8rem;
+            top: 30px;
+          }
+        }
+      }
+    }
+  }

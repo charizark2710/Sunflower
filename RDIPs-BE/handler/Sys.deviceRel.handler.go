@@ -22,8 +22,10 @@ func NewDeviceRelHandler(c *gin.Context, deviceRelModel *model.SysDeviceRel) Dev
 	return &deviceRelHandler{commonHandler: commonStruct, deviceRelBody: deviceRelModel}
 }
 
-func (dRel *deviceRelHandler) GetById(deviceId string, deviceRelResponse interface{}) error {
-	return dRel.db.Where("device_id = ?", deviceId).First(deviceRelResponse).Preload("sys_history", func(db *gorm.DB) *gorm.DB {
-		return db.Order("sunflower.sys_history.log_path Desc").Limit(1)
-	}).Error
+func (dRel *deviceRelHandler) GetById(deviceId string, deviceRelResponse interface{}, opts ...map[string]interface{}) error {
+	return dRel.db.Where("device_id = ?", deviceId).First(deviceRelResponse).
+		Preload("sys_history", func(db *gorm.DB) *gorm.DB {
+			return db.Order("sunflower.sys_history.log_path Desc").Limit(1)
+		}).
+		Preload("sys_performance").Error
 }

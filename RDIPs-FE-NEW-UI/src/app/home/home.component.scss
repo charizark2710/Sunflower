@@ -1,0 +1,47 @@
+@use "../../styles/variables" as *;
+.home-container {
+  height: 100vh;
+
+  app-navigation {
+    width: 20%;
+    height: 100%;
+  }
+
+  .dashboard-area {
+    gap: 10px;
+    padding: 24px;
+    left: 17rem;
+    width: 75%;
+    position: relative;
+
+    @media screen and (max-width: $screen-small) {
+      left: 0;
+      width: 100%;
+    }
+
+    .home-body {
+      display: flex;
+      flex-direction: column;
+      gap: 50px;
+      app-device-activity-statistic {
+        margin-top: 30px;
+      }
+      .card-container {
+        display: flex;
+        gap: 24px;
+        height: max-content;
+
+        @media screen and (max-width: $screen-medium) {
+          flex-direction: column;
+        }
+
+        .card-detail {
+          width: 33%;
+          @media screen and (max-width: $screen-medium) {
+            width: 100%;
+          }
+        }
+      }
+    }
+  }
+}

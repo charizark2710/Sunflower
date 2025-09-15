@@ -28,7 +28,7 @@ func (h *historyHandler) Create() error {
 	return h.db.Save(&historyObj).Error
 }
 
-func (h *historyHandler) GetById(id string, historyResponse interface{}) error {
+func (h *historyHandler) GetById(id string, historyResponse interface{}, opts ...map[string]interface{}) error {
 	return h.db.Where("id = ?", id).First(historyResponse).Error
 }
 

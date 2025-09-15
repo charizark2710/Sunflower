@@ -1,0 +1,46 @@
+.box {
+  gap: 24px;
+  padding: 24px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: left;
+  background: rgba(22, 27, 38, 1);
+  border-radius: 10px;
+  height: 100%;
+
+  .box-left {
+    .card-image {
+      width: 120px;
+      height: 120px;
+      background-image: url("/assets/images/pie-chart.svg");
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+  }
+
+  .box-right {
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+    gap: 50px;
+    width: 100%;
+    .data {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      .data-value {
+        font-size: 24px;
+        font-weight: 600;
+      }
+
+      .data-unit {
+        font-size: 16px;
+        font-weight: 500;
+        color: rgba(71, 205, 137, 1);
+      }
+    }
+  }
+}

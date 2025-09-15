@@ -1,0 +1,21 @@
+<div class="breadcumb-container flex flex-row justify-between align-center">
+  <div class="page-title">
+    {{ title | translate }}
+  </div>
+  <div class="button-clutter flex flex-row justify-between align-center">
+    <div
+      class="button button-cus flex flex-row justify-between align-center gap-[10px] text-align-center"
+      (click)="customizeClicked($event)"
+    >
+      <div class="customize"></div>
+      <div>{{ "labels.button.customize" | translate }}</div>
+    </div>
+    <div
+      class="button button-exp flex flex-row justify-between align-center gap-[10px] text-align-center"
+      (click)="exportClicked($event)"
+    >
+      <div class="export"></div>
+      <div>{{ "labels.button.export" | translate }}</div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,84 @@
+{
+  "labels": {
+    "app": {
+      "name": "SUNFLOWER"
+    },
+    "menu": {
+      "home": "Home",
+      "listDevices": "List Device",
+      "listUsers": "List Users",
+      "listAdmins": "List Admins",
+      "campaign": "Campaign",
+      "support": "Support",
+      "settings": "Settings"
+    },
+    "button": {
+      "customize": "Customize",
+      "export": "Export"
+    },
+    "chart": {
+      "title": "Energy Rate",
+      "legend": "My Devices"
+    },
+    "device": {
+      "mydevice": "My Devices",
+      "description": "Check your device frequently to ensure it is working properly.",
+      "addDevice": "Add Device",
+      "editDevice": "Edit Device",
+      "updateDevice": "Update Device",
+      "deviceName": "Device Name",
+      "deviceNamePlaceholder": "Enter device name",
+      "deviceType": "Device Type",
+      "selectType": "Select device type",
+      "deviceRegion": "Region",
+      "selectRegion": "Select region",
+      "deviceStatus": "Status"
+    },
+    "dashboard": {
+      "card": {
+        "totalNewUser": "Total New Users",
+        "totalNewDevice": "Total New Devices", 
+        "totalActivityTime": "Total Time Activity"
+      }
+    },
+    "dashboard.card.totalNewUser": "Total New Users",
+    "dashboard.card.totalNewDevice": "Total New Devices",
+    "dashboard.card.totalActivityTime": "Total Time Activity",
+    "table": {
+      "columns": {
+        "device": "Device",
+        "progress": "Progress",
+        "username": "Username",
+        "region": "Region",
+        "lifetime": "Lifetime",
+        "status": "Status",
+        "actions": "Actions",
+        "stt": "No.",
+        "userName": "User Name",
+        "address": "Address",
+        "phoneNumber": "Phone",
+        "email": "Email",
+        "type": "Type",
+        "totalDevices": "Total Devices",
+        "adminName": "Admin Name",
+        "role": "Role",
+        "authentication": "Authentication",
+        "historyActive": "History Active",
+        "memberUser": "Member/User",
+        "planFee": "Plan Fee",
+        "element": "Element",
+        "family": "Family",
+        "package": "Package"
+      }
+    },
+    "battery": {
+      "drainText": "Battery drain: 10%",
+      "maintenanceTitle": "Your device is due for maintenance",
+      "maintenanceDetail": "Note: Battery drain over 20% will greatly affect the battery and device, please replace or maintain when battery drain exceeds 20%"
+    },
+    "common": {
+      "cancel": "Cancel"
+    }
+  },
+  "contentBlocks": {}
+}

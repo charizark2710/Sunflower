@@ -17,9 +17,11 @@ func InitRouter(router *gin.Engine) {
 	router.Use(middleware.Validation())
 	router.Use(middleware.ValidatorMiddleware())
 	router.Use(middleware.SetFilter())
+	router.Use(middleware.SetSort())
 	DevicesRouter(router)
 	PerformanceRouter(router)
 	HistoryRouter(router)
 	WeatherRouter(router)
 	KeycloakRouter(router)
+	MessageRouter(router)
 }

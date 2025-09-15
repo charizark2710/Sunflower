@@ -5,8 +5,8 @@ WORKDIR /sunflower
 # pre-copy/cache go.mod for pre-downloading dependencies and only redownloading them in subsequent builds if they change
 COPY go.mod go.sum ./
 RUN go mod download && go mod verify
-RUN useradd -ms /bin/bash sunflower
-RUN groupadd -f rdips
+RUN useradd -u 1000 -ms /bin/bash sunflower
+RUN groupadd -f rdips -g 1000
 RUN chown -R sunflower:rdips /sunflower
 RUN chmod -R gu+rwx /sunflower
 

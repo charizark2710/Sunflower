@@ -1,0 +1,347 @@
+services:
+  keycloak:
+    container_name: "keycloak"
+    restart: unless-stopped
+    env_file:
+      - .env
+    image: charizark2710/sunflower-keycloak
+    # command: bash -c "while :; do echo 'Hit CTRL+C'; sleep 1; done"
+    command: [ "start", "--import-realm", "--verbose", "--hostname-strict=false", "--hostname=${KEYCLOAK_AUTHEN_URL}", "--https-certificate-file=/opt/keycloak/certs/rootCA.crt", "--https-certificate-key-file=/opt/keycloak/certs/rootCA.key" ]
+    environment:
+      - KC_DB=postgres
+      - KC_DB_URL=jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/keycloak
+      - KC_DB_URL_HOST=${POSTGRES_HOST}
+      - KC_DB_URL_PORT=${POSTGRES_PORT}
+      - KC_DB_USERNAME=${POSTGRES_USER}
+      - KC_DB_PASSWORD=${POSTGRES_PASSWORD}
+      - KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN}
+      - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
+      - KC_HOSTNAME_URL=${KEYCLOAK_AUTHEN_URL}
+      - KC_HOSTNAME_ADMIN_URL=${KEYCLOAK_AUTHEN_URL}
+    # ports:
+    #   - '9000:8080'
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'curl --head -fsS https://localhost:8443 --insecure'
+        ]
+      retries: 5
+      start_period: 20s
+    networks:
+      pi4:
+        aliases:
+          - auth.sunflower-rdips
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+      endpoint_mode: dnsrr
+    secrets:
+      - source: rootCA_key
+        target: /opt/keycloak/certs/rootCA.key
+        uid: '1000'
+        mode: 400
+      - source: rootCA_cert
+        target: /opt/keycloak/certs/rootCA.crt
+        uid: '1000'
+        mode: 400
+    # volumes:
+    #   - keycloak:/opt
+
+  rabbitmq:
+    container_name: "rabbitmq"
+    restart: unless-stopped
+    # command: tail -F /dev/null
+    image: charizark2710/sunflower-rabbitmq
+    env_file:
+      - .env
+    environment:
+      - RABBITMQ_ERLANG_COOKIE=/var/lib/rabbitmq/.erlang.cookie
+      - RABBITMQ_CONFIG_FILES=/etc/rabbitmq/${BROKER_PROTOCOL}/rabbitmq.conf
+      - RABBITMQ_MNESIA_BASE=/data/mnesia
+      - RABBITMQ_LOG_BASE=/data/log
+      - RABBITMQ_ENABLED_PLUGINS_FILE=/etc/rabbitmq/enabled_plugins
+      - RABBITMQ_DEFAULT_USER=${BROKER_USER}
+      - RABBITMQ_DEFAULT_PASS=${BROKER_PASSWORD}
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      timeout: 30s
+      retries: 3
+    networks:
+      pi4:
+        aliases:
+          - amqp-management.sunflower-rdips
+          - mqtt.sunflower-rdips
+          - amqp.sunflower-rdips
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+      endpoint_mode: dnsrr
+    secrets:
+      - source: rootCA_key
+        target: /opt/rabbitmq/certs/rootCA.key
+        gid: '1000'
+        mode: 440
+      - source: rootCA_cert
+        target: /opt/rabbitmq/certs/rootCA.crt
+        gid: '1000'
+        mode: 440
+      - source: client_key
+        target: /opt/rabbitmq/certs/client.key
+        gid: '1000'
+        mode: 440
+      - source: client_cert
+        target: /opt/rabbitmq/certs/client.crt
+        gid: '1000'
+        mode: 440
+
+  # gateway:
+  #   container_name: "gateway"
+  #   # Maybe there some memory leak that prevent docker to excute command so this is good for now
+  #   # entrypoint: ["./bin/RDIPs-Gateway"]
+  #   entrypoint: ["tail", "-f", "/dev/null"]
+  #   build:
+  #     context: ./RDIPs-Gateway
+  #     dockerfile: Gateway.Dockerfile
+  #   env_file:
+  #     - .env
+  #   ports:
+  #     - '8080:8080'
+  #   volumes:
+  #     - './RDIPs-Gateway:/var/lib/gateway'
+  #   # command: ["/bin/sh", "-c", "tail -F /dev/null"]
+  #   networks:
+  #     pi4:
+  #       aliases:
+  #         - sfBroker
+  db:
+    container_name: postgres
+    env_file:
+      - .env
+    image: charizark2710/sunflower-db
+    restart: unless-stopped
+    # ports:
+    #   - target: ${POSTGRES_PORT}
+    #     published: ${POSTGRES_PORT}
+    #     protocol: tcp
+    #     mode: host
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "sh -c 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}'"
+        ]
+      timeout: 60s
+      retries: 5
+      start_period: 80s
+    depends_on:
+      - migration
+    # volumes:
+    #   - db:/var/lib/postgresql/data
+    networks:
+      pi4:
+        aliases:
+          - sunflower-rdips
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+      endpoint_mode: dnsrr
+
+  mongo:
+    image: mongo:8.0.0-rc15
+    restart: unless-stopped
+    env_file:
+      - .env
+    # ports:
+    #   - target: 27017
+    #     published: 27017
+    #     protocol: tcp
+    #     mode: host
+    healthcheck:
+      test: ["CMD","mongosh", "--eval", "db.adminCommand('ping')"]
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    networks:
+      pi4:
+        aliases:
+          - sunflower-mongo
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+      endpoint_mode: dnsrr
+
+  pgadmin:
+    container_name: pgadmin4
+    image: dpage/pgadmin4
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "9090:80"
+    # volumes:
+    #   - pgadmin:/var/lib/pgadmin
+    networks:
+      pi4:
+        aliases:
+          - sunflower
+
+  memcached:
+    image: 'bitnami/memcached:latest'
+    restart: unless-stopped
+    # ports:
+    #   - target: 11211
+    #     published: 11211
+    #     protocol: tcp
+    #     mode: host
+    networks:
+      pi4:
+        aliases:
+          - cacheSrv
+    healthcheck:
+      test: "/bin/nc -z 127.0.0.1 11211"
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+      endpoint_mode: dnsrr
+
+  api:
+    container_name: sunflower_api
+    env_file:
+      - .env
+    image: charizark2710/sunflower-api
+    healthcheck:
+      test: curl -f localhost:${API_PORT}
+      timeout: 30s
+      retries: 5
+    # ports:
+    #   - '8080:8080'
+    # volumes:
+    #   - './RDIPs-BE:/srv/www/volume_sunflower'
+    networks:
+      pi4:
+        aliases:
+          - sunflower-rdips
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+    secrets:
+      - source: rootCA_key
+        target: /sunflower/certs/rootCA.key
+        gid: '1000'
+        mode: 440
+      - source: rootCA_cert
+        target: /sunflower/certs/rootCA.crt
+        gid: '1000'
+        mode: 440
+      - source: client_key
+        target: /sunflower/certs/client.key
+        gid: '1000'
+        mode: 440
+      - source: client_cert
+        target: /sunflower/certs/client.crt
+        gid: '1000'
+        mode: 440
+    environment:
+      - CONSUMER_PRIORITY=10
+
+  api_bk:
+    container_name: sunflower_api_bk
+    restart: on-failure:3
+    # command: tail -F /dev/null
+    env_file:
+      - .env
+    image: charizark2710/sunflower-api
+    # volumes:
+    #   - './RDIPs-BE:/srv/www/volume_sunflower'
+    networks:
+      pi4:
+        aliases:
+          - sunflower-rdips
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+    secrets:
+      - source: rootCA_key
+        target: /sunflower/certs/rootCA.key
+        gid: '1000'
+        mode: 440
+      - source: rootCA_cert
+        target: /sunflower/certs/rootCA.crt
+        gid: '1000'
+        mode: 440
+      - source: client_key
+        target: /sunflower/certs/client.key
+        gid: '1000'
+        mode: 440
+      - source: client_cert
+        target: /sunflower/certs/client.crt
+        gid: '1000'
+        mode: 440
+
+  server:
+    container_name: sunflower_server
+    restart: unless-stopped
+    image: charizark2710/sunflower-server
+    ports:
+      - "80:80"
+      - "81:81"
+      - "9000:9000"
+      - "443:443"
+      - "8883:8883"
+      - "8672:8672"
+    env_file:
+      - .env
+    # volumes:
+    #   - './RDIPs-Server/conf.d:/opt/nginx/conf.d'
+    #   - './RDIPs-Server/nginx.conf:/opt/nginx/conf'
+    #   - './RDIPs-Server/stream.conf.d:/opt/nginx/stream.conf.d'
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+    networks:
+      pi4:
+    secrets:
+      - source: rootCA_key
+        target: /etc/nginx/rootCA.key
+      - source: rootCA_cert
+        target: /etc/nginx/rootCA.crt
+      - source: client_cert
+        target: /etc/nginx/client.crt
+      - source: client_key
+        target: /etc/nginx/client.key
+      - source: dhparam_pem
+        target: /etc/nginx/dhparam.pem
+
+# volumes:
+#   db:
+#   pgadmin:
+#   api:
+#   keycloak:
+networks:
+  pi4:
+    driver: overlay
+
+secrets:
+  rootCA_key:
+    file: ./certs/rootCA.key
+  rootCA_cert:
+    file: ./certs/rootCA.crt
+  dhparam_pem:
+    file: ./certs/dhparam.pem
+  client_key:
+    file: ./certs/client.key
+  client_cert:
+    file: ./certs/client.crt

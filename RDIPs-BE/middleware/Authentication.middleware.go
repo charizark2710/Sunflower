@@ -19,7 +19,7 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
-const KEYCLOAK_TOKEN_CLIENT_KEY = "KeycloakTokenClient"
+const KEYCLOAK_ACCESS_TOKEN = "KeycloakTokenClient"
 
 var wg sync.WaitGroup
 
@@ -50,7 +50,8 @@ func Validation() gin.HandlerFunc {
 				return
 			}
 			if isTokenExpired(claims) {
-				refreshToken, err := model.CacheSrv.Get(sub)
+				ip := c.ClientIP()
+				refreshToken, err := model.CacheSrv.Get(ip + "#" + sub)
 				if err != nil {
 					utils.Log(LogConstant.Error, err)
 					c.AbortWithStatusJSON(http.StatusUnauthorized, err)
@@ -62,8 +63,10 @@ func Validation() gin.HandlerFunc {
 					c.AbortWithStatusJSON(500, err)
 					return
 				}
-				claims, ok = handler.ClaimsToken(jwt.AccessToken)
+				tokenStr = jwt.AccessToken
+				c.SetCookie("access_token", tokenStr, 30*60, "/", os.Getenv("APP_HOST"), true, true)
 			}
+			claims, ok = handler.ClaimsToken(tokenStr)
 
 			if !ok {
 				utils.Log(LogConstant.Error, "Unauthorized")
@@ -83,14 +86,21 @@ func Validation() gin.HandlerFunc {
 	}
 }
 
+/*
+In case multiple requests access at the same time, one process will call api to get access_token for KeycloakTokenClient.
+Other will wait until the access_token is retrieved and store to memcache.
+After one request is done, the other processes will continue.
+Other processes will check data in memcache to verify token if it is valid
+*/
 func CheckClientTokenValidation() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		wg.Wait()
 		if isKeyCloakTokenClientExpired(c) {
 			wg.Add(1)
-			err := getTokenByClientAccount(c.Request.Context(), c)
+			err := getTokenAdmin(c.Request.Context(), c)
 			if err != nil {
 				c.AbortWithError(http.StatusInternalServerError, err)
+				wg.Done()
 				return
 			}
 		}
@@ -98,7 +108,7 @@ func CheckClientTokenValidation() gin.HandlerFunc {
 	}
 }
 
-func getTokenByClientAccount(ctx context.Context, c *gin.Context) error {
+func getTokenAdmin(ctx context.Context, c *gin.Context) error {
 	defer wg.Done()
 	client := gocloak.NewClient(os.Getenv("KEYCLOAK_BASE_URL"))
 	token, err := client.LoginAdmin(
@@ -112,21 +122,21 @@ func getTokenByClientAccount(ctx context.Context, c *gin.Context) error {
 		return err
 	}
 	model.CacheSrv.Add(&memcache.Item{
-		Key:        KEYCLOAK_TOKEN_CLIENT_KEY,
+		Key:        KEYCLOAK_ACCESS_TOKEN,
 		Value:      []byte(token.AccessToken),
 		Expiration: 5 * 60,
 	})
-	c.Set(KEYCLOAK_TOKEN_CLIENT_KEY, token.AccessToken)
+	c.Set(KEYCLOAK_ACCESS_TOKEN, token.AccessToken)
 	return nil
 
 }
 
 func isKeyCloakTokenClientExpired(c *gin.Context) bool {
-	keycloakTokenItem, err := model.CacheSrv.Get(KEYCLOAK_TOKEN_CLIENT_KEY)
+	keycloakTokenItem, err := model.CacheSrv.Get(KEYCLOAK_ACCESS_TOKEN)
 	if err != nil {
 		return true
 	}
-	c.Set(KEYCLOAK_TOKEN_CLIENT_KEY, string(keycloakTokenItem.Value))
+	c.Set(KEYCLOAK_ACCESS_TOKEN, string(keycloakTokenItem.Value))
 	return false
 }
 

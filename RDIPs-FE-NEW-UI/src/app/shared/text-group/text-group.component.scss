@@ -1,0 +1,13 @@
+@use "../../../styles/variables" as *;
+
+.act-title {
+  margin-bottom: 5px;
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+}
+
+.act-description {
+  font-size: $font-size-sm;
+  color: $text-small-color;
+  font-weight: $font-weight-regular;
+}

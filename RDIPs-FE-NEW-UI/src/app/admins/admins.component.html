@@ -1,0 +1,24 @@
+<div class="admins-container flex flex-row h-full">
+  <div class="navigation-area">
+    <app-navigation></app-navigation>
+  </div>
+  <div class="content-area flex flex-col flex-1 p-6 bg-gray-50">
+    <app-breadcrumb [title]="'labels.menu.listAdmins'"></app-breadcrumb>
+    <div class="home-body">
+      <div class="main-content bg-white rounded-lg shadow-sm p-6">
+        <div class="table-container">
+          <app-data-table
+            [columns]="tableColumns"
+            [dataSource]="adminListData"
+            [showDeviceInfo]="false"
+            [showProgress]="false"
+            [showActions]="true"
+            (onEdit)="onEdit($event)"
+            (onDelete)="onDelete($event)"
+          >
+          </app-data-table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

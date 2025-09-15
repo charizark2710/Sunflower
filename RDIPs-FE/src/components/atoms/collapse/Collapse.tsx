@@ -10,7 +10,7 @@ const CollapseAtom: React.FC<CollapseAtomProps> = ({ children, buttonTitle = 'Co
   const [open, setOpen] = React.useState(false);
   return (
     <div>
-      <Button onClick={() => setOpen(!open)}>{buttonTitle}</Button>
+      <Button variant="outlined" onClick={() => setOpen(!open)}>{buttonTitle}</Button>
       {open ? children : ''}
     </div>
   );
