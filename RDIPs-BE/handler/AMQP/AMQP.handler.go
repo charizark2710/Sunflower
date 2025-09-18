@@ -25,7 +25,7 @@ import (
 var rabbitPool connection.Pool
 
 func InitializeAMQP() error {
-	amqpConn, err := commonModel.Dial(
+	amqpConn, err := amqp091.Dial(
 		os.Getenv("BROKER_PROTOCOL") + "://" +
 			os.Getenv("BROKER_USER") +
 			":" + os.Getenv("BROKER_PASSWORD") +
@@ -36,7 +36,7 @@ func InitializeAMQP() error {
 		return err
 	}
 
-	notifyConnCloseCh := amqpConn.GetAMQPConn().NotifyClose(make(chan *amqp091.Error, 1))
+	notifyConnCloseCh := amqpConn.NotifyClose(make(chan *amqp091.Error, 1))
 
 	// Reconnect if connection is close
 	go func() {
@@ -63,7 +63,7 @@ func InitializeAMQP() error {
 	}
 
 	closeFn := func(conn interface{}) error {
-		ch, ok := conn.(commonModel.BaseAmqpChannel)
+		ch, ok := conn.(*amqp091.Channel)
 		if !ok {
 			return fmt.Errorf("%v", "wrong amqp connection format")
 		}
@@ -72,7 +72,7 @@ func InitializeAMQP() error {
 	}
 
 	pingFn := func(conn interface{}) error {
-		ch, ok := conn.(commonModel.BaseAmqpChannel)
+		ch, ok := conn.(*amqp091.Channel)
 		if !ok {
 			return errors.New("wrong connection")
 		}
@@ -83,7 +83,7 @@ func InitializeAMQP() error {
 			closedErr := <-chClose
 			if closedErr != nil {
 				utils.Log(LogConstant.Error, closedErr)
-				if amqpConn.GetAMQPConn().IsClosed() {
+				if amqpConn.IsClosed() {
 					return
 				}
 				amqpCh, err := amqpConn.Channel()

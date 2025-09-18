@@ -5,7 +5,6 @@ import (
 	"RDIPs-BE/constant/ServiceConst"
 	"RDIPs-BE/handler"
 	AMQP_handler "RDIPs-BE/handler/AMQP"
-	commonModel "RDIPs-BE/model/common"
 	"RDIPs-BE/utils"
 	"os"
 	"strconv"
@@ -24,7 +23,7 @@ func InitAmqpRoutes() {
 		utils.Log(LogConstant.Fatal, err)
 	}
 
-	channel, ok := ch.(commonModel.BaseAmqpChannel)
+	channel, ok := ch.(*amqp091.Channel)
 
 	if !ok {
 		utils.Log(LogConstant.Fatal, "Wrong format")
