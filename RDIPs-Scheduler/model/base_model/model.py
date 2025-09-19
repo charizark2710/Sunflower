@@ -38,7 +38,7 @@ class CodeWithMetricsModel(nn.Module):
             nn.Linear(256, 128),
             nn.ReLU(),
             nn.Dropout(0.3),
-            nn.Linear(128, 1),
+            nn.Linear(128, 2),
         )
 
     def forward(self, input_ids_list, attention_mask_list, extra_feats):
@@ -63,7 +63,10 @@ class CodeWithMetricsModel(nn.Module):
         x = torch.cat([pooled_output, feat_proj], dim=1)
         x = self.norm(x)
         output = self.fc(x)
-        return output
+        mu = output[:, 0]
+        log_sigma = output[:, 1]
+        sigma = torch.exp(log_sigma) + 1e-6
+        return mu, sigma
 
 
 def load_model(model_name):

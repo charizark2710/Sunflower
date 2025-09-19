@@ -6,8 +6,6 @@ import (
 	"RDIPs-Scheduler/handler/AMQP"
 	"RDIPs-Scheduler/utils"
 	"encoding/json"
-	"fmt"
-	"net"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -93,23 +91,7 @@ func main() {
 		if initErr != nil {
 			panic(initErr)
 		}
-		socketPath, _ := filepath.Abs(currentPath + "/guess.sock")
-		if _, err := os.Stat(socketPath); os.IsNotExist(err) {
-			os.Remove(socketPath)
-			listener, err := net.Listen("unix", socketPath)
-			if err != nil {
-				panic(err)
-			}
-			defer listener.Close()
-		}
 
-		conn := handler.Connect(socketPath)
-		data := make([]byte, 1024)
-		n, err := conn.Read(data)
-		if err != nil {
-			panic(err)
-		}
-		fmt.Println(string(data[:n]))
 	}
 
 	// bundleSize, functionComplexity, conditionalComplexity, err := handler.AstParser(string(data))

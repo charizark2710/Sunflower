@@ -1,9 +1,8 @@
-package handler
+package AMQP_Handler
 
 import (
 	"RDIPs-Task/constant"
 	LogConstant "RDIPs-Task/constant/LogConst"
-	AMQP_Handler "RDIPs-Task/handler/AMQP"
 	"RDIPs-Task/utils"
 	"fmt"
 	"os"
@@ -78,7 +77,7 @@ func (m *messageStruct) InitAmqpQueue(conn *amqp091.Connection) {
 		utils.Log(LogConstant.Fatal, err)
 	}
 	go func() {
-		AMQP_Handler.ReceiveService(deliveries)
+		ReceiveService(deliveries)
 	}()
 
 	for _, routingKey := range constant.ROUTING_KEY_PREFIX {

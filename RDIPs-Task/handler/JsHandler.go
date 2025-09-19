@@ -5,12 +5,12 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"sync"
-	"time"
+	"unsafe"
 
 	"github.com/evanw/esbuild/pkg/api"
+	"golang.org/x/sys/unix"
 	"rogchap.com/v8go"
 )
 
@@ -96,26 +96,78 @@ func LoadJSDir(dir string, deep int) []map[string]string {
 	return append(filteredResult, subResult...)
 }
 
-func ExecuteJs(code string) (*v8go.Value, int64, uint64, error) {
-
+func ExecuteJs(code string, needCountIc bool) (*v8go.Value, uint64, error) {
 	iso := v8go.NewIsolate()
 	ctx := v8go.NewContext(iso)
 
-	var m runtime.MemStats
-	runtime.ReadMemStats(&m)
-	start := time.Now()
-	value, err := ctx.RunScript(code, "main.js")
-	elapsed := time.Since(start)
+	if needCountIc {
+		fd := startCounting()
+		value, err := ctx.RunScript(code, "main.js")
+		count := finishCounting(fd)
+		if err != nil {
+			return nil, count, err
+		}
 
-	if err != nil {
-		return nil, 0, 0, err
+		return value, count, err
+	} else {
+		value, err := ctx.RunScript(code, "main.js")
+		return value, 0, err
+	}
+}
+
+func perfEventOpen(attr *unix.PerfEventAttr, pid, cpu, groupFd, flags int) (int, error) {
+	r0, _, e1 := unix.Syscall6(
+		unix.SYS_PERF_EVENT_OPEN,
+		uintptr(unsafe.Pointer(attr)),
+		uintptr(pid),
+		uintptr(cpu),
+		uintptr(groupFd),
+		uintptr(flags),
+		0,
+	)
+	fd := int(r0)
+	if fd == -1 {
+		return -1, e1
+	}
+	return fd, nil
+}
+
+func startCounting() int {
+	attr := unix.PerfEventAttr{
+		Type:   unix.PERF_TYPE_HARDWARE,
+		Config: unix.PERF_COUNT_HW_INSTRUCTIONS,
+		Size:   uint32(unsafe.Sizeof(unix.PerfEventAttr{})),
+		Bits:   unix.PerfBitExcludeKernel,
 	}
 
-	var m2 runtime.MemStats
-	runtime.ReadMemStats(&m2)
+	fd, err := perfEventOpen(&attr, 0, -1, -1, unix.PERF_FLAG_FD_CLOEXEC)
+	if err != nil {
+		fmt.Println("perf_event_open failed:", err)
+		os.Exit(1)
+	}
 
-	memUsage := m.Alloc - m2.Alloc
-	runtime.GC()
-	return value, elapsed.Microseconds(), memUsage / 1024, err
+	// Reset + enable
+	unix.IoctlSetInt(fd, unix.PERF_EVENT_IOC_RESET, 0)
+	unix.IoctlSetInt(fd, unix.PERF_EVENT_IOC_ENABLE, 0)
 
+	return fd
+}
+
+func finishCounting(fd int) uint64 {
+	unix.IoctlSetInt(fd, unix.PERF_EVENT_IOC_DISABLE, 0)
+
+	// Read
+	buf := make([]byte, 8)
+	n, err := unix.Read(fd, buf)
+	if err != nil || n != 8 {
+		fmt.Println("failed to read perf counter:", err)
+		return 0
+	}
+	val := *(*uint64)(unsafe.Pointer(&buf[0]))
+
+	// (optional) reset for reuse
+	unix.IoctlSetInt(fd, unix.PERF_EVENT_IOC_RESET, 0)
+
+	unix.Close(fd)
+	return val
 }
