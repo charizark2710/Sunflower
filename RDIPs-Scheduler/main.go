@@ -29,13 +29,13 @@ func main() {
 			dir_path = "./javascript-algorithms-and-data-structures"
 		}
 		socketPath, _ := filepath.Abs(currentPath + "/training.sock")
-		files := handler.LoadJSDir(dir_path, 10)
+		files := handler.LoadJSDir(dir_path, 100)
 		if len(files) > 0 {
 			conn := handler.Connect(socketPath)
 			for _, file := range files {
 				// Handle bundled code
 				prev := debug.SetGCPercent(-1)
-				_, count, err := handler.ExecuteJs(file["bundledCode"], 3)
+				_, count, cycle, err := handler.ExecuteJs(file["bundledCode"], 3)
 				debug.SetGCPercent(prev)
 				runtime.GC()
 				if err == nil {
@@ -49,6 +49,7 @@ func main() {
 						"name":       strings.Split(file["name"], "/")[len(strings.Split(file["name"], "/"))-1],
 						"code":       file["bundledCode"],
 						"ic":         count,
+						"cycle":      cycle,
 						"bundleSize": bundleSize,
 					}
 					for k, v := range metricsMap {
@@ -91,7 +92,8 @@ func main() {
 		if initErr != nil {
 			panic(initErr)
 		}
-
+		AMQP.InitAmqpQueue()
+		select {}
 	}
 
 	// bundleSize, functionComplexity, conditionalComplexity, err := handler.AstParser(string(data))

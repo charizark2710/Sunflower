@@ -1,18 +1,13 @@
-import socket
 import os
-import json
-import time
-from typing import Dict, List
-import pandas as pd
 
 import torch
 import torch.nn as nn
 from transformers import RobertaTokenizer, RobertaModel
 from torch.optim import AdamW
-import numpy as np
+from utils.common import DEVICE
+
 
 SAVE_DIR = "./saved_model"
-DEVICE = "cpu"
 LR = 1e-4
 
 class CodeWithMetricsModel(nn.Module):
@@ -38,7 +33,7 @@ class CodeWithMetricsModel(nn.Module):
             nn.Linear(256, 128),
             nn.ReLU(),
             nn.Dropout(0.3),
-            nn.Linear(128, 2),
+            nn.Linear(128, 4),
         )
 
     def forward(self, input_ids_list, attention_mask_list, extra_feats):
@@ -63,11 +58,57 @@ class CodeWithMetricsModel(nn.Module):
         x = torch.cat([pooled_output, feat_proj], dim=1)
         x = self.norm(x)
         output = self.fc(x)
-        mu = output[:, 0]
-        log_sigma = output[:, 1]
-        sigma = torch.exp(log_sigma) + 1e-6
-        return mu, sigma
+        ic = output[:, 0]
+        sigma_ic = output[:, 1]
+        cycle = output[:, 2]
+        sigma_cycle = output[:, 3]
+        sigma_ic  = torch.exp(sigma_ic) + 1e-6
+        sigma_cycle = torch.exp(sigma_cycle) + 1e-6
 
+        return ic, sigma_ic, cycle, sigma_cycle
+
+# class RelativeErrorWithSigmaLoss(nn.Module):
+    # def __init__(self, sigma_reg_weight=0.1, min_sigma_ratio=0.01):
+    #     super().__init__()
+    #     self.sigma_reg_weight = sigma_reg_weight
+    #     self.min_sigma_ratio = min_sigma_ratio
+    
+    # def forward(self, log10_pred, log10_sigma, log10_target):
+    #     # Convert to linear space
+    #     linear_pred = 10 ** log10_pred
+    #     print("linear_pred", linear_pred.mean())
+    #     linear_target = 10 ** log10_target
+    #     print("log10_target", log10_target.mean())
+    #     # Convert sigma to linear space (as standard deviation)
+    #     linear_sigma_upper = 10 ** (log10_pred + log10_sigma)
+    #     linear_sigma = linear_sigma_upper - linear_pred
+        
+    #     # Ensure reasonable sigma bounds
+    #     min_sigma = self.min_sigma_ratio * linear_pred
+    #     linear_sigma = torch.clamp(linear_sigma, min=min_sigma)
+    #     print("linear_sigma", linear_sigma.mean())
+    #     # Relative error
+    #     relative_error = torch.abs(linear_pred - linear_target) / (linear_target + 1e-6)
+    #     print("relative_error", relative_error.mean())
+    #     # Weight the error by uncertainty (inverse weighting)
+    #     # High sigma → low weight → lower penalty
+    #     # Low sigma → high weight → higher penalty
+    #     sigma_ratio = linear_sigma / linear_pred  # Coefficient of variation
+    #     print("sigma_ratio", sigma_ratio.mean())
+    #     weighted_error = relative_error / (sigma_ratio + 1e-6)
+        
+    #     # Regularize sigma to prevent it from becoming too large
+    #     sigma_penalty = self.sigma_reg_weight * sigma_ratio.mean()
+    #     print("sigma_penalty", sigma_penalty.mean())
+    #     print("tessst:", weighted_error.mean() + sigma_penalty)
+    #     return weighted_error.mean() + sigma_penalty
+
+class RelativeErrorWithSigmaLoss(nn.Module):
+    def forward(self, ic_pred, sigma_ic,
+               cycle_pred, sigma_cycle, ic_target, cycle_target):
+        ic_loss  = 0.5 * (((ic_pred - ic_target) / sigma_ic)**2 + 2 * torch.log(sigma_ic))
+        cycle_loss = 0.5 * (((cycle_pred - cycle_target) / sigma_cycle)**2 + 2 * torch.log(sigma_cycle))
+        return (ic_loss.mean() + cycle_loss.mean()) / 2
 
 def load_model(model_name):
     if os.path.exists(SAVE_DIR + "/model.pt"):

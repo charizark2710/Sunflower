@@ -120,7 +120,6 @@ func InitializeAMQP() error {
 func ReceiveService(deliveries <-chan amqp091.Delivery) {
 	messageHandler := NewMessageHandler()
 	utils.Log(LogConstant.Info, "Start Receiver")
-
 	var ack func(d *amqp091.Delivery, sysErr error)
 	ack = func(d *amqp091.Delivery, sysErr error) {
 		utils.Log(LogConstant.Info, "Start ACK Delivery: "+d.Exchange+" With key: "+d.RoutingKey)

@@ -4,8 +4,6 @@ import (
 	"RDIPs-Scheduler/constant"
 	LogConstant "RDIPs-Scheduler/constant/LogConst"
 	connection "RDIPs-Scheduler/handler/Connection"
-	"os"
-	"strconv"
 
 	"RDIPs-Scheduler/utils"
 	"context"
@@ -59,7 +57,7 @@ func (m *messageStruct) Send(exchange string, body interface{}, deliveryMode uin
 	return err
 }
 
-func (m *messageStruct) InitAmqpQueue() {
+func InitAmqpQueue() {
 	utils.Log(LogConstant.Info, "Initialize AMQP routes")
 	defer utils.Log(LogConstant.Info, "Finish initialize AMQP routes")
 	amqpPool := GetRabbitPool()
@@ -77,17 +75,10 @@ func (m *messageStruct) InitAmqpQueue() {
 	channel.Qos(10, 0, false)
 
 	queue, err := channel.QueueDeclare(constant.SCHEDULER_QUEUE, true, false, false, false, amqp091.Table{
-		"x-message-ttl": 600000,
-		"x-queue-type":  "stream",
+		"x-queue-type": "stream",
 	})
 	if err != nil {
 		utils.Log(LogConstant.Fatal, err)
-	}
-
-	priority, err := strconv.Atoi(os.Getenv("CONSUMER_PRIORITY"))
-	if err != nil {
-		utils.Log(LogConstant.Error, err)
-		priority = 0 // default priority
 	}
 
 	deliveries, err := channel.Consume(
@@ -97,9 +88,7 @@ func (m *messageStruct) InitAmqpQueue() {
 		false,      // exclusive
 		false,      // noLocal
 		false,      // noWait
-		amqp091.Table{
-			"x-priority": priority,
-		})
+		amqp091.Table{})
 	if err != nil {
 		utils.Log(LogConstant.Fatal, err)
 	}

@@ -100,7 +100,7 @@ func perfEventOpen(attr *unix.PerfEventAttr, pid, cpu, groupFd, flags int) (int,
 	return fd, nil
 }
 
-func startCounting() int {
+func startCounting() (int, int) {
 	attr := unix.PerfEventAttr{
 		Type:   unix.PERF_TYPE_HARDWARE,
 		Config: unix.PERF_COUNT_HW_INSTRUCTIONS,
@@ -108,17 +108,32 @@ func startCounting() int {
 		Bits:   unix.PerfBitExcludeKernel,
 	}
 
-	fd, err := perfEventOpen(&attr, 0, -1, -1, unix.PERF_FLAG_FD_CLOEXEC)
+	fd_ic, err := perfEventOpen(&attr, 0, -1, -1, unix.PERF_FLAG_FD_CLOEXEC)
+	if err != nil {
+		fmt.Println("perf_event_open failed:", err)
+		os.Exit(1)
+	}
+
+	attr = unix.PerfEventAttr{
+		Type:   unix.PERF_TYPE_HARDWARE,
+		Config: unix.PERF_COUNT_HW_CPU_CYCLES,
+		Size:   uint32(unsafe.Sizeof(unix.PerfEventAttr{})),
+		Bits:   unix.PerfBitExcludeKernel,
+	}
+
+	fd_cycle, err := perfEventOpen(&attr, 0, -1, -1, unix.PERF_FLAG_FD_CLOEXEC)
 	if err != nil {
 		fmt.Println("perf_event_open failed:", err)
 		os.Exit(1)
 	}
 
 	// Reset + enable
-	unix.IoctlSetInt(fd, unix.PERF_EVENT_IOC_RESET, 0)
-	unix.IoctlSetInt(fd, unix.PERF_EVENT_IOC_ENABLE, 0)
+	unix.IoctlSetInt(fd_ic, unix.PERF_EVENT_IOC_RESET, 0)
+	unix.IoctlSetInt(fd_ic, unix.PERF_EVENT_IOC_ENABLE, 0)
+	unix.IoctlSetInt(fd_cycle, unix.PERF_EVENT_IOC_RESET, 0)
+	unix.IoctlSetInt(fd_cycle, unix.PERF_EVENT_IOC_ENABLE, 0)
 
-	return fd
+	return fd_ic, fd_cycle
 }
 
 func finishCounting(fd int) uint64 {
@@ -140,15 +155,17 @@ func finishCounting(fd int) uint64 {
 	return val
 }
 
-func ExecuteJs(code string, retry int) (*v8go.Value, uint64, error) {
+func ExecuteJs(code string, retry int) (*v8go.Value, uint64, uint64, error) {
 	iso := v8go.NewIsolate()
 	ctx := v8go.NewContext(iso)
 
-	fd := startCounting()
+	fd_ic, fd_cycle := startCounting()
 	value, err := ctx.RunScript(code, "main.js")
-	count := finishCounting(fd)
+	count := finishCounting(fd_ic)
+	cycle := finishCounting(fd_cycle)
+
 	if err != nil {
-		return nil, count, err
+		return nil, count, cycle, err
 	}
 
 	if retry > 0 && count == 0 {
@@ -156,5 +173,5 @@ func ExecuteJs(code string, retry int) (*v8go.Value, uint64, error) {
 		return ExecuteJs(code, retry-1)
 	}
 
-	return value, count, err
+	return value, count, cycle, err
 }
