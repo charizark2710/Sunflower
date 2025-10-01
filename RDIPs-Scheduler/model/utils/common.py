@@ -90,6 +90,7 @@ def tokenize_codes(tokenizer ,codes: List[str]) -> tuple[List[torch.Tensor], Lis
         chunks = []
         cur_chunk = ""
 
+        final = False
         for part in parts:
             # tentative chunk if we add this part
             tentative = cur_chunk + " " + part if cur_chunk else part
@@ -102,14 +103,16 @@ def tokenize_codes(tokenizer ,codes: List[str]) -> tuple[List[torch.Tensor], Lis
 
             if len(tokenized) <= (MAX_TOKEN_LEN - 2):
                 cur_chunk = tentative
+                final = True
             else:
                 # finalize the current chunk
                 if cur_chunk:
+                    final = False
                     chunks.append(cur_chunk)
-                # start new chunk with current part
+                else: final = True
                 cur_chunk = part
 
-        if cur_chunk:
+        if final == True:
             chunks.append(cur_chunk)
 
         # Now tokenize each chunk and pad

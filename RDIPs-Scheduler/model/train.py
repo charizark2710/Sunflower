@@ -40,13 +40,13 @@ torch.manual_seed(42)
 np.random.seed(42)
 
 
-def normalize_time_ic(ic):
+def normalize(ic):
     return np.log10(ic + 1)
 
-def unnormalize_time_ic(norm_val):
+def unnormalize(norm_val):
     return np.pow(10, norm_val) + 1
 
-def unnormalize_time_ic_torch(normalized):
+def unnormalize_torch(normalized):
     return torch.pow(10, normalized) + 1
 
 def exportToCsv(obj):
@@ -70,8 +70,8 @@ def prepare_data(batch, idxs):
     target_train_ic = []
     target_train_cycle = []
     for t, c in zip(ic_raw, cycle_raw):
-        target_train_ic.append(normalize_time_ic(t))
-        target_train_cycle.append(normalize_time_ic(c))
+        target_train_ic.append(normalize(t))
+        target_train_cycle.append(normalize(c))
     
     target_train_ic = torch.tensor(target_train_ic, dtype=torch.float, device=DEVICE).unsqueeze(1)
     target_train_cycle = torch.tensor(target_train_cycle, dtype=torch.float, device=DEVICE).unsqueeze(1)
@@ -178,13 +178,13 @@ def check_log(batch, pred_ic, pred_cycle):
     for i in range(min(3, len(batch))):
         actual_ic = actual_ics[i]
         predicted_ic = predicted_ics[i]
-        print(f"n_actual_ic: {normalize_time_ic(actual_ic):.3f} n_predicted_ic: {(predicted_ic):.3f}")
-        print(f"actual_ic: {actual_ic:.3f} predicted_ic: {unnormalize_time_ic(predicted_ic):.3f}")
+        print(f"n_actual_ic: {normalize(actual_ic):.3f} n_predicted_ic: {(predicted_ic):.3f}")
+        print(f"actual_ic: {actual_ic:.3f} predicted_ic: {unnormalize(predicted_ic):.3f}")
 
         actual_cycle = actual_cycles[i]
         predicted_cycle = predicted_cycles[i]
-        print(f"n_actual_cycle: {normalize_time_ic(actual_cycle):.3f} n_predicted_cycle: {(predicted_cycle):.3f}")
-        print(f"actual_cycle: {actual_cycle:.3f} predicted_cycle: {unnormalize_time_ic(predicted_cycle):.3f}")
+        print(f"n_actual_cycle: {normalize(actual_cycle):.3f} n_predicted_cycle: {(predicted_cycle):.3f}")
+        print(f"actual_cycle: {actual_cycle:.3f} predicted_cycle: {unnormalize(predicted_cycle):.3f}")
 
 # ----------------- socket server -----------------
 if os.path.exists(SOCKET_PATH):

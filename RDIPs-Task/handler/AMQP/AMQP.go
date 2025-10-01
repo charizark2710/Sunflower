@@ -72,9 +72,10 @@ func ReceiveService(deliveries <-chan amqp091.Delivery) {
 		var msg map[string]interface{}
 		json.Unmarshal(delivery.Body, &msg)
 		code := msg["code"].(string)
-		ic := msg["ic"].(string)
+		ic := msg["ic"].(float64)
+		cycle := msg["cycle"].(float64)
 		id := msg["id"].(string)
-		result, err := handler.ExecutionHandler(id, code, ic)
+		result, err := handler.ExecutionHandler(id, code, ic, cycle)
 		if err == nil {
 			Send(delivery.ReplyTo, result, 1, delivery.CorrelationId, delivery.ReplyTo)
 		} else {

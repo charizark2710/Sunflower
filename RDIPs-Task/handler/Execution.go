@@ -12,14 +12,15 @@ import (
 	unixSock "RDIPs-Task/handler/UnixSock"
 )
 
-func ExecutionHandler(id string, code string, ic string) (any, error) {
+func ExecutionHandler(id string, code string, ic float64, cycle float64) (any, error) {
 	conn := unixSock.Connect("/guess.sock")
 	defer conn.Close()
 
 	// Send request to model
 	b, _ := json.Marshal(map[string]any{
-		"ic":   ic,
-		"code": code,
+		"ic":    ic,
+		"code":  code,
+		"cycle": cycle,
 	})
 	if _, err := conn.Write(b); err != nil {
 		return nil, err
@@ -61,10 +62,11 @@ func ExecutionHandler(id string, code string, ic string) (any, error) {
 	resultCh := make(chan map[string]any, 1)
 
 	go func() {
-		val, actual_ic, err := ExecuteJs(code, confidence < 0.6)
+		val, actual_ic, actual_cycle, err := ExecuteJs(code, confidence < 0.6)
 		resultCh <- map[string]any{
 			"result": val,
 			"ic":     actual_ic,
+			"cycle":  actual_cycle,
 			"err":    err,
 		}
 	}()

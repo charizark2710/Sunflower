@@ -104,11 +104,35 @@ class CodeWithMetricsModel(nn.Module):
     #     return weighted_error.mean() + sigma_penalty
 
 class RelativeErrorWithSigmaLoss(nn.Module):
+    def __init__(self, cycle_rate=3.5e9, ic_w=0.2, cycle_w=0.1, cpu_time_w=0.4, eps=1e-2):
+        super().__init__()
+        self.cycle_rate = cycle_rate
+        self.ic_w = ic_w
+        self.cycle_w = cycle_w
+        self.cpu_time_w = cpu_time_w
+        self.eps = eps
+
     def forward(self, ic_pred, sigma_ic,
                cycle_pred, sigma_cycle, ic_target, cycle_target):
-        ic_loss  = 0.5 * (((ic_pred - ic_target) / sigma_ic)**2 + 2 * torch.log(sigma_ic))
-        cycle_loss = 0.5 * (((cycle_pred - cycle_target) / sigma_cycle)**2 + 2 * torch.log(sigma_cycle))
-        return (ic_loss.mean() + cycle_loss.mean()) / 2
+
+        # Avoid divide by zero
+        ic_pred = ic_pred.clamp(min=self.eps)
+        ic_target = ic_target.clamp(min=self.eps)
+        sigma_ic = sigma_ic.clamp(min=self.eps)
+        sigma_cycle = sigma_cycle.clamp(min=self.eps)
+
+        # log-likelihood style losses
+        # cpu_time_loss = 0.5 * (((cpu_time_pred - cpu_time_target) / sigma_cpu)**2 
+        #                        + 2 * torch.log(sigma_cpu))
+        ic_loss  = 0.5 * (((ic_pred - ic_target) / sigma_ic)**2 
+                          + 2 * torch.log(sigma_ic))
+        cycle_loss = 0.5 * (((cycle_pred - cycle_target) / sigma_cycle)**2 
+                            + 2 * torch.log(sigma_cycle))
+        cpu_time_loss = cycle_loss / self.cycle_rate
+
+        return (self.ic_w * ic_loss.mean().abs() +
+                self.cycle_w * cycle_loss.mean().abs() +
+                self.cpu_time_w * cpu_time_loss.mean().abs())
 
 def load_model(model_name):
     if os.path.exists(SAVE_DIR + "/model.pt"):

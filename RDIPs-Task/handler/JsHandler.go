@@ -96,61 +96,24 @@ func LoadJSDir(dir string, deep int) []map[string]string {
 	return append(filteredResult, subResult...)
 }
 
-func ExecuteJs(code string, needCountIc bool) (*v8go.Value, uint64, error) {
+func ExecuteJs(code string, needCount bool) (*v8go.Value, float64, float64, error) {
 	iso := v8go.NewIsolate()
 	ctx := v8go.NewContext(iso)
 
-	if needCountIc {
-		fd := startCounting()
+	if needCount {
+		fd_ic, fd_cycle := startCounting()
 		value, err := ctx.RunScript(code, "main.js")
-		count := finishCounting(fd)
+		count := finishCounting(fd_ic)
+		cycle := finishCounting(fd_cycle)
 		if err != nil {
-			return nil, count, err
+			return nil, float64(count), float64(cycle), err
 		}
 
-		return value, count, err
+		return value, float64(count), float64(cycle), err
 	} else {
 		value, err := ctx.RunScript(code, "main.js")
-		return value, 0, err
+		return value, 0, 0, err
 	}
-}
-
-func perfEventOpen(attr *unix.PerfEventAttr, pid, cpu, groupFd, flags int) (int, error) {
-	r0, _, e1 := unix.Syscall6(
-		unix.SYS_PERF_EVENT_OPEN,
-		uintptr(unsafe.Pointer(attr)),
-		uintptr(pid),
-		uintptr(cpu),
-		uintptr(groupFd),
-		uintptr(flags),
-		0,
-	)
-	fd := int(r0)
-	if fd == -1 {
-		return -1, e1
-	}
-	return fd, nil
-}
-
-func startCounting() int {
-	attr := unix.PerfEventAttr{
-		Type:   unix.PERF_TYPE_HARDWARE,
-		Config: unix.PERF_COUNT_HW_INSTRUCTIONS,
-		Size:   uint32(unsafe.Sizeof(unix.PerfEventAttr{})),
-		Bits:   unix.PerfBitExcludeKernel,
-	}
-
-	fd, err := perfEventOpen(&attr, 0, -1, -1, unix.PERF_FLAG_FD_CLOEXEC)
-	if err != nil {
-		fmt.Println("perf_event_open failed:", err)
-		os.Exit(1)
-	}
-
-	// Reset + enable
-	unix.IoctlSetInt(fd, unix.PERF_EVENT_IOC_RESET, 0)
-	unix.IoctlSetInt(fd, unix.PERF_EVENT_IOC_ENABLE, 0)
-
-	return fd
 }
 
 func finishCounting(fd int) uint64 {
@@ -170,4 +133,56 @@ func finishCounting(fd int) uint64 {
 
 	unix.Close(fd)
 	return val
+}
+func perfEventOpen(attr *unix.PerfEventAttr, pid, cpu, groupFd, flags int) (int, error) {
+	r0, _, e1 := unix.Syscall6(
+		unix.SYS_PERF_EVENT_OPEN,
+		uintptr(unsafe.Pointer(attr)),
+		uintptr(pid),
+		uintptr(cpu),
+		uintptr(groupFd),
+		uintptr(flags),
+		0,
+	)
+	fd := int(r0)
+	if fd == -1 {
+		return -1, e1
+	}
+	return fd, nil
+}
+
+func startCounting() (int, int) {
+	attr := unix.PerfEventAttr{
+		Type:   unix.PERF_TYPE_HARDWARE,
+		Config: unix.PERF_COUNT_HW_INSTRUCTIONS,
+		Size:   uint32(unsafe.Sizeof(unix.PerfEventAttr{})),
+		Bits:   unix.PerfBitExcludeKernel,
+	}
+
+	fd_ic, err := perfEventOpen(&attr, 0, -1, -1, unix.PERF_FLAG_FD_CLOEXEC)
+	if err != nil {
+		fmt.Println("perf_event_open failed:", err)
+		os.Exit(1)
+	}
+
+	attr = unix.PerfEventAttr{
+		Type:   unix.PERF_TYPE_HARDWARE,
+		Config: unix.PERF_COUNT_HW_CPU_CYCLES,
+		Size:   uint32(unsafe.Sizeof(unix.PerfEventAttr{})),
+		Bits:   unix.PerfBitExcludeKernel,
+	}
+
+	fd_cycle, err := perfEventOpen(&attr, 0, -1, -1, unix.PERF_FLAG_FD_CLOEXEC)
+	if err != nil {
+		fmt.Println("perf_event_open failed:", err)
+		os.Exit(1)
+	}
+
+	// Reset + enable
+	unix.IoctlSetInt(fd_ic, unix.PERF_EVENT_IOC_RESET, 0)
+	unix.IoctlSetInt(fd_ic, unix.PERF_EVENT_IOC_ENABLE, 0)
+	unix.IoctlSetInt(fd_cycle, unix.PERF_EVENT_IOC_RESET, 0)
+	unix.IoctlSetInt(fd_cycle, unix.PERF_EVENT_IOC_ENABLE, 0)
+
+	return fd_ic, fd_cycle
 }
