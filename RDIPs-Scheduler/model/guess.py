@@ -2,7 +2,7 @@ import socket
 import os
 import json
 import torch
-from model.base_model.model import load_model
+from base_model.model import load_model
 from utils.common import extract_numeric_features, tokenize_codes, DEVICE
 
 SOCKET_PATH = "../guess.sock"
@@ -33,8 +33,7 @@ def handle_request(data: dict):
     """
     # Example: just using code text for tokenization
     code_str = data.get("code", "")
-
-    input_ids, attention_mask = tokenize_codes(tokenizer, code_str)
+    input_ids, attention_mask = tokenize_codes(tokenizer, [code_str])
 
     input_ids = [x.to(DEVICE) for x in input_ids]
     attention_mask = [x.to(DEVICE) for x in attention_mask]
@@ -44,11 +43,15 @@ def handle_request(data: dict):
     with torch.no_grad():
         outputs = model(input_ids, attention_mask, extra_feats) # type: ignore
 
+    ic = pow(10, outputs[0].detach().cpu().numpy().flatten())
+    cycle = pow(10, outputs[2].detach().cpu().numpy().flatten())
 
-    pred_log = outputs.squeeze()
-    ic = pow(10, pred_log) + 1
-
-    return ic
+    return {
+        "ic": ic.tolist()[0],
+        "cycle": cycle.tolist()[0],
+        "input_ids": torch.cat(input_ids).view(-1).tolist(),
+        "attention_mask": torch.cat(attention_mask).view(-1).tolist(),
+    }
 
 while True:
     conn, _ = server_sock.accept()
@@ -69,7 +72,6 @@ while True:
 
             # Process through model
             result = handle_request(data_json)
-
             # Send back JSON
             conn.sendall((json.dumps(result) + "\n").encode("utf-8"))
 

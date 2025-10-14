@@ -1,7 +1,6 @@
 package AMQP_Handler
 
 import (
-	"context"
 	"encoding/json"
 	"os"
 	"strings"
@@ -14,7 +13,8 @@ import (
 	"RDIPs-Task/utils"
 )
 
-var channel *amqp091.Channel
+var receiveChannel *amqp091.Channel
+var sendChannel *amqp091.Channel
 
 func Connect() (*amqp091.Connection, error) {
 	amqpConn, err := amqp091.Dial(
@@ -27,31 +27,12 @@ func Connect() (*amqp091.Connection, error) {
 		return nil, err
 	}
 
-	channel, err = amqpConn.Channel()
+	receiveChannel, err = amqpConn.Channel()
+	sendChannel, err = amqpConn.Channel()
 	if err != nil {
 		return nil, err
 	}
 	return amqpConn, nil
-}
-
-func Send(exchange string, body interface{}, deliveryMode uint8, correlationID string, replyTo string, routingKeyArgs ...string) error {
-	routingKey := generateRoutingKey(routingKeyArgs...)
-	utils.Log(LogConstant.Info, "Sending message to ", exchange, "with ", routingKey)
-	var message []byte
-	message, err := json.Marshal(body)
-	if err != nil {
-		utils.Log(LogConstant.Error, err)
-		return err
-	}
-	err = channel.PublishWithContext(context.Background(), exchange, routingKey, true, false, amqp091.Publishing{
-		DeliveryMode: deliveryMode,
-		ContentType:  "text/plain",
-		Body:         message,
-		Headers:      amqp091.Table{"Correlation-ID": correlationID},
-		ReplyTo:      replyTo,
-	})
-	utils.Log(LogConstant.Info, "Finish sending message to ", exchange, "with ", routingKey)
-	return err
 }
 
 func generateRoutingKey(args ...string) string {
@@ -59,6 +40,7 @@ func generateRoutingKey(args ...string) string {
 }
 
 func ReceiveService(deliveries <-chan amqp091.Delivery) {
+	m := NewMessageHandler(sendChannel, receiveChannel)
 
 	var ack func(d *amqp091.Delivery, sysErr error)
 	ack = func(d *amqp091.Delivery, sysErr error) {
@@ -71,13 +53,10 @@ func ReceiveService(deliveries <-chan amqp091.Delivery) {
 	for delivery := range deliveries {
 		var msg map[string]interface{}
 		json.Unmarshal(delivery.Body, &msg)
-		code := msg["code"].(string)
-		ic := msg["ic"].(float64)
-		cycle := msg["cycle"].(float64)
-		id := msg["id"].(string)
-		result, err := handler.ExecutionHandler(id, code, ic, cycle)
+		id := delivery.CorrelationId
+		result, err := handler.ExecutionHandler(id, msg)
 		if err == nil {
-			Send(delivery.ReplyTo, result, 1, delivery.CorrelationId, delivery.ReplyTo)
+			m.Send(delivery.ReplyTo, result, 1, delivery.CorrelationId, delivery.ReplyTo)
 		} else {
 			utils.Log(LogConstant.Error, err)
 		}

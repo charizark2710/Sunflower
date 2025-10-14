@@ -32,12 +32,12 @@ func InitializeAMQP() error {
 		utils.Log(LogConstant.Error, err)
 		return err
 	}
-
-	notifyConnCloseCh := amqpConn.NotifyClose(make(chan *amqp091.Error, 1))
+	amqpConn.Config.Heartbeat = 10 * time.Second
+	notifyConnCloseConn := amqpConn.NotifyClose(make(chan *amqp091.Error, 1))
 
 	// Reconnect if connection is close
 	go func() {
-		closedErr := <-notifyConnCloseCh
+		closedErr := <-notifyConnCloseConn
 		if closedErr != nil {
 			utils.Log(LogConstant.Error, closedErr)
 			rabbitPool.Close()
@@ -50,8 +50,8 @@ func InitializeAMQP() error {
 				err = InitializeAMQP()
 			}
 		}
-		if len(notifyConnCloseCh) > 0 {
-			close(notifyConnCloseCh)
+		if len(notifyConnCloseConn) > 0 {
+			close(notifyConnCloseConn)
 		}
 	}()
 
@@ -74,7 +74,10 @@ func InitializeAMQP() error {
 		if !ok {
 			return errors.New("wrong connection")
 		}
-
+		err := InitAmqpQueue(ch)
+		if err != nil {
+			return err
+		}
 		chClose := ch.NotifyClose(make(chan *amqp091.Error, 1))
 		// Re-initialize channel if this one is closed due to some error
 		go func() {
@@ -85,6 +88,9 @@ func InitializeAMQP() error {
 					return
 				}
 				amqpCh, err := amqpConn.Channel()
+				if err == nil {
+					err = InitAmqpQueue(amqpCh)
+				}
 				// Open new channel if it get error
 				for err != nil {
 					utils.Log(LogConstant.Error, err)
@@ -110,6 +116,7 @@ func InitializeAMQP() error {
 
 	if err != nil {
 		amqpConn.Close()
+		return err
 	}
 
 	SetRabbitPool(rabbitPool)
@@ -124,6 +131,9 @@ func ReceiveService(deliveries <-chan amqp091.Delivery) {
 	ack = func(d *amqp091.Delivery, sysErr error) {
 		utils.Log(LogConstant.Info, "Start ACK Delivery: "+d.Exchange+" With key: "+d.RoutingKey)
 		if err := d.Ack(false); err != nil {
+			if err == amqp091.ErrClosed {
+				return
+			}
 			utils.Log(LogConstant.Error, err)
 			time.Sleep(10 * time.Second)
 			ack(d, sysErr)
@@ -164,13 +174,22 @@ func ReceiveService(deliveries <-chan amqp091.Delivery) {
 				switch prefixRoutingKey {
 				case constant.JSCODE_ROUTING_KEY:
 					code := delivery.Body
-					ic, err := handler.GuessHandler(string(code))
-					if err != nil {
-						messageHandler.Send(constant.EXECUTE_QUEUE, map[string]any{"ic": ic, "code": string(code)}, amqp091.Persistent, delivery.CorrelationId, delivery.ReplyTo)
+					result, err := handler.GuessHandler(string(code))
+					if err == nil && result != nil && result["error"] == nil {
+						messageHandler.Send(constant.EXECUTE_QUEUE, map[string]any{
+							"ic":             result["ic"],
+							"cycle":          result["cycle"],
+							"bundleSize":     result["bundleSize"],
+							"metrics":        result["metrics"],
+							"input_ids":      result["input_ids"],
+							"attention_mask": result["attention_mask"],
+							"code":           string(code)}, amqp091.Persistent, delivery.CorrelationId, delivery.ReplyTo)
 						go ack(&delivery, nil)
+					} else {
+						delivery.Nack(false, true)
 					}
 				default:
-					delivery.Nack(false, true)
+					go ack(&delivery, nil)
 				}
 			}
 		}

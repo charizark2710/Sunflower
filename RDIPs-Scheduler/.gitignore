@@ -1,2 +1,3 @@
 *.csv
-saved_model_*
+saved_model*
+*.pyc

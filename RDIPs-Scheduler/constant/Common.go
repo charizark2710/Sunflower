@@ -1,7 +1,7 @@
 package constant
 
 const (
-	JSCODE_ROUTING_KEY = "JS_CODE_"
+	JSCODE_ROUTING_KEY = "Scheduler-Gateway"
 	RESULT_ROUTING_KEY = "RESULT_"
 )
 

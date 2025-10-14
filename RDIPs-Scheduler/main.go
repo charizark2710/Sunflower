@@ -92,7 +92,7 @@ func main() {
 		if initErr != nil {
 			panic(initErr)
 		}
-		AMQP.InitAmqpQueue()
+		utils.Log(LogConstant.Info, "Start listening")
 		select {}
 	}
 

@@ -57,25 +57,15 @@ func (m *messageStruct) Send(exchange string, body interface{}, deliveryMode uin
 	return err
 }
 
-func InitAmqpQueue() {
+func InitAmqpQueue(channel *amqp091.Channel) error {
 	utils.Log(LogConstant.Info, "Initialize AMQP routes")
 	defer utils.Log(LogConstant.Info, "Finish initialize AMQP routes")
-	amqpPool := GetRabbitPool()
-	ch, _, err := amqpPool.Get()
-	if err != nil {
-		utils.Log(LogConstant.Fatal, err)
-	}
-
-	channel, ok := ch.(*amqp091.Channel)
-
-	if !ok {
-		utils.Log(LogConstant.Fatal, "Wrong format")
-	}
 
 	channel.Qos(10, 0, false)
 
 	queue, err := channel.QueueDeclare(constant.SCHEDULER_QUEUE, true, false, false, false, amqp091.Table{
 		"x-queue-type": "stream",
+		"x-max-age":    "5m",
 	})
 	if err != nil {
 		utils.Log(LogConstant.Fatal, err)
@@ -100,8 +90,9 @@ func InitAmqpQueue() {
 		err = channel.QueueBind(queue.Name, routingKey+queue.Name, "amq."+amqp091.ExchangeFanout, false, nil)
 	}
 	if err != nil {
-		utils.Log(LogConstant.Fatal, err)
+		return err
 	}
+	return nil
 }
 
 func (*messageStruct) generateRoutingKey(args ...string) string {

@@ -12,18 +12,28 @@ import (
 	unixSock "RDIPs-Task/handler/UnixSock"
 )
 
-func ExecutionHandler(id string, code string, ic float64, cycle float64) (any, error) {
+func ExecutionHandler(id string, msg map[string]interface{}) (any, error) {
 	conn := unixSock.Connect("/guess.sock")
 	defer conn.Close()
 
+	code := msg["code"].(string)
+	ic := msg["ic"].(float64)
+	cycle := msg["cycle"].(float64)
+	input_ids := msg["input_ids"].([]float64)
+	attention_mask := msg["attention_mask"].([]float64)
 	// Send request to model
 	b, _ := json.Marshal(map[string]any{
-		"ic":    ic,
-		"code":  code,
-		"cycle": cycle,
+		"pred_ic":        ic,
+		"pred_cycle":     cycle,
+		"input_ids":      input_ids,
+		"attention_mask": attention_mask,
 	})
-	if _, err := conn.Write(b); err != nil {
-		return nil, err
+	b = append(b, []byte("#END#\n")...)
+
+	for i := 0; i < len(b); i += 4096 {
+		if _, err := conn.Write(b[i:4096]); err != nil {
+			return nil, err
+		}
 	}
 
 	// Read response
@@ -39,11 +49,11 @@ func ExecutionHandler(id string, code string, ic float64, cycle float64) (any, e
 	}
 
 	// Safe type extraction
-	exeScore, _ := guessResult["score"].(float64)
+	isSkip, _ := guessResult["isSkip"].(string)
 	confidence, _ := guessResult["confidence"].(float64)
 
 	// Decision logic
-	if exeScore <= 0.7 && confidence >= 0.6 {
+	if isSkip == "true" {
 		return nil, fmt.Errorf("Skip")
 	}
 
@@ -62,7 +72,7 @@ func ExecutionHandler(id string, code string, ic float64, cycle float64) (any, e
 	resultCh := make(chan map[string]any, 1)
 
 	go func() {
-		val, actual_ic, actual_cycle, err := ExecuteJs(code, confidence < 0.6)
+		val, actual_ic, actual_cycle, err := ExecuteJs(code, confidence < 0.7)
 		resultCh <- map[string]any{
 			"result": val,
 			"ic":     actual_ic,
@@ -72,23 +82,30 @@ func ExecutionHandler(id string, code string, ic float64, cycle float64) (any, e
 	}()
 
 	var result *v8go.Value
-	var actual_ic uint64
+	var actual_ic float64
+	var actual_cycle float64
 	select {
 	case <-ctx.Done():
+		if _, err := conn.Write(nil); err != nil {
+			return nil, err
+		}
 		return nil, fmt.Errorf("execution timed out after 5 minutes")
 	case r := <-resultCh:
 		if r["err"] != nil {
 			return nil, r["err"].(error)
 		}
 		result = r["result"].(*v8go.Value)
-		actual_ic = r["ic"].(uint64)
+		actual_ic = r["ic"].(float64)
+		actual_cycle = r["cycle"].(float64)
 	}
 
 	if confidence < 0.6 {
 		// send actual ic to model
 		b, _ := json.Marshal(map[string]any{
-			"ic": actual_ic,
+			"actual_ic":    actual_ic,
+			"actual_cycle": actual_cycle,
 		})
+		b = append(b, []byte("#END#\n")...)
 		if _, err := conn.Write(b); err != nil {
 			return nil, err
 		}

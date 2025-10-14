@@ -4,9 +4,9 @@ import (
 	"RDIPs-Task/constant"
 	LogConstant "RDIPs-Task/constant/LogConst"
 	"RDIPs-Task/utils"
-	"fmt"
 	"os"
 	"strconv"
+	"time"
 
 	"context"
 	"encoding/json"
@@ -48,14 +48,38 @@ func (m *messageStruct) Send(exchange string, body interface{}, deliveryMode uin
 	return err
 }
 
-func (m *messageStruct) InitAmqpQueue(conn *amqp091.Connection) {
+func (m *messageStruct) InitAmqpQueue() error {
 	queue, err := m.receiveChannel.QueueDeclare("Task-Gateway", true, false, false, false, amqp091.Table{
-		"x-message-ttl": 600000,
-		"x-queue-type":  "stream",
+		"x-max-age":    "5m",
+		"x-queue-type": "stream",
 	})
 	if err != nil {
-		fmt.Print(err)
+		utils.Log(LogConstant.Error, err)
+		return err
 	}
+
+	notifyConnCloseCh := receiveChannel.NotifyClose(make(chan *amqp091.Error, 1))
+
+	// Reconnect if connection is close
+	go func() {
+		closedErr := <-notifyConnCloseCh
+		if closedErr != nil {
+			utils.Log(LogConstant.Error, closedErr)
+
+			time.Sleep(10 * time.Second)
+
+			err := m.InitAmqpQueue()
+			// Open new channel if it get error
+			for err != nil {
+				utils.Log(LogConstant.Error, err)
+				time.Sleep(10 * time.Second)
+				err = m.InitAmqpQueue()
+			}
+		}
+		if len(notifyConnCloseCh) > 0 {
+			<-notifyConnCloseCh
+		}
+	}()
 
 	priority, err := strconv.Atoi(os.Getenv("CONSUMER_PRIORITY"))
 	if err != nil {
@@ -74,7 +98,8 @@ func (m *messageStruct) InitAmqpQueue(conn *amqp091.Connection) {
 			"x-priority": priority,
 		})
 	if err != nil {
-		utils.Log(LogConstant.Fatal, err)
+		utils.Log(LogConstant.Error, err)
+		return err
 	}
 	go func() {
 		ReceiveService(deliveries)
@@ -84,8 +109,11 @@ func (m *messageStruct) InitAmqpQueue(conn *amqp091.Connection) {
 		err = m.receiveChannel.QueueBind(queue.Name, routingKey+queue.Name, "amq."+amqp091.ExchangeFanout, false, nil)
 	}
 	if err != nil {
-		utils.Log(LogConstant.Fatal, err)
+		utils.Log(LogConstant.Error, err)
+		return err
 	}
+
+	return nil
 }
 
 func (*messageStruct) generateRoutingKey(args ...string) string {
