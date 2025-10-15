@@ -76,7 +76,10 @@ func InitializeAMQP() error {
 		if !ok {
 			return errors.New("wrong connection")
 		}
-
+		err := InitAmqpQueue(ch)
+		if err != nil {
+			return err
+		}
 		chClose := ch.NotifyClose(make(chan *amqp091.Error, 1))
 		// Re-initialize channel if this one is closed due to some error
 		go func() {
@@ -87,6 +90,9 @@ func InitializeAMQP() error {
 					return
 				}
 				amqpCh, err := amqpConn.Channel()
+				if err == nil {
+					err = InitAmqpQueue(amqpCh)
+				}
 				// Open new channel if it get error
 				for err != nil {
 					utils.Log(LogConstant.Error, err)

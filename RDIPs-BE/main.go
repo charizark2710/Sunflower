@@ -35,6 +35,5 @@ func main() {
 	commonModel.Helper.SetDb(db)
 	commonModel.Helper.SetMongoDB(mongoDB)
 	routers.InitRouter(r)
-	routers.InitAmqpRoutes()
 	r.Run(":" + os.Getenv("API_PORT"))
 }

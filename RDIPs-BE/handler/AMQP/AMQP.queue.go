@@ -1,10 +1,8 @@
-package routers
+package AMQP_handler
 
 import (
 	LogConstant "RDIPs-BE/constant/LogConst"
 	"RDIPs-BE/constant/ServiceConst"
-	"RDIPs-BE/handler"
-	AMQP_handler "RDIPs-BE/handler/AMQP"
 	"RDIPs-BE/utils"
 	"os"
 	"strconv"
@@ -14,28 +12,16 @@ import (
 
 // var m sync.Mutex
 
-func InitAmqpRoutes() {
+func InitAmqpQueue(channel *amqp091.Channel) error {
 	utils.Log(LogConstant.Info, "Initialize AMQP routes")
 	defer utils.Log(LogConstant.Info, "Finish initialize AMQP routes")
-	amqpPool := handler.GetRabbitPool()
-	ch, _, err := amqpPool.Get()
-	if err != nil {
-		utils.Log(LogConstant.Fatal, err)
-	}
-
-	channel, ok := ch.(*amqp091.Channel)
-
-	if !ok {
-		utils.Log(LogConstant.Fatal, "Wrong format")
-	}
-
 	channel.Qos(10, 0, false)
 
 	queue, err := channel.QueueDeclare("API", true, false, false, false, amqp091.Table{
 		"x-message-ttl": 600000,
 	})
 	if err != nil {
-		utils.Log(LogConstant.Fatal, err)
+		return err
 	}
 
 	priority, err := strconv.Atoi(os.Getenv("CONSUMER_PRIORITY"))
@@ -55,16 +41,16 @@ func InitAmqpRoutes() {
 			"x-priority": priority,
 		})
 	if err != nil {
-		utils.Log(LogConstant.Fatal, err)
+		return err
 	}
 	go func() {
-		AMQP_handler.ReceiveService(deliveries)
+		ReceiveService(deliveries)
 	}()
 
 	for serviceName := range ServiceConst.ServiceMapMQTT {
 		err = channel.QueueBind(queue.Name, "gateway.*."+serviceName, "amq."+amqp091.ExchangeTopic, false, nil)
 		if err != nil {
-			utils.Log(LogConstant.Fatal, err)
+			return err
 		}
 		utils.Log(LogConstant.Debug, "Start Binding "+serviceName)
 	}
@@ -74,6 +60,8 @@ func InitAmqpRoutes() {
 		"x-message-ttl": 600000,
 	})
 	if err != nil {
-		utils.Log(LogConstant.Fatal, err)
+		return err
 	}
+
+	return nil
 }
