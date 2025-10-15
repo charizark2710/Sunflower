@@ -1,24 +1,20 @@
 
 from model.base_model.model import ReplayMemory, ActorModel, CriticModel, RelativeErrorWithSigmaLoss
 from utils.common import DEVICE
-from unix_sock import send_msg, recv_msg
+from model.unix_socket import send_msg, recv_msg
 from base_model.env import TaskEvalEnv
+from utils.common import load_model
 
 import torch.nn.functional as F
 import gymnasium as gym
 import numpy as np
 import torch
-import socket
 
 import torch
 import torch.nn.functional as F
 import numpy as np
-from torch.distributions import Categorical
-
 class ActorCritic:
-    def __init__(self, 
-                 actor: ActorModel,
-                 critic: CriticModel,
+    def __init__(self,
                  num_extra_feats: int,
                  conn,
                  gamma=0.99,
@@ -26,19 +22,17 @@ class ActorCritic:
                  actor_lr=1e-4,
                  critic_lr=1e-3,
                  batch_size=32,
-                 memory_capacity=1000,
-                 epsilon_start=0.9,
-                 epsilon_end=0.01,
-                 epsilon_decay=2500):
-        
+                 memory_capacity=1000):
+
         self.device = DEVICE
+        actor, critic = load_model(num_extra_feats)
         self.actor = actor.to(self.device)
         self.critic = critic.to(self.device)
         self.target_actor = ActorModel(num_extra_feats).to(self.device)
         self.target_critic = CriticModel().to(self.device)
 
-        self.target_actor.load_state_dict(actor.state_dict())
-        self.target_critic.load_state_dict(critic.state_dict())
+        self.target_actor.load_state_dict(self.actor.state_dict())
+        self.target_critic.load_state_dict(self.critic.state_dict())
 
         self.conn = conn
         self.gamma = gamma
@@ -55,9 +49,9 @@ class ActorCritic:
     # --- ACTOR PREDICTION / ACTION SELECTION
     # -------------------------------------------------------------------------
     @torch.no_grad()
-    def select_action(self, code_tokens, attention_masks, state, metrics):
+    def select_action(self, code_tokens, attention_mask, state, ast_metric, master_pred):
         self.actor.eval()
-        dist, pred_state = self.actor(code_tokens, attention_masks, state, metrics)
+        dist, pred_state = self.actor(code_tokens, attention_mask, state, ast_metric, master_pred)
         action = torch.argmax(dist.probs, dim=-1).item()
         return action, pred_state
 
@@ -68,7 +62,7 @@ class ActorCritic:
         rewards_per_episode = np.zeros(len(episodes))
 
         for ep_idx, episode in enumerate(episodes):
-            ast_metrics, code_tokens, attention_masks = episode
+            ast_metric, code_tokens, attention_mask, master_pred = episode
             state = torch.tensor(self.env.reset(), dtype=torch.float, device=self.device)
             episode_reward = 0.0
             done = False
@@ -81,8 +75,8 @@ class ActorCritic:
                     done = True
 
                 action, pred_state = self.select_action(
-                    code_tokens, attention_masks,
-                    {"cpu": state[1], "memory": state[0]}, ast_metrics
+                    code_tokens, attention_mask,
+                    {"cpu": state[1], "memory": state[0]}, ast_metric, master_pred
                 )
 
                 # execute
@@ -116,22 +110,19 @@ class ActorCritic:
                     'certainty': certainty.item(),
                     'done': done,
                     "code_tokens": code_tokens,
-                    "attention_masks": attention_masks,
-                    "ast_metrics": ast_metrics,
+                    "attention_mask": attention_mask,
+                    "ast_metric": ast_metric,
                     "actual_cycle": result["cycle"] if result else None,
-                    "actual_ic": result["ic"] if result else None
+                    "actual_ic": result["ic"] if result else None,
+                    "master_pred": master_pred
                 })
 
                 state = next_state
                 episode_reward += reward
 
-                if len(self.memory) >= self.batch_size:
-                    self.update_model()
-
             rewards_per_episode[ep_idx] = episode_reward
 
-
-        return rewards_per_episode
+        return self.update_model()
 
     # -------------------------------------------------------------------------
     # --- MODEL UPDATE
@@ -150,19 +141,20 @@ class ActorCritic:
             head_loss = torch.tensor([[float(exp.get('head_loss', 1.0))]], device=self.device)
 
             code_tokens = exp['code_tokens']
-            attention_masks = exp['attention_masks']
-            metrics = exp['metrics']
+            attention_mask = exp['attention_mask']
+            ast_metric = exp['ast_metric']
 
+            master_pred = exp["master_pred"]
             # Critic update
             with torch.no_grad():
-                dist_next, _ = self.target_actor(code_tokens, attention_masks,
-                                                 {"cpu": next_state[0, 1], "memory": next_state[0, 0]}, metrics)
+                dist_next, _ = self.target_actor(code_tokens, attention_mask,
+                                                 {"cpu": next_state[0, 1], "memory": next_state[0, 0]}, ast_metric, master_pred)
                 next_action = torch.argmax(dist_next.probs, dim=-1, keepdim=True).float()
                 target_q = self.target_critic(next_state, next_action)
                 target_value = reward + self.gamma * target_q * (1 - done)
 
-            dist, _ = self.actor(code_tokens, attention_masks,
-                                 {"cpu": state[0, 1], "memory": state[0, 0]}, metrics)
+            dist, state = self.actor(code_tokens, attention_mask,
+                                 {"cpu": state[0, 1], "memory": state[0, 0]}, ast_metric, master_pred)
             action = torch.argmax(dist.probs, dim=-1, keepdim=True).float()
             current_q = self.critic(state, action)
 
@@ -175,8 +167,8 @@ class ActorCritic:
 
             # Actor update
             self.actor_optimizer.zero_grad()
-            dist, _ = self.actor(code_tokens, attention_masks,
-                                 {"cpu": state[0, 1], "memory": state[0, 0]}, metrics)
+            dist, _ = self.actor(code_tokens, attention_mask,
+                                 {"cpu": state[0, 1], "memory": state[0, 0]}, ast_metric)
             pred_action = torch.argmax(dist.probs, dim=-1, keepdim=True).float()
             actor_loss = -self.critic(state, pred_action)
             actor_loss = (actor_loss * head_loss * certainty).mean()
@@ -192,4 +184,4 @@ class ActorCritic:
             for target_param, param in zip(self.target_actor.parameters(), self.actor.parameters()):
                 target_param.data.copy_(param.data)
 
-        return total_actor_loss / len(batch), total_critic_loss / len(batch)
+        return action, state

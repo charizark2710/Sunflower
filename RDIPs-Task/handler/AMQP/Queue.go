@@ -6,7 +6,6 @@ import (
 	"RDIPs-Task/utils"
 	"os"
 	"strconv"
-	"time"
 
 	"context"
 	"encoding/json"
@@ -57,29 +56,6 @@ func (m *messageStruct) InitAmqpQueue() error {
 		utils.Log(LogConstant.Error, err)
 		return err
 	}
-
-	notifyConnCloseCh := receiveChannel.NotifyClose(make(chan *amqp091.Error, 1))
-
-	// Reconnect if connection is close
-	go func() {
-		closedErr := <-notifyConnCloseCh
-		if closedErr != nil {
-			utils.Log(LogConstant.Error, closedErr)
-
-			time.Sleep(10 * time.Second)
-
-			err := m.InitAmqpQueue()
-			// Open new channel if it get error
-			for err != nil {
-				utils.Log(LogConstant.Error, err)
-				time.Sleep(10 * time.Second)
-				err = m.InitAmqpQueue()
-			}
-		}
-		if len(notifyConnCloseCh) > 0 {
-			<-notifyConnCloseCh
-		}
-	}()
 
 	priority, err := strconv.Atoi(os.Getenv("CONSUMER_PRIORITY"))
 	if err != nil {

@@ -51,7 +51,7 @@ class RelativeErrorWithSigmaLoss(nn.Module):
                 self.cpu_time_w * cpu_time_loss.mean().abs())
 
 class CodeWithMetricsModel(nn.Module):
-    """ACTOR: Predicts performance ast_metrics (IC, cycles)"""
+    """ACTOR: Predicts performance ast_metric (IC, cycles)"""
     def __init__(self, encoder_hidden_size, dropout, init_weigh=None):
         super().__init__(encoder_hidden_size, dropout, init_weigh)
 
@@ -143,7 +143,7 @@ class ActorModel(nn.Module):
             nn.Linear(64, 64)
         )
 
-        # ensemble: predict performance ast_metrics state from code features
+        # ensemble: predict performance ast_metric state from code features
         dropout_list = list(np.random.choice(np.arange(0.1, 0.6, 0.1), size=heads, replace=False))
         init_weigh = list(np.random.choice(np.arange(1e-1, 1e-6, 1e-1), size=heads, replace=False))
         
@@ -160,7 +160,7 @@ class ActorModel(nn.Module):
             nn.Linear(64, n_actions)
         )
         
-    def extract_code_embeddings(self, input_ids_list, attention_mask_list, ast_metrics):
+    def extract_code_embeddings(self, input_ids_list, attention_mask_list, ast_metric):
         # Extract code embeddings
         flat_input_ids = torch.cat(input_ids_list, dim=0)
         flat_attention_mask = torch.cat(attention_mask_list, dim=0)
@@ -177,18 +177,18 @@ class ActorModel(nn.Module):
             idx += n_chunks
 
         code_emb = torch.stack(pooled_outputs, dim=0)
-        feat_proj = self.feat_proj(ast_metrics)
+        feat_proj = self.feat_proj(ast_metric)
         x = torch.cat([code_emb, feat_proj], dim=1)
         x = self.norm(x)
         
         return x
 
-    def forward(self, input_ids_list, attention_mask_list, state, ast_metrics, master_predictions):
+    def forward(self, input_ids_list, attention_mask_list, state, ast_metric, master_predictions):
         """
         Returns: value estimate from critic
         """
 
-        x = self.extract_code_embeddings(input_ids_list, attention_mask_list, ast_metrics)
+        x = self.extract_code_embeddings(input_ids_list, attention_mask_list, ast_metric)
 
         head_outputs = []
         for head in self.heads:

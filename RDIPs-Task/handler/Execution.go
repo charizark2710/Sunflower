@@ -27,6 +27,7 @@ func ExecutionHandler(id string, msg map[string]interface{}) (any, error) {
 		"pred_cycle":     cycle,
 		"input_ids":      input_ids,
 		"attention_mask": attention_mask,
+		"ast_metric":     msg["ast_metric"].(string),
 	})
 	b = append(b, []byte("#END#\n")...)
 

@@ -180,10 +180,10 @@ func ReceiveService(deliveries <-chan amqp091.Delivery) {
 							"ic":             result["ic"],
 							"cycle":          result["cycle"],
 							"bundleSize":     result["bundleSize"],
-							"metrics":        result["metrics"],
+							"ast_metric":     result["ast_metric"],
 							"input_ids":      result["input_ids"],
 							"attention_mask": result["attention_mask"],
-							"code":           string(code)}, amqp091.Persistent, delivery.CorrelationId, delivery.ReplyTo)
+							"code":           result["code"]}, amqp091.Persistent, delivery.CorrelationId, delivery.ReplyTo)
 						go ack(&delivery, nil)
 					} else {
 						delivery.Nack(false, true)

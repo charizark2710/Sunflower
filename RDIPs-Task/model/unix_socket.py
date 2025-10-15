@@ -2,6 +2,10 @@ import socket
 import json
 import os
 import torch
+import psutil
+import argparse
+
+from ActorCritic import ActorCritic
 
 def socket_listener(socket_path="../guess.sock"):
     # Remove existing socket file if it exists
@@ -18,37 +22,53 @@ def socket_listener(socket_path="../guess.sock"):
     
     return server
 
-def handle_connection(server_socket):
+def handle_connection(server_socket, is_training=False):
     """Accept and handle a single connection"""
     conn, _ = server_socket.accept()
     print("Connection established.")
     
+    actorCritic = ActorCritic(
+        num_extra_feats=7,
+        conn=conn
+    )
     try:
         # Receive initial request
         initial_data = recv_msg(conn)
         if not initial_data:
             return
         
-        ic = initial_data.get("pred_ic")
+        ic = initial_data.get("ic")
         input_ids = torch.tensor(initial_data.get("input_ids"))
-        attention_masks = torch.tensor(initial_data.get("attention_masks"))
-        
-        cycle = initial_data.get("pred_cycle")
-        
-        # Process and generate prediction
-        score, confidence = your_model_predict(ic, "", cycle)
-        
+        attention_mask = torch.tensor(initial_data.get("attention_mask"))
+        cycle = initial_data.get("cycle")
+        ast_metric = initial_data.get("ast_metric")
+
+        memory_total = psutil.virtual_memory().total
+        cpu_usage = psutil.cpu_percent(interval=0) / 100
+        mem_usage = psutil.virtual_memory().used / memory_total
+
+        response = None
+        if is_training:
+            action, state = actorCritic.train([{
+                "ast_metric": ast_metric,
+                "code_tokens": input_ids,
+                "attention_mask": attention_mask,
+                "master_pred": {
+                    "ic": ic,
+                    "cycle": cycle
+                }
+            }])
+        else:
+            action, state = actorCritic.select_action(input_ids, attention_mask, state={
+                "cpu": cpu_usage,
+                "memory": mem_usage
+            }, ast_metric=ast_metric, master_pred={
+                "ic": ic,
+                "cycle": cycle
+            })
         # Send response back
-        response = {"score": score, "confidence": confidence}
+        response = {"isSkip": action != 1, "confidence": state["certainty"]}
         send_msg(conn, response)
-        
-        # If confidence < 0.6, expect actual_ic feedback
-        if confidence < 0.6:
-            feedback = recv_msg(conn)
-            if feedback and "ic" in feedback:
-                actual_ic = feedback["ic"]
-                # Update your model or log the actual_ic
-                print(f"Received actual IC: {actual_ic}")
 
     except Exception as e:
         print(f"Error handling connection: {e}")
@@ -88,32 +108,3 @@ def send_msg(conn: socket.socket, data: dict):
     except Exception as e:
         print(f"Error sending message: {e}")
         raise
-
-def your_model_predict(ic, code, cycle):
-    """Replace with your actual model prediction logic"""
-    # Placeholder - implement your model here
-    score = 0.8
-    confidence = 0.7
-    
-    
-    return score, confidence
-
-# # Main loop
-# def main():
-
-#     server = socket_listener("../guess.sock")
-    
-#     try:
-#         while True:
-#             handle_connection(server)
-#     except KeyboardInterrupt:
-#         print("\nShutting down...")
-#     finally:
-#         server.close()
-#         try:
-#             os.unlink("../guess.sock")
-#         except:
-#             pass
-
-# if __name__ == "__main__":
-#     main()

@@ -57,7 +57,7 @@ func GuessHandler(code string) (map[string]interface{}, error) {
 	}
 
 	resultMap["bundleSize"] = bundleSize
-	resultMap["metrics"] = metricMap
-
+	resultMap["ast_metric"] = metricMap
+	resultMap["code"] = string(bundleCode)
 	return resultMap, nil
 }
