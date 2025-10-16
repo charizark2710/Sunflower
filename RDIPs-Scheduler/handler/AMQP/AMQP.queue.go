@@ -86,8 +86,8 @@ func InitAmqpQueue(channel *amqp091.Channel) error {
 		ReceiveService(deliveries)
 	}()
 
-	for _, routingKey := range constant.ROUTING_KEY_PREFIX {
-		err = channel.QueueBind(queue.Name, routingKey+queue.Name, "amq."+amqp091.ExchangeFanout, false, nil)
+	for _, routingKey := range constant.ROUTING_KEY_POSTFIX {
+		err = channel.QueueBind(queue.Name, queue.Name+"."+routingKey, "amq."+amqp091.ExchangeFanout, false, nil)
 	}
 	if err != nil {
 		return err

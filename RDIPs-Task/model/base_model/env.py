@@ -28,7 +28,7 @@ class TaskEvalEnv(gym.Env):
             low=np.array([0.0, 0.0, 0.0]),
             high=np.array([1.0, 100.0, 100.0]),
             shape=(3,),
-            dtype=np.float32
+            dtype=np.float64
         )
 
         # placeholders for context updated externally
@@ -58,12 +58,11 @@ class TaskEvalEnv(gym.Env):
         actual_cycle = cycle_est
 
         percent_deduction = 1.0
+        mem_usage = psutil.virtual_memory().used
+        cpu_usage = psutil.cpu_percent(interval=0)
+        mem_percent = mem_usage / self.memory_total
+        cpu_percent = cpu_usage / 100.0
         if executed:
-            mem_usage = psutil.virtual_memory().used
-            cpu_usage = psutil.cpu_percent(interval=0)
-            mem_percent = mem_usage / self.memory_total
-            cpu_percent = cpu_usage / 100.0
-
             # apply highest thresholds first
             if mem_percent > 0.9:
                 percent_deduction *= 2.0
@@ -77,6 +76,21 @@ class TaskEvalEnv(gym.Env):
             elif cpu_percent > 0.7:
                 percent_deduction *= 1.5
             elif cpu_percent > 0.5:
+                percent_deduction *= 1.2
+        else:
+            # apply lowest thresholds first
+            if mem_percent < 0.1:
+                percent_deduction *= 2.0
+            elif mem_percent < 0.3:
+                percent_deduction *= 1.5
+            elif mem_percent < 0.5:
+                percent_deduction *= 1.2
+
+            if cpu_percent < 0.1:
+                percent_deduction *= 2.0
+            elif cpu_percent < 0.3:
+                percent_deduction *= 1.5
+            elif cpu_percent < 0.5:
                 percent_deduction *= 1.2
 
         # --- Reward logic ---
@@ -126,7 +140,7 @@ class TaskEvalEnv(gym.Env):
 
     def _get_state(self):
         """Return [mem_usage_ratio, cpu_usage%]."""
-        cpu_usage = psutil.cpu_percent(interval=0)
+        cpu_usage = psutil.cpu_percent(interval=0) / 100
         mem_usage = psutil.virtual_memory().used / self.memory_total
         return np.array([mem_usage, cpu_usage], dtype=np.float32)
 

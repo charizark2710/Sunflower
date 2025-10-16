@@ -74,23 +74,14 @@ func InitializeAMQP() error {
 		if !ok {
 			return errors.New("wrong connection")
 		}
-		err := InitAmqpQueue(ch)
-		if err != nil {
-			return err
-		}
+
 		chClose := ch.NotifyClose(make(chan *amqp091.Error, 1))
 		// Re-initialize channel if this one is closed due to some error
 		go func() {
 			closedErr := <-chClose
 			if closedErr != nil {
 				utils.Log(LogConstant.Error, closedErr)
-				if amqpConn.IsClosed() {
-					return
-				}
 				amqpCh, err := amqpConn.Channel()
-				if err == nil {
-					err = InitAmqpQueue(amqpCh)
-				}
 				// Open new channel if it get error
 				for err != nil {
 					utils.Log(LogConstant.Error, err)
@@ -120,6 +111,22 @@ func InitializeAMQP() error {
 	}
 
 	SetRabbitPool(rabbitPool)
+
+	ch, _, err := rabbitPool.Get()
+	if err != nil {
+		utils.Log(LogConstant.Error, err)
+		return err
+	}
+
+	channel, ok := ch.(*amqp091.Channel)
+	if !ok {
+		utils.Log(LogConstant.Error, "wrong channel format")
+		return fmt.Errorf("wrong channel format")
+	}
+	err = InitAmqpQueue(channel)
+	if err != nil {
+		return err
+	}
 	utils.Log(LogConstant.Info, "Finish Connect Rabbitmq, err:", err)
 	return err
 }
@@ -169,25 +176,28 @@ func ReceiveService(deliveries <-chan amqp091.Delivery) {
 		routingKey := delivery.RoutingKey
 		utils.Log(LogConstant.Debug, "Received a message: Delivery: "+delivery.Exchange+" With key: "+routingKey)
 
-		for _, prefixRoutingKey := range constant.ROUTING_KEY_PREFIX {
-			if strings.HasPrefix(routingKey, prefixRoutingKey) {
-				switch prefixRoutingKey {
+		for _, postfixRoutingKey := range constant.ROUTING_KEY_POSTFIX {
+			if strings.HasPrefix(routingKey, constant.SCHEDULER_QUEUE) {
+				switch postfixRoutingKey {
 				case constant.JSCODE_ROUTING_KEY:
 					code := delivery.Body
-					result, err := handler.GuessHandler(string(code))
-					if err == nil && result != nil && result["error"] == nil {
-						messageHandler.Send(constant.EXECUTE_QUEUE, map[string]any{
-							"ic":             result["ic"],
-							"cycle":          result["cycle"],
-							"bundleSize":     result["bundleSize"],
-							"ast_metric":     result["ast_metric"],
-							"input_ids":      result["input_ids"],
-							"attention_mask": result["attention_mask"],
-							"code":           result["code"]}, amqp091.Persistent, delivery.CorrelationId, delivery.ReplyTo)
-						go ack(&delivery, nil)
-					} else {
-						delivery.Nack(false, true)
-					}
+					go func() {
+						result, err := handler.GuessHandler(string(code))
+						if err == nil && result != nil && result["error"] == nil {
+							messageHandler.Send("amq."+amqp091.ExchangeFanout, map[string]any{
+								"ic":             result["ic"],
+								"cycle":          result["cycle"],
+								"bundleSize":     result["bundleSize"],
+								"ast_metric":     result["ast_metric"],
+								"input_ids":      result["input_ids"],
+								"attention_mask": result["attention_mask"],
+								"code":           result["code"]}, amqp091.Persistent, delivery.CorrelationId, delivery.ReplyTo,
+								constant.EXECUTE_QUEUE, postfixRoutingKey)
+							go ack(&delivery, nil)
+						} else {
+							delivery.Nack(false, true)
+						}
+					}()
 				default:
 					go ack(&delivery, nil)
 				}

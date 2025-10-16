@@ -4,8 +4,6 @@ import (
 	"RDIPs-Task/constant"
 	LogConstant "RDIPs-Task/constant/LogConst"
 	"RDIPs-Task/utils"
-	"os"
-	"strconv"
 
 	"context"
 	"encoding/json"
@@ -17,6 +15,7 @@ import (
 type MessageHandler interface {
 	Send(exchange string, body interface{}, deliveryMode uint8,
 		correlationID string, routingKeyArgs ...string) error
+	InitAmqpQueue() error
 }
 
 type messageStruct struct {
@@ -48,7 +47,7 @@ func (m *messageStruct) Send(exchange string, body interface{}, deliveryMode uin
 }
 
 func (m *messageStruct) InitAmqpQueue() error {
-	queue, err := m.receiveChannel.QueueDeclare("Task-Gateway", true, false, false, false, amqp091.Table{
+	queue, err := m.receiveChannel.QueueDeclare(constant.EXECUTE_QUEUE, true, false, false, false, amqp091.Table{
 		"x-max-age":    "5m",
 		"x-queue-type": "stream",
 	})
@@ -57,11 +56,7 @@ func (m *messageStruct) InitAmqpQueue() error {
 		return err
 	}
 
-	priority, err := strconv.Atoi(os.Getenv("CONSUMER_PRIORITY"))
-	if err != nil {
-		utils.Log(LogConstant.Error, err)
-		priority = 0 // default priority
-	}
+	m.receiveChannel.Qos(10, 0, false)
 
 	deliveries, err := m.receiveChannel.Consume(
 		queue.Name, // name
@@ -70,9 +65,7 @@ func (m *messageStruct) InitAmqpQueue() error {
 		false,      // exclusive
 		false,      // noLocal
 		false,      // noWait
-		amqp091.Table{
-			"x-priority": priority,
-		})
+		amqp091.Table{})
 	if err != nil {
 		utils.Log(LogConstant.Error, err)
 		return err
@@ -81,8 +74,8 @@ func (m *messageStruct) InitAmqpQueue() error {
 		ReceiveService(deliveries)
 	}()
 
-	for _, routingKey := range constant.ROUTING_KEY_PREFIX {
-		err = m.receiveChannel.QueueBind(queue.Name, routingKey+queue.Name, "amq."+amqp091.ExchangeFanout, false, nil)
+	for _, routingKey := range constant.ROUTING_KEY_POSTFIX {
+		err = m.receiveChannel.QueueBind(queue.Name, queue.Name+"."+routingKey, "amq."+amqp091.ExchangeFanout, false, nil)
 	}
 	if err != nil {
 		utils.Log(LogConstant.Error, err)

@@ -18,7 +18,6 @@ model.eval()
 # Ensure old socket is removed
 if os.path.exists(SOCKET_PATH):
     os.remove(SOCKET_PATH)
-
 # Create UNIX socket server
 server_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
 server_sock.bind(SOCKET_PATH)

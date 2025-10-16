@@ -9,7 +9,10 @@ import (
 
 func main() {
 	utils.PrepareLog()
-	AMQP_Handler.Connect()
+	_, err := AMQP_Handler.Connect()
+	if err != nil {
+		utils.Log(LogConstant.Fatal, err)
+	}
 	Redis_Handler.ConnectRedis()
 	utils.Log(LogConstant.Info, "Start listening")
 	select {}

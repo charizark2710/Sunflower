@@ -3,10 +3,12 @@ package AMQP_Handler
 import (
 	"encoding/json"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/rabbitmq/amqp091-go"
 
+	"RDIPs-Task/constant"
 	LogConstant "RDIPs-Task/constant/LogConst"
 	handler "RDIPs-Task/handler"
 	"RDIPs-Task/utils"
@@ -30,6 +32,21 @@ func Connect() (*amqp091.Connection, error) {
 	amqpConn.Config.Heartbeat = 10 * time.Second
 	notifyConnCloseConn := amqpConn.NotifyClose(make(chan *amqp091.Error, 1))
 
+	receiveChannel, err = amqpConn.Channel()
+	if err != nil {
+		return nil, err
+	}
+	sendChannel, err = amqpConn.Channel()
+	if err != nil {
+		return nil, err
+	}
+
+	messageHandler = NewMessageHandler(sendChannel, receiveChannel)
+	err = messageHandler.InitAmqpQueue()
+	if err != nil {
+		return nil, err
+	}
+
 	// Reconnect if connection is close
 	go func() {
 		closedErr := <-notifyConnCloseConn
@@ -48,15 +65,6 @@ func Connect() (*amqp091.Connection, error) {
 		}
 	}()
 
-	receiveChannel, err = amqpConn.Channel()
-	if err != nil {
-		return nil, err
-	}
-	sendChannel, err = amqpConn.Channel()
-	if err != nil {
-		return nil, err
-	}
-	messageHandler = NewMessageHandler(sendChannel, receiveChannel)
 	return amqpConn, nil
 }
 
@@ -70,16 +78,22 @@ func ReceiveService(deliveries <-chan amqp091.Delivery) {
 	}
 
 	for delivery := range deliveries {
-		var msg map[string]interface{}
-		json.Unmarshal(delivery.Body, &msg)
-		id := delivery.CorrelationId
-		result, err := handler.ExecutionHandler(id, msg)
-		if err == nil {
-			messageHandler.Send(delivery.ReplyTo, result, 1, delivery.CorrelationId, delivery.ReplyTo)
-		} else {
-			utils.Log(LogConstant.Error, err)
+		routingKey := delivery.RoutingKey
+		utils.Log(LogConstant.Debug, "Received a message: Delivery: "+delivery.Exchange+" With key: "+routingKey)
+		if strings.HasPrefix(routingKey, constant.EXECUTE_QUEUE) {
+			var msg map[string]interface{}
+			json.Unmarshal(delivery.Body, &msg)
+			id := delivery.CorrelationId
+			go func() {
+				result, err := handler.ExecutionHandler(id, msg)
+				if err == nil {
+					messageHandler.Send("amq."+amqp091.ExchangeFanout, result, 1, delivery.CorrelationId, delivery.ReplyTo)
+				} else {
+					utils.Log(LogConstant.Error, err)
+				}
+				go ack(&delivery, nil)
+			}()
 		}
-		go ack(&delivery, nil)
 	}
 
 }

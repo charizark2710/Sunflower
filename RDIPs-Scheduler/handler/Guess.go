@@ -21,9 +21,9 @@ func GuessHandler(code string) (map[string]interface{}, error) {
 		utils.Log(LogConstant.Error, err)
 		return nil, err
 	}
+	metricMap["bundleSize"] = bundleSize
 	b, _ := json.Marshal(map[string]interface{}{
 		"bundleSize": bundleSize,
-		"metrics":    metricMap,
 		"code":       string(bundleCode),
 	})
 	_, err = conn.Write(b)
