@@ -71,6 +71,11 @@ func InitAmqpQueue(channel *amqp091.Channel) error {
 		utils.Log(LogConstant.Fatal, err)
 	}
 
+	err = channel.ExchangeDeclare(constant.SCHEDULER_QUEUE, amqp091.ExchangeFanout, true, false, false, false, nil)
+	if err != nil {
+		utils.Log(LogConstant.Fatal, err)
+	}
+
 	deliveries, err := channel.Consume(
 		queue.Name, // name
 		"",         // consumerTag,
@@ -87,7 +92,7 @@ func InitAmqpQueue(channel *amqp091.Channel) error {
 	}()
 
 	for _, routingKey := range constant.ROUTING_KEY_POSTFIX {
-		err = channel.QueueBind(queue.Name, queue.Name+"."+routingKey, "amq."+amqp091.ExchangeFanout, false, nil)
+		err = channel.QueueBind(queue.Name, queue.Name+"."+routingKey, constant.SCHEDULER_QUEUE, false, nil)
 	}
 	if err != nil {
 		return err

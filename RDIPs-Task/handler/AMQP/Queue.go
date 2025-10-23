@@ -56,6 +56,12 @@ func (m *messageStruct) InitAmqpQueue() error {
 		return err
 	}
 
+	err = m.sendChannel.ExchangeDeclare(constant.EXECUTE_QUEUE, amqp091.ExchangeFanout, true, false, false, false, nil)
+	if err != nil {
+		utils.Log(LogConstant.Error, err)
+		return err
+	}
+
 	m.receiveChannel.Qos(10, 0, false)
 
 	deliveries, err := m.receiveChannel.Consume(
@@ -75,7 +81,7 @@ func (m *messageStruct) InitAmqpQueue() error {
 	}()
 
 	for _, routingKey := range constant.ROUTING_KEY_POSTFIX {
-		err = m.receiveChannel.QueueBind(queue.Name, queue.Name+"."+routingKey, "amq."+amqp091.ExchangeFanout, false, nil)
+		err = m.receiveChannel.QueueBind(queue.Name, queue.Name+"."+routingKey, constant.EXECUTE_QUEUE, false, nil)
 	}
 	if err != nil {
 		utils.Log(LogConstant.Error, err)

@@ -144,7 +144,7 @@ class ActorCritic:
             next_state = exp['next_state'].unsqueeze(0).to(self.device)
             reward = torch.tensor([[exp['reward']]], device=self.device, dtype=torch.float)
             certainty = torch.tensor([[exp['certainty']]], device=self.device)
-            head_loss = torch.tensor([[float(exp.get('head_loss', 1.0))]], device=self.device)
+            head_loss = torch.tensor([[1.0 / (1 + float(exp.get('head_loss', 10.0)))]], device=self.device)
 
             code_tokens = exp['code_tokens']
             attention_mask = exp['attention_mask']
@@ -156,7 +156,7 @@ class ActorCritic:
                 dist_next, next_state = self.target_actor(code_tokens, attention_mask,
                                                  {"cpu": next_state[0, 1], "memory": next_state[0, 0]}, ast_metric, master_pred)
                 target_q = self.target_critic(next_state, dist_next.probs)
-                target_value = reward + self.gamma * target_q
+                target_value = reward + self.gamma * target_q * head_loss
 
             dist, state = self.actor(code_tokens, attention_mask,
                                  {"cpu": state[0, 1], "memory": state[0, 0]}, ast_metric, master_pred)
@@ -170,7 +170,7 @@ class ActorCritic:
             total_critic_loss += critic_loss.item()
 
             # Actor update
-            
+
             self.actor_optimizer.zero_grad()
             state_detached = state.detach()
 

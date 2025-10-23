@@ -184,7 +184,7 @@ func ReceiveService(deliveries <-chan amqp091.Delivery) {
 					go func() {
 						result, err := handler.GuessHandler(string(code))
 						if err == nil && result != nil && result["error"] == nil {
-							messageHandler.Send("amq."+amqp091.ExchangeFanout, map[string]any{
+							messageHandler.Send(constant.EXECUTE_QUEUE, map[string]any{
 								"ic":             result["ic"],
 								"cycle":          result["cycle"],
 								"bundleSize":     result["bundleSize"],
