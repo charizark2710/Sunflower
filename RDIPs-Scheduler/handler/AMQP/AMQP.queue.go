@@ -32,7 +32,7 @@ func (m *messageStruct) Send(exchange string, body interface{}, deliveryMode uin
 	if err != nil {
 		utils.Log(LogConstant.Error, err)
 	} else {
-		defer rabbitPool.Release(conn, ctx)
+		defer rabbitPool.Release(conn, false, ctx)
 		channel, ok := conn.(*amqp091.Channel)
 		if !ok {
 			utils.Log(LogConstant.Error, "wrong channel format")

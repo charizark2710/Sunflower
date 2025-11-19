@@ -11,7 +11,7 @@ def socket_listener(socket_path="../guess.sock"):
     
     server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     server.bind(socket_path)
-    server.listen(1)
+    server.listen(10)
     
     print(f"Listening on {socket_path} — waiting for connection...")
     

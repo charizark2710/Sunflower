@@ -14,8 +14,8 @@ func GuessHandler(code string) (map[string]interface{}, error) {
 		utils.Log(LogConstant.Error, err)
 		return nil, err
 	}
-	conn := Connect("guess.sock")
-	defer conn.Close()
+	conn := GetUnixSock()
+	defer PutUnixSock(conn)
 	bundleCode, err := BundleJSCode(code)
 	if err != nil {
 		utils.Log(LogConstant.Error, err)
@@ -26,7 +26,7 @@ func GuessHandler(code string) (map[string]interface{}, error) {
 		"bundleSize": bundleSize,
 		"code":       string(bundleCode),
 	})
-	_, err = conn.Write(b)
+	_, err = (*conn).Write(b)
 	if err != nil {
 		return nil, err
 	}
@@ -36,8 +36,8 @@ func GuessHandler(code string) (map[string]interface{}, error) {
 	buf := make([]byte, 4096)
 
 	for {
-		conn.SetReadDeadline(time.Now().Add(5000 * time.Millisecond))
-		n, err := conn.Read(buf)
+		(*conn).SetReadDeadline(time.Now().Add(5000 * time.Millisecond))
+		n, err := (*conn).Read(buf)
 		if n > 0 {
 			result = append(result, buf[:n]...)
 		}

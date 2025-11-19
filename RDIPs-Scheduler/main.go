@@ -29,9 +29,14 @@ func main() {
 			dir_path = "./javascript-algorithms-and-data-structures"
 		}
 		socketPath, _ := filepath.Abs(currentPath + "/training.sock")
+		err := handler.InitializeUnixSock(socketPath)
+		if err != nil {
+			panic(err)
+		}
 		files := handler.LoadJSDir(dir_path, 100)
 		if len(files) > 0 {
-			conn := handler.Connect(socketPath)
+			conn := handler.GetUnixSock()
+			defer handler.PutUnixSock(conn)
 			for _, file := range files {
 				// Handle bundled code
 				prev := debug.SetGCPercent(-1)
@@ -57,7 +62,7 @@ func main() {
 					}
 
 					b, _ := json.Marshal(obj)
-					conn.Write(append(b, []byte("\nEND\n")...))
+					(*conn).Write(append(b, []byte("\nEND\n")...))
 				} else {
 					continue
 				}
@@ -91,6 +96,11 @@ func main() {
 		initErr := AMQP.InitializeAMQP()
 		if initErr != nil {
 			panic(initErr)
+		}
+		socketPath, _ := filepath.Abs(currentPath + "/guess.sock")
+		err := handler.InitializeUnixSock(socketPath)
+		if err != nil {
+			panic(err)
 		}
 		utils.Log(LogConstant.Info, "Start listening")
 		select {}

@@ -87,7 +87,9 @@ func ReceiveService(deliveries <-chan amqp091.Delivery) {
 			go func() {
 				result, err := handler.ExecutionHandler(id, msg)
 				if err == nil {
-					messageHandler.Send("amq."+amqp091.ExchangeFanout, result, 1, delivery.CorrelationId, delivery.ReplyTo)
+					if result != nil {
+						messageHandler.Send(constant.RESPONSE_QUEUE, result, 1, delivery.CorrelationId, delivery.ReplyTo)
+					}
 				} else {
 					utils.Log(LogConstant.Error, err)
 				}

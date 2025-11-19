@@ -6,7 +6,7 @@ from transformers import RobertaTokenizer, RobertaModel
 from torch.optim import AdamW
 from utils.common import DEVICE
 
-
+import numpy as np
 SAVE_DIR = "./saved_model"
 LR = 1e-4
 
@@ -106,7 +106,7 @@ class CodeWithMetricsModel(nn.Module):
 class RelativeErrorWithSigmaLoss(nn.Module):
     def __init__(self, cycle_rate=3.5e9, ic_w=0.2, cycle_w=0.1, cpu_time_w=0.4, eps=1e-2):
         super().__init__()
-        self.cycle_rate = cycle_rate
+        self.cycle_rate = np.log10(cycle_rate)
         self.ic_w = ic_w
         self.cycle_w = cycle_w
         self.cpu_time_w = cpu_time_w
@@ -122,13 +122,15 @@ class RelativeErrorWithSigmaLoss(nn.Module):
         sigma_cycle = sigma_cycle.clamp(min=self.eps)
 
         # log-likelihood style losses
-        # cpu_time_loss = 0.5 * (((cpu_time_pred - cpu_time_target) / sigma_cpu)**2 
-        #                        + 2 * torch.log(sigma_cpu))
+
         ic_loss  = 0.5 * (((ic_pred - ic_target) / sigma_ic)**2 
                           + 2 * torch.log(sigma_ic))
         cycle_loss = 0.5 * (((cycle_pred - cycle_target) / sigma_cycle)**2 
                             + 2 * torch.log(sigma_cycle))
-        cpu_time_loss = cycle_loss / self.cycle_rate
+        cpu_time_target = cycle_target / self.cycle_rate
+        cpu_time_pred = (ic_pred * (cycle_pred / ic_pred)) / self.cycle_rate
+        cpu_time_loss = 0.5 * (((cpu_time_pred - cpu_time_target) / sigma_cycle)**2
+                            + 2 * torch.log(sigma_cycle))
 
         return (self.ic_w * ic_loss.mean().abs() +
                 self.cycle_w * cycle_loss.mean().abs() +

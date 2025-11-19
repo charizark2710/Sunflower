@@ -21,7 +21,7 @@ if os.path.exists(SOCKET_PATH):
 # Create UNIX socket server
 server_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
 server_sock.bind(SOCKET_PATH)
-server_sock.listen(1)
+server_sock.listen(10)
 print(f"Listening on {SOCKET_PATH}")
 
 def handle_request(data: dict):

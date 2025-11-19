@@ -1,5 +1,9 @@
 import torch
 import os
+import psutil
+import time
+import gc
+
 from torch.optim import AdamW
 from base_model.model import ActorModel, CriticModel
 from utils.constant import DEVICE, SAVE_DIR
@@ -8,16 +12,45 @@ running_count = 0
 running_mean = torch.zeros(7, dtype=torch.float, device=DEVICE)
 running_std = torch.ones(7, dtype=torch.float, device=DEVICE)
 
+def profile_with_psutil(func):
+    """Profile using psutil for detailed system metrics"""
+    def wrapper(*args, **kwargs):
+        process = psutil.Process(os.getpid())
+
+        # CPU baseline
+        process.cpu_percent(interval=None)
+
+        # Memory baseline
+        mem_before = process.memory_info().rss
+
+        # Run function
+        result = func(*args, **kwargs)
+
+        # Allow memory to stabilize
+        time.sleep(0.05)
+        gc.collect()
+
+        # Memory after
+        mem_after = process.memory_info().rss
+
+        # CPU after
+        cpu_after = process.cpu_percent(interval=0.1)
+
+        mem_delta = mem_after - mem_before
+        cpu_delta = cpu_after
+        return result, mem_delta, cpu_delta
+    return wrapper
+
 def load_model(num_extra_feats):
-    if not os.path.exists("../"+ SAVE_DIR + "/actor_model.pt") or not os.path.exists("../"+ SAVE_DIR + "/critic_model.pt"):
+    if not os.path.exists(SAVE_DIR + "/actor_model.pt") or not os.path.exists(SAVE_DIR + "/critic_model.pt"):
         actor = ActorModel(num_extra_feats = num_extra_feats)
         critic = CriticModel()
         return actor, critic
         
     actor_model = ActorModel(num_extra_feats = num_extra_feats)
-    actor_model.load_state_dict(torch.load("../"+ SAVE_DIR + "/actor_model.pt", map_location=DEVICE))
+    actor_model.load_state_dict(torch.load(SAVE_DIR + "/actor_model.pt", map_location=DEVICE))
     critic_model = CriticModel()
-    critic_model.load_state_dict(torch.load("../"+ SAVE_DIR + "/critic_model.pt", map_location=DEVICE))
+    critic_model.load_state_dict(torch.load(SAVE_DIR + "/critic_model.pt", map_location=DEVICE))
 
     return actor_model, critic_model
 
@@ -83,3 +116,20 @@ def normalize_features(features):
     # Normalize current batch
     normalized = (features - running_mean) / running_std
     return normalized
+
+def get_cpu_clock_rate_hz():
+    """
+    Retrieves the current CPU clock rate in Hertz.
+    """
+    try:
+        # psutil.cpu_freq() returns a named tuple with current, min, and max frequencies in MHz.
+        cpu_freq_info = psutil.cpu_freq()
+        if cpu_freq_info:
+            # Convert current frequency from MHz to Hz
+            max_frequency_hz = cpu_freq_info.max * 1_000_000
+            return max_frequency_hz
+        else:
+            return None
+    except Exception as e:
+        print(f"Error getting CPU frequency: {e}")
+        return None

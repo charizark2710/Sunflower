@@ -129,7 +129,11 @@ func ExecutionHandler(id string, msg map[string]interface{}) (any, error) {
 				return nil, err
 			}
 		} else {
-			if _, err := conn.Write([]byte("OK#END#")); err != nil {
+			msg, _ := json.Marshal(map[string]any{
+				"status": "complete",
+			})
+			msg = append(msg, []byte("#END#")...)
+			if _, err := conn.Write(msg); err != nil {
 				lock.Release(releaseCtx)
 				execCancel()
 				releaseCancel()

@@ -156,7 +156,6 @@ func (ca *ComplexityAnalyzer) traverse(node ast.Node, context *TraversalContext)
 	case *ast.Statement:
 		ca.traverse(n.Stmt, context)
 	default:
-		fmt.Printf("Unhandled node type: %T\n", n)
 	}
 }
 

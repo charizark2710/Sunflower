@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"net"
 	"path/filepath"
+	"time"
 )
 
 func Connect(path string) net.Conn {
+	time.Sleep(2 * time.Second)
 	socketPath, _ := filepath.Abs(path)
 	fmt.Println(socketPath)
 	conn, err := net.Dial("unix", socketPath)

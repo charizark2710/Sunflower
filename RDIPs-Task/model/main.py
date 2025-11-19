@@ -45,15 +45,16 @@ def handle_connection(server_socket, is_training=False):
                 }
             }])
         else:
-            action, state = actorCritic.select_action(input_ids, attention_mask, state={
-                "cpu": cpu_usage,
-                "memory": mem_usage
-            }, ast_metric=ast_metric, master_pred={
-                "ic": ic,
-                "cycle": cycle
-            })
+            with torch.no_grad():
+                action, state, certainty = actorCritic.select_action(input_ids, attention_mask, state={
+                    "cpu": cpu_usage,
+                    "memory": mem_usage
+                }, ast_metric=ast_metric, master_pred={
+                    "ic": ic,
+                    "cycle": cycle
+                })
             # Send response back
-            response = {"isSkip": action != 1, "confidence": state["certainty"], "done": True}
+            response = {"isSkip": action != 1, "confidence": certainty, "done": True}
             send_msg(conn, response)
 
     except Exception as e:

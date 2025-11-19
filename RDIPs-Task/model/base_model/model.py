@@ -3,25 +3,24 @@ import os
 import torch
 import torch.nn as nn
 import numpy as np
+import random
 
 from transformers import RobertaTokenizer, RobertaModel
 from torch.optim import AdamW
 from utils.constant import DEVICE, SAVE_DIR
 from collections import deque
 import torch.nn.functional as F
-from torch.distributions import Categorical
 
-LR = 1e-4
+LR = 1e-5
 
-def fanin_init(size, fanin=None):
-    fanin = fanin or size[0]
-    v = 1. / np.sqrt(fanin)
-    return torch.Tensor(size).uniform_(-v, v)
+def init_w(m):
+    m.weight.data.normal_(1.0, 0.02)
+    m.bias.data.fill_(0)
 
 class RelativeErrorWithSigmaLoss(nn.Module):
     def __init__(self, cycle_rate=3.5e9, ic_w=0.2, cycle_w=0.1, cpu_time_w=0.4, eps=1e-2):
         super().__init__()
-        self.cycle_rate = cycle_rate
+        self.cycle_rate = np.log10(cycle_rate)
         self.ic_w = ic_w
         self.cycle_w = cycle_w
         self.cpu_time_w = cpu_time_w
@@ -37,54 +36,64 @@ class RelativeErrorWithSigmaLoss(nn.Module):
         sigma_cycle = sigma_cycle.clamp(min=self.eps)
 
         # log-likelihood style losses
-        # cpu_time_loss = 0.5 * (((cpu_time_pred - cpu_time_target) / sigma_cpu)**2 
-        #                        + 2 * torch.log(sigma_cpu))
+
         ic_loss  = 0.5 * (((ic_pred - ic_target) / sigma_ic)**2 
                           + 2 * torch.log(sigma_ic))
         cycle_loss = 0.5 * (((cycle_pred - cycle_target) / sigma_cycle)**2 
                             + 2 * torch.log(sigma_cycle))
-        cpu_time_loss = cycle_loss / self.cycle_rate
+        cpu_time_target = cycle_target / self.cycle_rate
+        cpu_time_pred = (ic_pred * (cycle_pred / ic_pred)) / self.cycle_rate
+        cpu_time_loss = 0.5 * (((cpu_time_pred - cpu_time_target) / sigma_cycle)**2
+                            + 2 * torch.log(sigma_cycle))
 
         return (self.ic_w * ic_loss.mean().abs() +
                 self.cycle_w * cycle_loss.mean().abs() +
                 self.cpu_time_w * cpu_time_loss.mean().abs())
+class DuelingHeadNet(nn.Module):
+    def __init__(self, n_actions=2):
+        super(DuelingHeadNet, self).__init__()
+        mult = 64*7*7
+        self.split_size = 512
+        self.fc1 = nn.Linear(mult, self.split_size*2)
+        self.value = nn.Linear(self.split_size, 1)
+        self.advantage = nn.Linear(self.split_size, n_actions)
+        self.fc1.apply(init_w)
+        self.value.apply(init_w)
+        self.advantage.apply(init_w)
+
+    def forward(self, x):
+        x1,x2 = torch.split(F.relu(self.fc1(x)), self.split_size, dim=1)
+        value = self.value(x1)
+        advantage = self.advantage(x2)
+        # value is shape [batch_size, 1]
+        # advantage is shape [batch_size, n_actions]
+        q = value + torch.sub(advantage, torch.mean(advantage, dim=1, keepdim=True))
+        return q
 
 class CodeWithMetricsModel(nn.Module):
     """ACTOR: Predicts performance ast_metric (IC, cycles)"""
-    def __init__(self, encoder_hidden_size, dropout, init_weigh=None):
+    def __init__(self, encoder_hidden_size):
         super().__init__()
         self.fc = nn.Sequential(
-            nn.Linear(encoder_hidden_size + 64, 512),
+            nn.Linear(encoder_hidden_size + 64, 512), # Increased size
             nn.ReLU(),
-            nn.Dropout(dropout),
-            nn.Linear(512, 256),
+            nn.Dropout(0.3),
+            nn.Linear(512, 256),             # Added a new layer
             nn.ReLU(),
-            nn.Dropout(dropout),
+            nn.Dropout(0.3),
             nn.Linear(256, 128),
             nn.ReLU(),
-            nn.Dropout(dropout),
-            nn.Linear(128, 4),  # [ic, log_sigma_ic, cycle, log_sigma_cycle]
+            nn.Dropout(0.3),
+            nn.Linear(128, 4),
         )
         
         self.optimizer = AdamW(self.parameters(), lr=LR, weight_decay=0.01)
         self.loss_fn = RelativeErrorWithSigmaLoss()
-        self.init_weighs(init_weigh)
-
-    def init_weighs(self, init_w):
-        # Get all Linear layers from the Sequential
-        linear_layers = [module for module in self.fc.modules() if isinstance(module, nn.Linear)]
-        
-        # Initialize hidden layers with fanin
-        for layer in linear_layers[:-1]:
-            layer.weight.data = fanin_init(layer.weight.data.size())
-        
-        # Initialize output layer with uniform distribution
-        linear_layers[-1].weight.data.uniform_(-init_w, init_w)
 
     def loss_function(self, ic_target, cycle_target):
         """Actor loss: prediction error"""
         ic_pred, sigma_ic, cycle_pred, sigma_cycle = self.result
-        loss_val = self.loss_fn(ic_pred, sigma_ic, cycle_pred, sigma_cycle, ic_target, cycle_target)
+        loss_val = self.loss_fn(torch.log10(ic_pred).squeeze(), sigma_ic.squeeze(), torch.log10(cycle_pred).squeeze(), sigma_cycle.squeeze(), ic_target.squeeze(), cycle_target.squeeze())
         loss_val.backward(retain_graph=True)
         torch.nn.utils.clip_grad_norm_(self.parameters(), max_norm=1.0)
         self.optimizer.step()
@@ -102,33 +111,33 @@ class CodeWithMetricsModel(nn.Module):
         return ic, sigma_ic, cycle, sigma_cycle
 
 class CriticModel(nn.Module):
-    def __init__(self, nb_states = 7, nb_actions = 2):
-        """CRITIC: Evaluates quality of actor's predictions"""
-        """action: [1, 0]"""
-        """state: [ic, sigma_ic, cycle, sigma_cycle, certainty, cpu%, memory%]"""
+    def __init__(self, nb_states=8, nb_actions=2):
         super().__init__()
         self.fc1 = nn.Linear(nb_states, 400)
-        self.fc2 = nn.Linear(400+nb_actions, 300)
-        self.fc3 = nn.Linear(300, 1)
+        self.fc2 = nn.Linear(400 + nb_actions, 300)
+        self.fc_certainty = nn.Linear(300 + 1, 150)
+        self.fc3 = nn.Linear(150, 1)
         self.relu = nn.ReLU()
+        
+        # optional stabilization
+        nn.init.uniform_(self.fc3.weight, -3e-3, 3e-3)
+        nn.init.uniform_(self.fc3.bias, -3e-3, 3e-3)
 
-    def forward(self, state, action):
-        out = self.fc1(state)
-        out = self.relu(out)
-        # debug()
-        out = self.fc2(torch.cat([out,action], dim=1))
-        out = self.relu(out)
-        out = self.fc3(out)
-        return out
-    
+    def forward(self, state, action, certainty):
+        x = self.relu(self.fc1(state))
+        x = self.relu(self.fc2(torch.cat([x, action], dim=1)))
+        x = self.relu(self.fc_certainty(torch.cat([x, certainty.view(1, 1)], dim=1)))
+        q_value = self.fc3(x)
+        return q_value
+
     def calculate_loss(self, y_pred, y_true):
         loss = F.mse_loss(y_pred, y_true)
         return loss
 
 class ActorModel(nn.Module):
-    def __init__(self, num_extra_feats, n_states = 7, n_actions=2, model_name="microsoft/codebert-base", heads=5):
+    def __init__(self, num_extra_feats, n_states = 8, n_actions=2, model_name="microsoft/codebert-base", heads=5):
         '''
-        """state: [ic, sigma_ic, cycle, sigma_cycle, certainty, cpu%, memory%]"""
+        """state: [ic, sigma_ic, cycle, sigma_cycle, m_ic, m_cycle, cpu%, memory%]"""
         '''
         super().__init__()
         
@@ -137,30 +146,28 @@ class ActorModel(nn.Module):
         hidden_size = self.encoder.config.hidden_size
         self.norm = nn.LayerNorm(hidden_size + 64)
         
+        self.n_actions = n_actions
         self.feat_proj = nn.Sequential(
             nn.Linear(num_extra_feats, 64),
             nn.ReLU(),
             nn.Linear(64, 64)
         )
 
-        # ensemble: predict performance ast_metric state from code features
-        dropout_list = list(np.random.choice(np.arange(0.1, 0.6, 0.1), size=heads, replace=False))
-        log_values = np.random.uniform(-6, -1, size=heads * 2)
-        unique_vals = np.unique(np.round(log_values, 6))[:heads]  # ensure unique
-        init_weigh = list(10 ** unique_vals)        
-        self.heads = nn.ModuleList([
-            self.load_code_with_metrics_model("./"+SAVE_DIR+"/"+"model.pt", hidden_size, dropout_list[i], init_weigh = init_weigh[i])
-            for i in range(heads)
-        ])
+        self.core = self.load_code_with_metrics_model("./"+SAVE_DIR+"/"+"model.pt", hidden_size)
+        self.heads = nn.ModuleList([DuelingHeadNet(n_actions=n_actions) for k in range(heads)])
 
         self.shared_fc = nn.Sequential(
             nn.Linear(n_states, 128),
             nn.ReLU(),
             nn.Linear(128, 64),
             nn.ReLU(),
-            nn.Linear(64, n_actions)
+            nn.Linear(64, 64*7*7)
         )
         
+        self.mix_logit = nn.Parameter(torch.tensor(0.0))
+        self.scale_param = nn.Parameter(torch.tensor(0.0))
+        self.temp_param = nn.Parameter(torch.tensor(-2.0))
+
     def extract_code_embeddings(self, input_ids_list, attention_mask_list, ast_metric):
         # Extract code embeddings
         flat_input_ids = torch.cat(input_ids_list, dim=0)
@@ -189,43 +196,46 @@ class ActorModel(nn.Module):
         Returns: value estimate from critic
         """
         x = self.extract_code_embeddings(input_ids_list, attention_mask_list, ast_metric)
-
-        head_outputs = []
-        for head in self.heads:
-            ic, sigma_ic, cycle, sigma_cycle = head(x)
-            head_outputs.append((ic, sigma_ic, cycle, sigma_cycle))
-
-        self.head_outputs = head_outputs
-        self.code_features = x  # Save for later use
-
-        ics, sigmas_ic, cycles, sigmas_cycle = self.get_avg_head_outputs(head_outputs)
-        certainty = self._calculate_certainty_per_sample(head_outputs)
+        x = self.core(x)
+        ic, sigma_ic, cycle, sigma_cycle = x
         m_ic = torch.tensor(np.log10(master_predictions["ic"]))
         m_cycle = torch.tensor(np.log10(master_predictions["cycle"]))
-        blended_ic = certainty * ics + (1 - certainty) * m_ic
-        blended_cycle = certainty * cycles + (1 - certainty) * m_cycle
-        
-        # Build state with uncertainty information
+
+        # print(f"torch.log10(ic).squeeze(0).unsqueeze(0).shape: {torch.log10(ic).squeeze(0).unsqueeze(0).shape}")
+        # print(f"torch.log10(cycle).squeeze(0).unsqueeze(0).shape: {torch.log10(cycle).squeeze(0).unsqueeze(0).shape}")
+        # print(f"sigma_ic.squeeze(0).unsqueeze(0).shape: {sigma_ic.squeeze(0).unsqueeze(0).shape}")
+        # print(f"sigma_cycle.squeeze(0).unsqueeze(0).shape: {sigma_cycle.squeeze(0).unsqueeze(0).shape}")
+        # print(f"m_ic.unsqueeze(0).shape: {m_ic.unsqueeze(0).shape}")
+        # print(f"m_cycle.unsqueeze(0).shape: {m_cycle.unsqueeze(0).shape}")
+        # print(f"state['memory'].unsqueeze(0).shape: {state['memory'].unsqueeze(0).shape}")
+        # print(f"state['cpu'].unsqueeze(0).shape: {state['cpu'].unsqueeze(0).shape}")
         state = torch.cat([
-            blended_ic.unsqueeze(0),
-            blended_cycle.unsqueeze(0),
-            certainty.unsqueeze(0),
-            (ics - m_ic).abs().unsqueeze(0),  # Disagreement with base model
-            (cycles - m_cycle).abs().unsqueeze(0),
-            state["memory"].unsqueeze(0).unsqueeze(0),
-            state["cpu"].unsqueeze(0).unsqueeze(0),
+            torch.log10(ic).reshape(1, 1).float(),
+            torch.log10(cycle).reshape(1, 1).float(),
+            sigma_ic.reshape(1, 1).float(),
+            sigma_cycle.reshape(1, 1).float(),
+            m_ic.reshape(1, 1).float(),
+            m_cycle.reshape(1, 1).float(),
+            state["memory"].reshape(1, 1).float(),
+            state["cpu"].reshape(1, 1).float(),
         ], dim=1)
-        action = self.shared_fc(state)
-        distribution = Categorical(F.softmax(action, dim=-1))
-        return distribution, state
-    def load_code_with_metrics_model(self, checkpoint_path, encoder_hidden_size=768, dropout=0.3,
-                                    init_weigh=1e-3):
+
+        x = self.shared_fc(state)
+
+        self.head_outputs = [net(x) for net in self.heads]
+        self.code_features = x  # Save for later use
+
+        certainty = self._calculate_certainty_per_sample()
+        
+        avg_head_output = torch.mean(torch.stack(self.head_outputs), dim=0)
+        return avg_head_output, state, certainty
+
+    def load_code_with_metrics_model(self, checkpoint_path, encoder_hidden_size=768,
+                                    ):
         """Load a CodeWithMetricsModel from checkpoint"""
         # Determine mode
         model = CodeWithMetricsModel(
             encoder_hidden_size=encoder_hidden_size,
-            dropout=dropout,
-            init_weigh=init_weigh
         )
         if not os.path.exists(checkpoint_path):
             print(f"✗ Checkpoint not found: {checkpoint_path}")
@@ -251,65 +261,26 @@ class ActorModel(nn.Module):
         print(f"✓ Model loaded successfully")
         return model
 
-    def get_avg_head_outputs(self, head_outputs = None):
-        if head_outputs is None:
-            head_outputs = self.head_outputs
-        """Get average actor predictions"""
-        ics = torch.stack([h[0] for h in head_outputs], dim=0)
-        sigmas_ic = torch.stack([h[1] for h in head_outputs], dim=0)
-        cycles = torch.stack([h[2] for h in head_outputs], dim=0)
-        sigmas_cycle = torch.stack([h[3] for h in head_outputs], dim=0)
-
-        return ics.mean(dim=0), sigmas_ic.mean(dim=0), cycles.mean(dim=0), sigmas_cycle.mean(dim=0)
-
-    def _calculate_certainty_per_sample(self, head_outputs=None):
-        if head_outputs is None:
-            head_outputs = self.head_outputs
-        
-        ics = torch.stack([h[0] for h in head_outputs], dim=0)  # [num_heads, batch]
-        cycles = torch.stack([h[2] for h in head_outputs], dim=0)
-        sigma_ics = torch.stack([h[1] for h in head_outputs], dim=0)
-        sigma_cycles = torch.stack([h[3] for h in head_outputs], dim=0)
-
-        mean_ic = ics.mean(dim=0)
-        mean_cycle = cycles.mean(dim=0)
-        
-        epistemic_ic = ics.std(dim=0) / (mean_ic.abs() + 1e-6)
-        epistemic_cycle = cycles.std(dim=0) / (mean_cycle.abs() + 1e-6)
-
-        avg_sigma_ic = sigma_ics.mean(dim=0)
-        avg_sigma_cycle = sigma_cycles.mean(dim=0)
-
-        if not hasattr(self, 'uncertainty_weights'):
-            self.uncertainty_weights = nn.Parameter(torch.ones(4))
-
-        # Normalize uncertainties to similar scales
-        epistemic = (epistemic_ic + epistemic_cycle) / 2
-        aleatoric = (avg_sigma_ic + avg_sigma_cycle) / 2
-
-        # Apply learned weights with softmax
-        weights = F.softmax(self.uncertainty_weights, dim=0)
-        total_uncertainty = (
-            weights[0] * epistemic + 
-            weights[1] * aleatoric
-        )
-
-        # Convert to certainty using exponential decay
-        certainty = torch.exp(-weights[2] * total_uncertainty)
-
-        # Apply temperature scaling
-        temperature = torch.clamp(weights[3] * 10, 0.1, 10.0)
-        certainty = torch.sigmoid((certainty - 0.5) * temperature)
-
+    def _calculate_certainty_per_sample(self):
+        head_outputs = self.head_outputs
+        advantages = [h[0] - h[0].mean(dim=0, keepdim=True) for h in head_outputs]
+        var_q = torch.var(torch.stack(advantages), dim=0)
+        uncertainty = var_q.mean(dim=-1)
+        certainty = torch.exp(-uncertainty)
         return certainty
 
-    def train_head(self, actual_ic, actual_cycle):
-        """Train all actor heads with ground truth"""
-        total_loss = 0
-        for head in self.heads:
-            loss = head.loss_function(actual_ic, actual_cycle)
-            total_loss += loss
-        return total_loss / len(self.heads)
+    def loss_fn(self, q_values, actions, rewards):
+        """
+        Contextual bandit loss for multi-head critic.
+        
+        q_values: list of [batch_size, num_actions] from each head
+        actions: [batch_size]  (action indices taken)
+        rewards: [batch_size]  (observed rewards)
+        """
+        q_pred = q_values.gather(1, actions.unsqueeze(1)).squeeze(1)
+        # MSE between predicted Q and observed reward
+        loss = F.mse_loss(q_pred, rewards)
+        return loss
 
 class ReplayMemory():
     def __init__(self, maxlen=1000):
@@ -323,8 +294,7 @@ class ReplayMemory():
         self.memory.clear()
     
     def sample(self, batch_size):
+        
         if len(self.memory) < batch_size:
-            return
-        indices = np.random.choice(len(self.memory), size=batch_size, replace=False)
-        batch = [self.memory[idx] for idx in indices]
-        return batch
+            batch_size = len(self.memory)    
+        return random.sample(self.memory, batch_size)

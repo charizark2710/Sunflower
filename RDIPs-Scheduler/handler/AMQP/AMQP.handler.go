@@ -88,6 +88,7 @@ func InitializeAMQP() error {
 					time.Sleep(10 * time.Second)
 					amqpCh, err = amqpConn.Channel()
 				}
+				ch = amqpCh
 				conn = amqpCh
 			}
 			if len(chClose) > 0 {
