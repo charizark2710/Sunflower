@@ -47,14 +47,14 @@ def handle_connection(server_socket, is_training=False):
         else:
             with torch.no_grad():
                 action, state, certainty = actorCritic.select_action(input_ids, attention_mask, state={
-                    "cpu": cpu_usage,
-                    "memory": mem_usage
+                    "cpu": torch.tensor(cpu_usage, dtype=torch.float),
+                    "memory": torch.tensor(mem_usage, dtype=torch.float)
                 }, ast_metric=ast_metric, master_pred={
                     "ic": ic,
                     "cycle": cycle
                 })
             # Send response back
-            response = {"isSkip": action != 1, "confidence": certainty, "done": True}
+            response = {"isSkip": action != 1, "confidence": certainty.item(), "done": True}
             send_msg(conn, response)
 
     except Exception as e:
@@ -67,10 +67,11 @@ def handle_connection(server_socket, is_training=False):
 def main():
     global actorCritic
     parser = argparse.ArgumentParser(description="Run actor-critic socket listener.")
-    parser.add_argument("--is_training", type=lambda x: x.lower() in ['true', '1', 'yes'], default=True,
+    parser.add_argument("--is_training", type=lambda x: x.lower() in ['true', '1', 'yes'], default=False,
                         help="Run in training mode if True, else inference mode.")
     parser.add_argument("--socket_path", type=str, default="../guess.sock",
                         help="Path to the UNIX socket file.")
+    print("test")
     actorCritic = ActorCritic(
             num_extra_feats=7,
             conn=None,

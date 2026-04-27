@@ -17,7 +17,7 @@
         "BROKER_PASSWORD": "admin",
         "BROKER_PROTOCOL": "amqp"
       },
-      // "args": ["train"],
+      "args": ["guess.sock"],
       "console": "integratedTerminal",
       "asRoot": true,
     }

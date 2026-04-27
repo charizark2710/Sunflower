@@ -113,8 +113,8 @@ func getTokenAdmin(ctx context.Context, c *gin.Context) error {
 	client := gocloak.NewClient(os.Getenv("KEYCLOAK_BASE_URL"))
 	token, err := client.LoginAdmin(
 		ctx,
-		os.Getenv("KEYCLOAK_ADMIN"),
-		os.Getenv("KEYCLOAK_ADMIN_PASSWORD"),
+		os.Getenv("KC_BOOTSTRAP_ADMIN_USERNAME"),
+		os.Getenv("KC_BOOTSTRAP_ADMIN_PASSWORD"),
 		os.Getenv("KEYCLOAK_REALM_NAME"))
 
 	if err != nil {

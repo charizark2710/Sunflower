@@ -1,4 +1,3 @@
-saved_model/
 *.pyc
 dist/
 __pycache__/

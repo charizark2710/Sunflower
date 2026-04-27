@@ -47,7 +47,7 @@ services:
     depends_on:
       - migration
     volumes:
-      - db:/var/lib/postgresql/data
+      - db:/data/postgres
     networks:
       pi4:
         aliases:
@@ -71,8 +71,8 @@ services:
       - KC_DB_URL_PORT=${POSTGRES_PORT}
       - KC_DB_USERNAME=${POSTGRES_USER}
       - KC_DB_PASSWORD=${POSTGRES_PASSWORD}
-      - KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN}
-      - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
+      - KC_BOOTSTRAP_ADMIN_USERNAME=${KC_BOOTSTRAP_ADMIN_USERNAME}
+      - KC_BOOTSTRAP_ADMIN_PASSWORD=${KC_BOOTSTRAP_ADMIN_PASSWORD}
       - KC_HOSTNAME_URL=${KEYCLOAK_AUTHEN_URL}
       - KC_HOSTNAME_ADMIN_URL=${KEYCLOAK_AUTHEN_URL}
     depends_on:

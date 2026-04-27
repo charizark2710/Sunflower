@@ -8,6 +8,8 @@ github.com/evanw/esbuild v0.25.8/go.mod h1:D2vIQZqV/vIf/VRHtViaUtViZmG7o+kKmlBfV
 github.com/evanw/esbuild v0.25.9 h1:aU7GVC4lxJGC1AyaPwySWjSIaNLAdVEEuq3chD0Khxs=
 github.com/evanw/esbuild v0.25.9/go.mod h1:D2vIQZqV/vIf/VRHtViaUtViZmG7o+kKmlBfVQuRi48=
 github.com/google/uuid v1.6.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
+github.com/joho/godotenv v1.5.1 h1:7eLL/+HRGLY0ldzfGMeQkb7vMd0as4CfYvUVzLqw0N0=
+github.com/joho/godotenv v1.5.1/go.mod h1:f4LDr5Voq0i2e/R5DDNOoa2zzDfwtkZa6DnEwAbqwq4=
 github.com/nukilabs/unicodeid v0.1.0/go.mod h1:3qxjfcmcgVYBg9dMRNSniAVfqxwOed7JU7P2rPkJrRg=
 github.com/rabbitmq/amqp091-go v1.10.0 h1:STpn5XsHlHGcecLmMFCtg7mqq0RnD+zFr4uzukfVhBw=
 github.com/rabbitmq/amqp091-go v1.10.0/go.mod h1:Hy4jKW5kQART1u+JkDTF9YYOQUHXqMuhrgxOEeS7G4o=

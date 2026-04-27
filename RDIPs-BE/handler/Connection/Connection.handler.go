@@ -65,28 +65,40 @@ func (p *Pool) FillPool(data PoolData) error {
 	p.conn = make(chan PoolDetail, data.Max)
 	p.mu = &sync.Mutex{}
 	p.p = &data
-	start := time.Now()
+	deadline := time.Now().Add(data.WaitTimeout)
 	for i := 0; i < data.Size; i++ {
-		currentTime := time.Since(start).Seconds()
-		if currentTime >= data.WaitTimeout.Seconds() {
-			close(p.conn)
-			return fmt.Errorf("timeout after: %v seconds", currentTime)
+		if time.Now().After(deadline) {
+			return fmt.Errorf("timeout after %.2fs while creating pool connections", data.WaitTimeout.Seconds())
 		}
+
 		val, err := data.FactoryFn()
 		if err != nil {
 			utils.Log(LogConstant.Error, err)
-			return err
+			return fmt.Errorf("factory failed: %w", err)
 		}
 
 		if data.PingFn != nil {
-			err := data.PingFn(val)
-			if err != nil {
-				close(p.conn)
-				return err
+			if err := data.PingFn(val); err != nil {
+				utils.Log(LogConstant.Error, err)
+				if data.CloseFn != nil {
+					_ = data.CloseFn(val)
+				}
+				return fmt.Errorf("ping failed: %w", err)
 			}
 		}
-		p.conn <- PoolDetail{data: val, ctx: context.Background()}
-		p.availConn++
+
+		select {
+		case p.conn <- PoolDetail{data: val, ctx: context.Background()}:
+			p.mu.Lock()
+			p.availConn++
+			p.mu.Unlock()
+		case <-time.After(data.WaitTimeout):
+			// Avoid blocking indefinitely if channel is full
+			if data.CloseFn != nil {
+				_ = data.CloseFn(val)
+			}
+			return fmt.Errorf("timeout adding connection to pool")
+		}
 	}
 	return nil
 }
@@ -99,24 +111,44 @@ func (p *Pool) Get(retry ...int) (interface{}, context.Context, error) {
 	if p.conn == nil {
 		return nil, nil, fmt.Errorf("connection is not initialize")
 	}
-	p.mu.Lock()
-	defer p.mu.Unlock()
+
 	for i := 0; i < retryTimes; i += 1 {
 		select {
 		case poolDetail, ok := <-p.conn:
 			if !ok {
 				return nil, nil, fmt.Errorf("channel is closed")
 			}
+			p.mu.Lock()
 			p.availConn--
+			p.mu.Unlock()
 			if poolDetail.ctx.Err() != nil {
+				utils.Log(LogConstant.Error, "Context is closed:", poolDetail.ctx.Err())
 				// ctx is closed, skip this data
 				continue
 			}
+
 			if poolDetail.timer != nil {
 				if !poolDetail.timer.Stop() {
 					<-poolDetail.timer.C
 				}
-				poolDetail.timer.Reset(p.p.IdleTimeout)
+			}
+
+			if p.p.PingFn != nil {
+				err := p.p.PingFn(poolDetail.data)
+				if err != nil {
+					// Connection is dead, close it
+					utils.Log(LogConstant.Warning, "Connection validation failed:", err)
+					p.p.CloseFn(poolDetail.data)
+
+					// Create new connection
+					newData, err := p.p.FactoryFn()
+					if err != nil {
+						utils.Log(LogConstant.Error, "Failed to create new connection:", err)
+						continue
+					}
+					poolDetail.data = newData
+					utils.Log(LogConstant.Info, "Created new connection to replace dead one")
+				}
 			}
 			return poolDetail.data, poolDetail.ctx, nil
 		case time := <-time.After(p.p.WaitTimeout):
@@ -124,16 +156,23 @@ func (p *Pool) Get(retry ...int) (interface{}, context.Context, error) {
 			timeoutErr := fmt.Errorf("timeout after: %v seconds", time.Second())
 			return nil, nil, timeoutErr
 		default:
+			p.mu.Lock()
+			currentSize := len(p.conn)
+			canCreate := currentSize < p.p.Max
+			p.mu.Unlock()
 			// If there are no data in pool and haven't reach max
 			// Then create new connection
-			if len(p.conn) < p.p.Max {
+			if canCreate {
 				newCtx, cancel := context.WithCancel(context.Background())
 
 				// Create timer to cancel this context after idle time
 				timer := time.AfterFunc(p.p.IdleTimeout, cancel)
 				res, err := p.p.FactoryFn()
+				if err != nil {
+					timer.Stop()
+					return nil, nil, err
+				}
 				data := PoolDetail{ctx: newCtx, data: res, timer: timer}
-				p.conn <- data
 				// The newly created connection should not be opened forever
 				// wait for idle time out before running close function
 				go p.handleTimeoutCtx(data.data, newCtx)
@@ -154,9 +193,19 @@ func (p *Pool) handleTimeoutCtx(data interface{}, ctx context.Context) error {
 }
 
 // return back to Pool
-func (p *Pool) Release(data interface{}, ctx context.Context) error {
+func (p *Pool) Release(data interface{}, need_validate bool, ctx context.Context) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
+	if need_validate {
+		err := p.p.PingFn(data)
+		if err != nil {
+			// Connection is dead, just close it and don't return to pool
+			utils.Log(LogConstant.Warning, "Dead connection on release, closing:", err)
+			p.p.CloseFn(data)
+			return err
+		}
+	}
+
 	if p.forceClose {
 		err := p.p.CloseFn(data)
 		if err == nil {
@@ -181,6 +230,11 @@ Loop:
 				break Loop
 			}
 			utils.Log(LogConstant.Info, "Close all child channel")
+
+			if c.timer != nil {
+				c.timer.Stop()
+			}
+
 			err := p.p.CloseFn(c.data)
 			if err != nil {
 				utils.Log(LogConstant.Error, err)

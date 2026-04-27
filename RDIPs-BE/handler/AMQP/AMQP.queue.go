@@ -1,16 +1,64 @@
-package AMQP_handler
+package AMQP
 
 import (
 	LogConstant "RDIPs-BE/constant/LogConst"
 	"RDIPs-BE/constant/ServiceConst"
+	connection "RDIPs-BE/handler/Connection"
 	"RDIPs-BE/utils"
+	"context"
+	"encoding/json"
+	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/rabbitmq/amqp091-go"
 )
 
 // var m sync.Mutex
+var rabbitPool *connection.Pool = &connection.Pool{}
+
+type MessageHandler interface {
+	Send(exchange string, body interface{}, deliveryMode uint8,
+		correlationID string, replyTo string, routingKeyArgs ...string) error
+}
+
+type messageStruct struct{}
+
+func NewMessageHandler() MessageHandler {
+	return &messageStruct{}
+}
+func (m *messageStruct) Send(exchange string, body interface{}, deliveryMode uint8, correlationID string, replyTo string, routingKeyArgs ...string) error {
+	routingKey := m.generateRoutingKey(routingKeyArgs...)
+	utils.Log(LogConstant.Info, "Sending message to ", exchange, "with ", routingKey)
+	conn, ctx, err := rabbitPool.Get()
+	if err != nil {
+		utils.Log(LogConstant.Error, err)
+	} else {
+		defer rabbitPool.Release(conn, false, ctx)
+		channel, ok := conn.(*amqp091.Channel)
+		if !ok {
+			utils.Log(LogConstant.Error, "wrong channel format")
+			return fmt.Errorf("wrong channel format")
+		}
+		var message []byte
+		message, err = json.Marshal(body)
+		if err != nil {
+			utils.Log(LogConstant.Error, err)
+			return err
+		}
+		err = channel.PublishWithContext(context.Background(), exchange, routingKey, true, false, amqp091.Publishing{
+			DeliveryMode: deliveryMode,
+			ContentType:  "text/plain",
+			Body:         message,
+			Headers:      amqp091.Table{"Correlation-ID": correlationID},
+			ReplyTo:      replyTo,
+		})
+		utils.Log(LogConstant.Info, "Finish sending message to ", exchange, "with ", routingKey)
+
+	}
+	return err
+}
 
 func InitAmqpQueue(channel *amqp091.Channel) error {
 	utils.Log(LogConstant.Info, "Initialize AMQP routes")
@@ -64,4 +112,16 @@ func InitAmqpQueue(channel *amqp091.Channel) error {
 	}
 
 	return nil
+}
+
+func (*messageStruct) generateRoutingKey(args ...string) string {
+	return strings.Join(args, ".")
+}
+
+func GetRabbitPool() *connection.Pool {
+	return rabbitPool
+}
+
+func SetRabbitPool(pool *connection.Pool) {
+	rabbitPool = pool
 }

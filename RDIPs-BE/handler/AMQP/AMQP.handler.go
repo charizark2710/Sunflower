@@ -1,4 +1,4 @@
-package AMQP_handler
+package AMQP
 
 import (
 	"RDIPs-BE/constant"
@@ -21,8 +21,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rabbitmq/amqp091-go"
 )
-
-var rabbitPool connection.Pool
 
 func InitializeAMQP() error {
 	amqpConn, err := amqp091.Dial(
@@ -120,7 +118,6 @@ func InitializeAMQP() error {
 		amqpConn.Close()
 	}
 
-	handler.SetRabbitPool(&rabbitPool)
 	utils.Log(LogConstant.Info, "Finish Connect Rabbitmq, err:", err)
 	return err
 }
@@ -179,7 +176,7 @@ func ReceiveService(deliveries <-chan amqp091.Delivery) {
 		resBody, err := getResBody(response)
 		if err == nil && resBody["needResponse"] == true {
 			// After delete, optimize response
-			if header["Correlation-Id"] != nil && len(header["Correlation-Id"]) != 0 {
+			if len(header["Correlation-Id"]) != 0 {
 				deliveryMode, ok := resBody["deliveryMode"].(uint8)
 				if !ok {
 					deliveryMode = amqp091.Transient

@@ -2,6 +2,7 @@ package AMQP_Handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"strings"
 	"time"
@@ -85,9 +86,10 @@ func ReceiveService(deliveries <-chan amqp091.Delivery) {
 			json.Unmarshal(delivery.Body, &msg)
 			id := delivery.CorrelationId
 			go func() {
-				result, err := handler.ExecutionHandler(id, msg)
+				result, err := handler.ExecutionHandler(id, msg, os.Args[1])
 				if err == nil {
 					if result != nil {
+						fmt.Print(result)
 						messageHandler.Send(constant.RESPONSE_QUEUE, result, 1, delivery.CorrelationId, delivery.ReplyTo)
 					}
 				} else {
