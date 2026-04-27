@@ -1,5 +1,9 @@
 #!/bin/sh 
 
+# Usage: ./deploy-swarm.sh [dev|prod] [ip]
+
+sh ./infrastructure/build.sh prod "$1" "$2"
+
 GenerateRandomPw () {
     declare -a keys=("postgres" "broker" "keycloak" "mongo")
 
@@ -7,7 +11,7 @@ GenerateRandomPw () {
         local pw=$(openssl rand -base64 12 | sha1sum | awk '{print $1}')
         export declare ${key}_pw=$pw
     done
-    envsubst < ./local.deploy.env > ./.env
+    envsubst < ../local.deploy.env > ./.env
 }
 
 #Generate random password for production

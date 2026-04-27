@@ -14,8 +14,8 @@ import (
 	"RDIPs-Task/utils"
 )
 
-func ExecutionHandler(id string, msg map[string]interface{}) (any, error) {
-	conn := unixSock.Connect("guess.sock")
+func ExecutionHandler(id string, msg map[string]interface{}, sockName string) (any, error) {
+	conn := unixSock.Connect(sockName)
 	defer conn.Close()
 
 	code := msg["code"].(string)
@@ -129,16 +129,16 @@ func ExecutionHandler(id string, msg map[string]interface{}) (any, error) {
 				return nil, err
 			}
 		} else {
-			msg, _ := json.Marshal(map[string]any{
-				"status": "complete",
-			})
-			msg = append(msg, []byte("#END#")...)
-			if _, err := conn.Write(msg); err != nil {
-				lock.Release(releaseCtx)
-				execCancel()
-				releaseCancel()
-				return nil, err
-			}
+			// msg, _ := json.Marshal(map[string]any{
+			// 	"status": "complete",
+			// })
+			// msg = append(msg, []byte("#END#")...)
+			// if _, err := conn.Write(msg); err != nil {
+			// 	lock.Release(releaseCtx)
+			// 	execCancel()
+			// 	releaseCancel()
+			// 	return nil, nil
+			// }
 		}
 
 		lock.Release(releaseCtx)
