@@ -1,6 +1,8 @@
-version: '3.8'
 services:
   migration:
+    deploy:
+      restart_policy:
+        condition: none
     container_name: migration
     env_file:
       - ./../.env
@@ -22,6 +24,8 @@ services:
       pi4:
         aliases:
           - sunflower-mongo
+    ports:
+      - "27017:27017"
 
   db:
     container_name: postgres
@@ -37,6 +41,8 @@ services:
       timeout: 60s
       retries: 5
       start_period: 80s
+    ports:
+      - "${POSTGRES_PORT}:5432"
     depends_on:
       - migration
     networks:
@@ -53,7 +59,18 @@ services:
       context: ../../RDIPs-Server
       dockerfile: keycloak.Dockerfile
     image: charizark2710/sunflower-keycloak
-    command: [ "start", "--import-realm", "--verbose", "--hostname-strict=false", "--hostname=${KEYCLOAK_AUTHEN_URL}", "--https-certificate-file=/opt/keycloak/certs/rootCA.crt", "--https-certificate-key-file=/opt/keycloak/certs/rootCA.key" ]
+    command: 
+      - "start"
+      - "--import-realm"
+      - "--verbose"
+      - "--hostname-strict=false"
+      - "--hostname=${KEYCLOAK_PUBLIC_URL}"
+      # Use the Leaf/Server certificate, NOT the Root CA
+      - "--https-certificate-file=/opt/keycloak/certs/client.crt"
+      - "--https-certificate-key-file=/opt/keycloak/certs/client.key"
+      # Add the Root CA to the truststore so Keycloak can verify clients/LDAP/etc
+      - "--https-trust-store-file=/opt/keycloak/certs/rootCA.crt"
+      - "--https-trust-store-password=changeit"
     environment:
       - KC_DB=postgres
       - KC_DB_URL=jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/keycloak
@@ -63,13 +80,13 @@ services:
       - KC_DB_PASSWORD=${POSTGRES_PASSWORD}
       - KC_BOOTSTRAP_ADMIN_USERNAME=${KC_BOOTSTRAP_ADMIN_USERNAME}
       - KC_BOOTSTRAP_ADMIN_PASSWORD=${KC_BOOTSTRAP_ADMIN_PASSWORD}
-      - KC_HOSTNAME_URL=${KEYCLOAK_AUTHEN_URL}
-      - KC_HOSTNAME_ADMIN_URL=${KEYCLOAK_AUTHEN_URL}
-    depends_on:
-      db:
-        condition: service_healthy
-    ports:
-      - '8443:8443'
+      - KC_HOSTNAME_URL=${KEYCLOAK_PUBLIC_URL}
+      - KC_HOSTNAME_ADMIN_URL=${KEYCLOAK_PUBLIC_URL}
+    # depends_on:
+    #   db:
+    #     condition: service_healthy
+    # ports:
+    #   - '8443:8443'
     healthcheck:
       test:
         [ 'CMD-SHELL', 'curl --head -fsS https://localhost:8443 --insecure' ]
@@ -81,16 +98,19 @@ services:
           - auth.sunflower-rdips
     volumes:
       - keycloak:/opt
-      - ../../certs:/opt/keycloak/certs/
     secrets:
-      - source: rootCA_key
-        target: /opt/keycloak/certs/rootCA.key
+      - source: client_key
+        target: /opt/keycloak/certs/client.key
         uid: '1000'
-        mode: 400
+        mode: 0440
+      - source: client_cert
+        target: /opt/keycloak/certs/client.crt
+        uid: '1000'
+        mode: 0440
       - source: rootCA_cert
         target: /opt/keycloak/certs/rootCA.crt
         uid: '1000'
-        mode: 400
+        mode: 0440
 
   rabbitmq:
     container_name: rabbitmq
@@ -124,25 +144,27 @@ services:
           - amqp-management.sunflower-rdips
           - mqtt.sunflower-rdips
           - amqp.sunflower-rdips
+    ports:
+      - "15671:15671"
     volumes:
       - ../../certs:/opt/rabbitmq/certs/
     secrets:
       - source: rootCA_key
         target: /opt/rabbitmq/certs/rootCA.key
         gid: '1000'
-        mode: 440
+        mode: 0440
       - source: rootCA_cert
         target: /opt/rabbitmq/certs/rootCA.crt
         gid: '1000'
-        mode: 440
+        mode: 0440
       - source: client_key
         target: /opt/rabbitmq/certs/client.key
         gid: '1000'
-        mode: 440
+        mode: 0440
       - source: client_cert
         target: /opt/rabbitmq/certs/client.crt
         gid: '1000'
-        mode: 440
+        mode: 0440
 
   pgadmin:
     container_name: pgadmin4
@@ -152,9 +174,6 @@ services:
       - ./../.env
     ports:
       - "9090:80"
-    depends_on:
-      db:
-        condition: service_healthy
     volumes:
       - pgadmin:/var/lib/pgadmin
     networks:
@@ -163,7 +182,7 @@ services:
           - sunflower
 
   memcached:
-    image: 'memcached:1.6.41'
+    image: memcached:1.6.41-alpine
     restart: unless-stopped
     networks:
       pi4:
@@ -197,6 +216,8 @@ services:
       - '../../RDIPs-Server/stream.conf.d:/opt/nginx/stream.conf.d'
     networks:
       pi4:
+        aliases:
+          - sunflower-rdips
     secrets:
       - source: rootCA_key
         target: /etc/nginx/rootCA.key

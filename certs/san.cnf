@@ -1,0 +1,20 @@
+[req]
+default_bits = 2048
+prompt = no
+distinguished_name = dn
+req_extensions = v3_req
+
+[dn]
+CN = localhost
+
+[v3_req]
+subjectAltName = @alt_names
+
+[alt_names]
+DNS.1 = localhost
+IP.1  = 127.0.0.1
+DNS.2 = sunflower-rdips
+DNS.3 = sunflower-rdips.tech
+DNS.4 = auth.sunflower-rdips
+DNS.5 = auth.sunflower-rdips.tech
+DNS.6 = amqp-management.sunflower-rdips.tech

@@ -29,6 +29,14 @@ func Validation() gin.HandlerFunc {
 			c.Next()
 			return
 		}
+
+		apiKey := c.GetHeader("X-API-Key")
+		if apiKey == os.Getenv("API_KEY") {
+			utils.Log(LogConstant.Debug, "API key is valid")
+			c.Next()
+			return
+		}
+
 		tokenStr, err := c.Cookie("access_token")
 
 		//Check expired time, and get new token if refresh token valid

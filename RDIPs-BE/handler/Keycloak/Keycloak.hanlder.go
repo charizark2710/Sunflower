@@ -7,7 +7,6 @@ import (
 	"RDIPs-BE/model"
 	"RDIPs-BE/utils"
 	"context"
-	"crypto/tls"
 	"encoding/base64"
 	"fmt"
 	"net/url"
@@ -25,7 +24,7 @@ var CLIENT_ID = os.Getenv("KEYCLOAK_CLIENT_ID")
 var REDIRECT_URI = os.Getenv("REDIRECT_URI")
 
 // For debug local docker deploy only
-var KEYCLOAK_AUTHEN_URL = os.Getenv("KEYCLOAK_AUTHEN_URL")
+var KEYCLOAK_PUBLIC_URL = os.Getenv("KEYCLOAK_PUBLIC_URL")
 
 type GoCloakClientStruct struct {
 	GoCloakClient *gocloak.GoCloak
@@ -40,9 +39,10 @@ var keycloakPool connection.Pool
 Get client_id, client_secret from client_name
 */
 func getClientData(client_name string) (*string, *string, error) {
+	tlsConfig := handler.GetTlsConfig()
 	gocloakClient := gocloak.NewClient(os.Getenv("KEYCLOAK_BASE_URL"))
 	restyClient := gocloakClient.RestyClient()
-	restyClient.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
+	restyClient.SetTLSClientConfig(tlsConfig)
 	ctx := context.Background()
 	adminUserName := os.Getenv("KC_BOOTSTRAP_ADMIN_USERNAME")
 	adminPw := os.Getenv("KC_BOOTSTRAP_ADMIN_PASSWORD")
@@ -61,7 +61,7 @@ func getClientData(client_name string) (*string, *string, error) {
 
 		// GET jwt from admin master
 		jwt, err = gocloakClient.LoginAdmin(ctx, adminUserName,
-			"admin", // default
+			adminPw,
 			ADMIN_KEYCLOAK_REALM_NAME)
 		if err != nil {
 			utils.Log(LogConstant.Error, err)
@@ -108,6 +108,8 @@ func getClientData(client_name string) (*string, *string, error) {
 }
 
 func InitKeycloakClient(client_name string) error {
+	tlsConfig := handler.GetTlsConfig()
+
 	if client_name == "" {
 		client_name = CLIENT_ID
 	}
@@ -119,7 +121,7 @@ func InitKeycloakClient(client_name string) error {
 	factoryFn := func() (interface{}, error) {
 		gocloakClient := gocloak.NewClient(os.Getenv("KEYCLOAK_BASE_URL"))
 		restyClient := gocloakClient.RestyClient()
-		restyClient.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
+		restyClient.SetTLSClientConfig(tlsConfig)
 		return &GoCloakClientStruct{GoCloakClient: gocloakClient, client_id: *client_id, client_secret: *client_secret, client_name: client_name}, err
 	}
 
@@ -208,8 +210,8 @@ func GetLoginScreen(redirect string) (string, string, error) {
 	codeChallenge := oauth2.S256ChallengeFromVerifier(codeVerifier)
 	codeVerifyMethod := "S256"
 	kcEndpoint := ADMIN_KEYCLOAK_BASE_URL
-	if KEYCLOAK_AUTHEN_URL != "" {
-		kcEndpoint = KEYCLOAK_AUTHEN_URL
+	if KEYCLOAK_PUBLIC_URL != "" {
+		kcEndpoint = KEYCLOAK_PUBLIC_URL
 	}
 	if redirect == "" {
 		redirect = REDIRECT_URI

@@ -3,11 +3,20 @@ services:
     container_name: sunflower_api
     env_file:
       - .env
+    build:
+      context: ../RDIPs-BE
+      dockerfile: Dockerfile
+      target: production
     image: charizark2710/sunflower-api
-    healthcheck:
-      test: curl -f localhost:${API_PORT}
-      timeout: 30s
-      retries: 5
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        window: 120s
+    # healthcheck:
+    #   test: curl -f localhost:${API_PORT}
+    #   timeout: 30s
+    #   retries: 5
     # ports:
     #   - '8080:8080'
     # volumes:
@@ -16,76 +25,26 @@ services:
       pi4:
         aliases:
           - sunflower-rdips
-    deploy:
-      placement:
-        constraints:
-          - node.role == worker
     secrets:
-      - source: rootCA_key
-        target: /sunflower/certs/rootCA.key
-        gid: '1000'
-        mode: 440
       - source: rootCA_cert
-        target: /sunflower/certs/rootCA.crt
-        gid: '1000'
-        mode: 440
-      - source: client_key
-        target: /sunflower/certs/client.key
-        gid: '1000'
-        mode: 440
-      - source: client_cert
-        target: /sunflower/certs/client.crt
+        target: /etc/certs/rootCA.crt
         gid: '1000'
         mode: 440
     environment:
       - CONSUMER_PRIORITY=10
 
-  api_bk:
-    container_name: sunflower_api_bk
-    restart: on-failure:3
-    # command: tail -F /dev/null
-    env_file:
-      - .env
-    image: charizark2710/sunflower-api
-    # volumes:
-    #   - './RDIPs-BE:/srv/www/volume_sunflower'
-    networks:
-      pi4:
-        aliases:
-          - sunflower-rdips
-    deploy:
-      placement:
-        constraints:
-          - node.role == manager
-    secrets:
-      - source: rootCA_key
-        target: /sunflower/certs/rootCA.key
-        gid: '1000'
-        mode: 440
-      - source: rootCA_cert
-        target: /sunflower/certs/rootCA.crt
-        gid: '1000'
-        mode: 440
-      - source: client_key
-        target: /sunflower/certs/client.key
-        gid: '1000'
-        mode: 440
-      - source: client_cert
-        target: /sunflower/certs/client.crt
-        gid: '1000'
-        mode: 440
-
+networks:
   pi4:
-    driver: overlay
+    external: true
 
 secrets:
   rootCA_key:
-    file: ./certs/rootCA.key
+    file: ../certs/rootCA.key
   rootCA_cert:
-    file: ./certs/rootCA.crt
+    file: ../certs/rootCA.crt
   dhparam_pem:
-    file: ./certs/dhparam.pem
+    file: ../certs/dhparam.pem
   client_key:
-    file: ./certs/client.key
+    file: ../certs/client.key
   client_cert:
-    file: ./certs/client.crt
+    file: ../certs/client.crt

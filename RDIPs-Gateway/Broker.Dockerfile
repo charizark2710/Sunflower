@@ -27,10 +27,12 @@ ARG BROKER_PASSWORD
 ENV BROKER_USER=${BROKER_USER}
 ENV BROKER_PASSWORD=${BROKER_PASSWORD}
 
-RUN mkdir /etc/rabbitmq/amqp && mkdir /etc/rabbitmq/amqps
-COPY --from=migration --chown=rabbitmq:rdips /migration/rabbitmq/rabbitmq.conf /etc/rabbitmq/rabbitmq-tmp.conf
+RUN mkdir /etc/rabbitmq/amqps
 COPY --from=migration --chown=rabbitmq:rdips /migration/rabbitmq/rabbitmq-ssl.conf /etc/rabbitmq/rabbitmq-tmp-ssl.conf
-RUN envsubst "$(printf '${%s} ' $(env | cut -d'=' -f1))" < /etc/rabbitmq/rabbitmq-tmp.conf > /etc/rabbitmq/amqp/rabbitmq.conf
+
 RUN envsubst "$(printf '${%s} ' $(env | cut -d'=' -f1))" < /etc/rabbitmq/rabbitmq-tmp-ssl.conf > /etc/rabbitmq/amqps/rabbitmq.conf
+
+RUN chown rabbitmq:rdips /etc/rabbitmq/amqps/rabbitmq.conf && \
+    chmod 644 /etc/rabbitmq/amqps/rabbitmq.conf
 
 RUN rabbitmq-plugins enable --offline rabbitmq_mqtt rabbitmq_management && rabbitmq-plugins enable rabbitmq_mqtt

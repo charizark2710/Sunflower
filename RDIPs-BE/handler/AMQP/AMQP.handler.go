@@ -23,12 +23,16 @@ import (
 )
 
 func InitializeAMQP() error {
-	amqpConn, err := amqp091.Dial(
-		os.Getenv("BROKER_PROTOCOL") + "://" +
-			os.Getenv("BROKER_USER") +
-			":" + os.Getenv("BROKER_PASSWORD") +
-			"@" + os.Getenv("BROKER_HOST") +
-			":" + os.Getenv("BROKER_PORT") + "/")
+	tlsConfig := handler.GetTlsConfig()
+	amqpConn, err := amqp091.DialTLS(
+		os.Getenv("BROKER_PROTOCOL")+"://"+
+			os.Getenv("BROKER_USER")+
+			":"+os.Getenv("BROKER_PASSWORD")+
+			"@"+os.Getenv("BROKER_HOST")+
+			":"+os.Getenv("BROKER_PORT")+"/",
+		tlsConfig,
+	)
+
 	if err != nil {
 		utils.Log(LogConstant.Error, err)
 		return err
