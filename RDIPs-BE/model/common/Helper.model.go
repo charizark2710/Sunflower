@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var CacheSrv = memcache.New(os.Getenv("CACHE_SERVER") + ":11211")
+var CacheSrv = memcache.New(os.Getenv("CACHE_SERVER"))
 
 type helper struct {
 	db             *gorm.DB

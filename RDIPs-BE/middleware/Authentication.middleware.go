@@ -29,6 +29,14 @@ func Validation() gin.HandlerFunc {
 			c.Next()
 			return
 		}
+
+		apiKey := c.GetHeader("X-API-Key")
+		if apiKey == os.Getenv("API_KEY") {
+			utils.Log(LogConstant.Debug, "API key is valid")
+			c.Next()
+			return
+		}
+
 		tokenStr, err := c.Cookie("access_token")
 
 		//Check expired time, and get new token if refresh token valid
@@ -113,8 +121,8 @@ func getTokenAdmin(ctx context.Context, c *gin.Context) error {
 	client := gocloak.NewClient(os.Getenv("KEYCLOAK_BASE_URL"))
 	token, err := client.LoginAdmin(
 		ctx,
-		os.Getenv("KEYCLOAK_ADMIN"),
-		os.Getenv("KEYCLOAK_ADMIN_PASSWORD"),
+		os.Getenv("KC_BOOTSTRAP_ADMIN_USERNAME"),
+		os.Getenv("KC_BOOTSTRAP_ADMIN_PASSWORD"),
 		os.Getenv("KEYCLOAK_REALM_NAME"))
 
 	if err != nil {

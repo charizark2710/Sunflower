@@ -3,7 +3,6 @@ package handler
 import (
 	LogConstant "RDIPs-BE/constant/LogConst"
 	connection "RDIPs-BE/handler/Connection"
-	commonModel "RDIPs-BE/model/common"
 
 	"RDIPs-BE/utils"
 	"context"
@@ -34,8 +33,8 @@ func (m *messageStruct) Send(exchange string, body interface{}, deliveryMode uin
 	if err != nil {
 		utils.Log(LogConstant.Error, err)
 	} else {
-		defer rabbitPool.Release(conn, ctx)
-		channel, ok := conn.(commonModel.BaseAmqpChannel)
+		defer rabbitPool.Release(conn, false, ctx)
+		channel, ok := conn.(*amqp091.Channel)
 		if !ok {
 			utils.Log(LogConstant.Error, "wrong channel format")
 			return fmt.Errorf("wrong channel format")

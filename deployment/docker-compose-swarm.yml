@@ -1,0 +1,50 @@
+services:
+  api:
+    container_name: sunflower_api
+    env_file:
+      - .env
+    build:
+      context: ../RDIPs-BE
+      dockerfile: Dockerfile
+      target: production
+    image: charizark2710/sunflower-api
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        window: 120s
+    # healthcheck:
+    #   test: curl -f localhost:${API_PORT}
+    #   timeout: 30s
+    #   retries: 5
+    # ports:
+    #   - '8080:8080'
+    # volumes:
+    #   - './RDIPs-BE:/srv/www/volume_sunflower'
+    networks:
+      pi4:
+        aliases:
+          - sunflower-rdips
+    secrets:
+      - source: rootCA_cert
+        target: /etc/certs/rootCA.crt
+        gid: '1000'
+        mode: 440
+    environment:
+      - CONSUMER_PRIORITY=10
+
+networks:
+  pi4:
+    external: true
+
+secrets:
+  rootCA_key:
+    file: ../certs/rootCA.key
+  rootCA_cert:
+    file: ../certs/rootCA.crt
+  dhparam_pem:
+    file: ../certs/dhparam.pem
+  client_key:
+    file: ../certs/client.key
+  client_cert:
+    file: ../certs/client.crt

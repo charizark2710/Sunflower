@@ -10,3 +10,9 @@
 [submodule "RDIPs-Gateway/dependencies/json"]
 	path = RDIPs-Gateway/dependencies/json
 	url = https://github.com/nlohmann/json
+[submodule "RDIPs-Scheduler/Javascript-Practice"]
+	path = RDIPs-Scheduler/Javascript-Practice
+	url = https://github.com/chetannada/Javascript-Practice
+[submodule "RDIPs-Scheduler/javascript-algorithms-and-data-structures"]
+	path = RDIPs-Scheduler/javascript-algorithms-and-data-structures
+	url = https://github.com/Annahcj/javascript-algorithms-and-data-structures

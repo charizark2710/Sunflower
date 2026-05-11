@@ -1,0 +1,252 @@
+services:
+  migration:
+    deploy:
+      restart_policy:
+        condition: none
+    container_name: migration
+    env_file:
+      - ./../.env
+    image: charizark2710/sunflower-migration
+    build:
+      context: ../../RDIPs-Migration
+
+  mongo:
+    image: mongo:8.0.0-rc15
+    restart: unless-stopped
+    env_file:
+      - ./../.env
+    healthcheck:
+      test: ["CMD","mongosh", "--eval", "db.adminCommand('ping')"]
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    networks:
+      pi4:
+        aliases:
+          - sunflower-mongo
+    ports:
+      - "27017:27017"
+
+  db:
+    container_name: postgres
+    env_file:
+      - ./../.env
+    image: charizark2710/sunflower-db
+    build:
+      context: ../../RDIPs-Database
+    restart: unless-stopped
+    healthcheck:
+      test:
+        ["CMD-SHELL", "sh -c 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}'"]
+      timeout: 60s
+      retries: 5
+      start_period: 80s
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    depends_on:
+      - migration
+    networks:
+      pi4:
+        aliases:
+          - sunflower-rdips
+
+  keycloak:
+    container_name: keycloak
+    restart: unless-stopped
+    env_file:
+      - ./../.env
+    build:
+      context: ../../RDIPs-Server
+      dockerfile: keycloak.Dockerfile
+    image: charizark2710/sunflower-keycloak
+    command: 
+      - "start"
+      - "--import-realm"
+      - "--verbose"
+      - "--hostname-strict=false"
+      - "--hostname=${KEYCLOAK_PUBLIC_URL}"
+      # Use the Leaf/Server certificate, NOT the Root CA
+      - "--https-certificate-file=/opt/keycloak/certs/client.crt"
+      - "--https-certificate-key-file=/opt/keycloak/certs/client.key"
+      # Add the Root CA to the truststore so Keycloak can verify clients/LDAP/etc
+      - "--https-trust-store-file=/opt/keycloak/certs/rootCA.crt"
+      - "--https-trust-store-password=changeit"
+    environment:
+      - KC_DB=postgres
+      - KC_DB_URL=jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/keycloak
+      - KC_DB_URL_HOST=${POSTGRES_HOST}
+      - KC_DB_URL_PORT=${POSTGRES_PORT}
+      - KC_DB_USERNAME=${POSTGRES_USER}
+      - KC_DB_PASSWORD=${POSTGRES_PASSWORD}
+      - KC_BOOTSTRAP_ADMIN_USERNAME=${KC_BOOTSTRAP_ADMIN_USERNAME}
+      - KC_BOOTSTRAP_ADMIN_PASSWORD=${KC_BOOTSTRAP_ADMIN_PASSWORD}
+      - KC_HOSTNAME_URL=${KEYCLOAK_PUBLIC_URL}
+      - KC_HOSTNAME_ADMIN_URL=${KEYCLOAK_PUBLIC_URL}
+    # depends_on:
+    #   db:
+    #     condition: service_healthy
+    # ports:
+    #   - '8443:8443'
+    healthcheck:
+      test:
+        [ 'CMD-SHELL', 'curl --head -fsS https://localhost:8443 --insecure' ]
+      retries: 5
+      start_period: 20s
+    networks:
+      pi4:
+        aliases:
+          - auth.sunflower-rdips
+    volumes:
+      - keycloak:/opt
+    secrets:
+      - source: client_key
+        target: /opt/keycloak/certs/client.key
+        uid: '1000'
+        mode: 0440
+      - source: client_cert
+        target: /opt/keycloak/certs/client.crt
+        uid: '1000'
+        mode: 0440
+      - source: rootCA_cert
+        target: /opt/keycloak/certs/rootCA.crt
+        uid: '1000'
+        mode: 0440
+
+  rabbitmq:
+    container_name: rabbitmq
+    restart: unless-stopped
+    build:
+      context: ../../RDIPs-Gateway
+      dockerfile: Broker.Dockerfile
+      args:
+        - BROKER_USER=${BROKER_USER}
+        - BROKER_PASSWORD=${BROKER_PASSWORD}
+    image: charizark2710/sunflower-rabbitmq
+    env_file:
+      - ./../.env
+    environment:
+      - RABBITMQ_ERLANG_COOKIE=/var/lib/rabbitmq/.erlang.cookie
+      - RABBITMQ_CONFIG_FILES=/etc/rabbitmq/${BROKER_PROTOCOL}/rabbitmq.conf
+      - RABBITMQ_MNESIA_BASE=/data/mnesia
+      - RABBITMQ_LOG_BASE=/data/log
+      - RABBITMQ_ENABLED_PLUGINS_FILE=/etc/rabbitmq/enabled_plugins
+      - RABBITMQ_DEFAULT_USER=${BROKER_USER}
+      - RABBITMQ_DEFAULT_PASS=${BROKER_PASSWORD}
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      timeout: 30s
+      retries: 3
+    depends_on:
+      - migration
+    networks:
+      pi4:
+        aliases:
+          - amqp-management.sunflower-rdips
+          - mqtt.sunflower-rdips
+          - amqp.sunflower-rdips
+    ports:
+      - "15671:15671"
+    volumes:
+      - ../../certs:/opt/rabbitmq/certs/
+    secrets:
+      - source: rootCA_key
+        target: /opt/rabbitmq/certs/rootCA.key
+        gid: '1000'
+        mode: 0440
+      - source: rootCA_cert
+        target: /opt/rabbitmq/certs/rootCA.crt
+        gid: '1000'
+        mode: 0440
+      - source: client_key
+        target: /opt/rabbitmq/certs/client.key
+        gid: '1000'
+        mode: 0440
+      - source: client_cert
+        target: /opt/rabbitmq/certs/client.crt
+        gid: '1000'
+        mode: 0440
+
+  pgadmin:
+    container_name: pgadmin4
+    image: dpage/pgadmin4
+    restart: unless-stopped
+    env_file:
+      - ./../.env
+    ports:
+      - "9090:80"
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+    networks:
+      pi4:
+        aliases:
+          - sunflower
+
+  memcached:
+    image: memcached:1.6.41-alpine
+    restart: unless-stopped
+    networks:
+      pi4:
+        aliases:
+          - cacheSrv
+    healthcheck:
+      test: echo stats | nc localhost 11211
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+
+  server:
+    container_name: sunflower_server
+    restart: unless-stopped
+    build:
+      context: ../../RDIPs-Server
+    env_file:
+      - ./../.env
+    image: charizark2710/sunflower-server
+    ports:
+      - "80:80"
+      - "81:81"
+      - "9000:9000"
+      - "443:443"
+      - "8883:8883"
+      - "8672:8672"
+    volumes:
+      - '../../RDIPs-Server/conf.d:/opt/nginx/conf.d'
+      - '../../RDIPs-Server/nginx.conf:/opt/nginx/conf'
+      - '../../RDIPs-Server/stream.conf.d:/opt/nginx/stream.conf.d'
+    networks:
+      pi4:
+        aliases:
+          - sunflower-rdips
+    secrets:
+      - source: rootCA_key
+        target: /etc/nginx/rootCA.key
+      - source: rootCA_cert
+        target: /etc/nginx/rootCA.crt
+      - source: client_cert
+        target: /etc/nginx/client.crt
+      - source: client_key
+        target: /etc/nginx/client.key
+      - source: dhparam_pem
+        target: /etc/nginx/dhparam.pem
+
+volumes:
+  pgadmin:
+  keycloak:
+
+networks:
+  pi4:
+    driver: overlay
+    external: true
+
+secrets:
+  rootCA_key:
+    file: ../../certs/rootCA.key
+  rootCA_cert:
+    file: ../../certs/rootCA.crt
+  dhparam_pem:
+    file: ../../certs/dhparam.pem
+  client_key:
+    file: ../../certs/client.key
+  client_cert:
+    file: ../../certs/client.crt

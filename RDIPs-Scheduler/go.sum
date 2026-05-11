@@ -1,0 +1,17 @@
+github.com/evanw/esbuild v0.25.8 h1:nSMdIN7nu2UH6APeDSpaQnz90JOPJxcVZe9DfI0ezjc=
+github.com/evanw/esbuild v0.25.8/go.mod h1:D2vIQZqV/vIf/VRHtViaUtViZmG7o+kKmlBfVQuRi48=
+github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
+github.com/google/uuid v1.6.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
+github.com/nukilabs/unicodeid v0.1.0 h1:+CtAaV9CkgVA3Jy9V29yb57DPCLsnWUJrP9LxhkD89w=
+github.com/nukilabs/unicodeid v0.1.0/go.mod h1:3qxjfcmcgVYBg9dMRNSniAVfqxwOed7JU7P2rPkJrRg=
+github.com/rabbitmq/amqp091-go v1.10.0 h1:STpn5XsHlHGcecLmMFCtg7mqq0RnD+zFr4uzukfVhBw=
+github.com/rabbitmq/amqp091-go v1.10.0/go.mod h1:Hy4jKW5kQART1u+JkDTF9YYOQUHXqMuhrgxOEeS7G4o=
+github.com/t14raptor/go-fast v0.0.3 h1:V+C3wMO7Cf4UfsuEpJHS9sxEn5OgLlm5oFyxCJDb0Bw=
+github.com/t14raptor/go-fast v0.0.3/go.mod h1:IyzuItbJu1DY1z+xBRE9Bk/jCvaJEFG/yeSupi/2HDU=
+golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
+golang.org/x/sys v0.34.0 h1:H5Y5sJ2L2JRdyv7ROF1he/lPdvFsd0mJHFw2ThKHxLA=
+golang.org/x/sys v0.34.0/go.mod h1:BJP2sWEmIv4KK5OTEluFJCKSidICx8ciO85XgH3Ak8k=
+golang.org/x/tools v0.35.0 h1:mBffYraMEf7aa0sB+NuKnuCy8qI/9Bughn8dC2Gu5r0=
+golang.org/x/tools v0.35.0/go.mod h1:NKdj5HkL/73byiZSJjqJgKn3ep7KjFkBOkR/Hps3VPw=
+rogchap.com/v8go v0.9.0 h1:wYbUCO4h6fjTamziHrzyrPnpFNuzPpjZY+nfmZjNaew=
+rogchap.com/v8go v0.9.0/go.mod h1:MxgP3pL2MW4dpme/72QRs8sgNMmM0pRc8DPhcuLWPAs=

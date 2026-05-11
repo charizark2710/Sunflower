@@ -1,0 +1,6 @@
+saved_model/
+*.pyc
+dist/
+__pycache__/
+.vscode/
+*.csv

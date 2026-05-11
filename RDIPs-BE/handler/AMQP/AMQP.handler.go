@@ -1,4 +1,4 @@
-package AMQP_handler
+package AMQP
 
 import (
 	"RDIPs-BE/constant"
@@ -22,21 +22,23 @@ import (
 	"github.com/rabbitmq/amqp091-go"
 )
 
-var rabbitPool connection.Pool
-
 func InitializeAMQP() error {
-	amqpConn, err := commonModel.Dial(
-		os.Getenv("BROKER_PROTOCOL") + "://" +
-			os.Getenv("BROKER_USER") +
-			":" + os.Getenv("BROKER_PASSWORD") +
-			"@" + os.Getenv("BROKER_HOST") +
-			":" + os.Getenv("BROKER_PORT") + "/")
+	tlsConfig := handler.GetTlsConfig()
+	amqpConn, err := amqp091.DialTLS(
+		os.Getenv("BROKER_PROTOCOL")+"://"+
+			os.Getenv("BROKER_USER")+
+			":"+os.Getenv("BROKER_PASSWORD")+
+			"@"+os.Getenv("BROKER_HOST")+
+			":"+os.Getenv("BROKER_PORT")+"/",
+		tlsConfig,
+	)
+
 	if err != nil {
 		utils.Log(LogConstant.Error, err)
 		return err
 	}
 
-	notifyConnCloseCh := amqpConn.GetAMQPConn().NotifyClose(make(chan *amqp091.Error, 1))
+	notifyConnCloseCh := amqpConn.NotifyClose(make(chan *amqp091.Error, 1))
 
 	// Reconnect if connection is close
 	go func() {
@@ -63,7 +65,7 @@ func InitializeAMQP() error {
 	}
 
 	closeFn := func(conn interface{}) error {
-		ch, ok := conn.(commonModel.BaseAmqpChannel)
+		ch, ok := conn.(*amqp091.Channel)
 		if !ok {
 			return fmt.Errorf("%v", "wrong amqp connection format")
 		}
@@ -72,21 +74,27 @@ func InitializeAMQP() error {
 	}
 
 	pingFn := func(conn interface{}) error {
-		ch, ok := conn.(commonModel.BaseAmqpChannel)
+		ch, ok := conn.(*amqp091.Channel)
 		if !ok {
 			return errors.New("wrong connection")
 		}
-
+		err := InitAmqpQueue(ch)
+		if err != nil {
+			return err
+		}
 		chClose := ch.NotifyClose(make(chan *amqp091.Error, 1))
 		// Re-initialize channel if this one is closed due to some error
 		go func() {
 			closedErr := <-chClose
 			if closedErr != nil {
 				utils.Log(LogConstant.Error, closedErr)
-				if amqpConn.GetAMQPConn().IsClosed() {
+				if amqpConn.IsClosed() {
 					return
 				}
 				amqpCh, err := amqpConn.Channel()
+				if err == nil {
+					err = InitAmqpQueue(amqpCh)
+				}
 				// Open new channel if it get error
 				for err != nil {
 					utils.Log(LogConstant.Error, err)
@@ -114,7 +122,6 @@ func InitializeAMQP() error {
 		amqpConn.Close()
 	}
 
-	handler.SetRabbitPool(&rabbitPool)
 	utils.Log(LogConstant.Info, "Finish Connect Rabbitmq, err:", err)
 	return err
 }
@@ -173,7 +180,7 @@ func ReceiveService(deliveries <-chan amqp091.Delivery) {
 		resBody, err := getResBody(response)
 		if err == nil && resBody["needResponse"] == true {
 			// After delete, optimize response
-			if header["Correlation-Id"] != nil && len(header["Correlation-Id"]) != 0 {
+			if len(header["Correlation-Id"]) != 0 {
 				deliveryMode, ok := resBody["deliveryMode"].(uint8)
 				if !ok {
 					deliveryMode = amqp091.Transient

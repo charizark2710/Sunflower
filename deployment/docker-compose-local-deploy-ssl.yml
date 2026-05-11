@@ -1,0 +1,71 @@
+services:
+  api:
+    container_name: sunflower_api
+    env_file:
+      - .env
+    build:
+      context: ../RDIPs-BE
+      dockerfile: Dockerfile
+      target: production
+    image: charizark2710/sunflower-api
+    healthcheck:
+      test: curl -f localhost:${API_PORT}
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+    depends_on:
+      db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+    environment:
+      - CONSUMER_PRIORITY=10
+    ports:
+      - '8080:8080'
+    volumes:
+      - 'api:/srv/www/volume_sunflower'
+    secrets:
+      - source: rootCA_cert
+        target: /etc/certs/rootCA.crt
+        gid: '1000'
+        mode: 440
+    networks:
+      pi4:
+
+  ui:
+    container_name: sunflower_ui
+    env_file:
+      - .env
+    build:
+      context: ./RDIPs-FE
+      dockerfile: Dockerfile
+    # command: [ "serve", "-s", "build" ]
+    image: charizark2710/sunflower-ui
+    depends_on: [ api ]
+    ports:
+      - '3000:3000'
+    networks:
+      pi4:
+
+volumes:
+  api:
+
+networks:
+  pi4:
+    external: true
+
+secrets:
+  rootCA_key:
+    file: ../certs/rootCA.key
+  rootCA_cert:
+    file: ../certs/rootCA.crt
+  dhparam_pem:
+      file: ../certs/dhparam.pem
+  client_key:
+    file: ../certs/client.key
+  client_cert:
+    file: ../certs/client.crt

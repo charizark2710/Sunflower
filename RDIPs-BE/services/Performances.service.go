@@ -1,14 +1,12 @@
 package services
 
 import (
-	"RDIPs-BE/constant"
 	LogConstant "RDIPs-BE/constant/LogConst"
 	"RDIPs-BE/handler"
 	"RDIPs-BE/model"
 	commonModel "RDIPs-BE/model/common"
 	"RDIPs-BE/utils"
 	"encoding/json"
-	"fmt"
 	"strconv"
 	"time"
 
@@ -128,11 +126,11 @@ var PutPerformance = func(c *commonModel.ServiceContext) (commonModel.ResponseTe
 
 	performanceBody := model.Performance{}
 	if err := json.Unmarshal(c.Body, &performanceBody); err == nil {
-		if c.Header[constant.REQUEST_TYPE_HEADER] == nil &&
-			performanceBody.Payload != nil {
-			errMsg := "cannot update performance if request is not from mqtt"
-			return commonModel.ResponseTemplate{HttpCode: 400, Data: nil, Message: errMsg}, fmt.Errorf(errMsg)
-		}
+		// if c.Header[constant.REQUEST_TYPE_HEADER] == nil &&
+		// 	performanceBody.Payload != nil {
+		// 	errMsg := "cannot update performance if request is not from mqtt"
+		// 	return commonModel.ResponseTemplate{HttpCode: 400, Data: nil, Message: errMsg}, fmt.Errorf(errMsg)
+		// }
 		performanceBody.Id = rel.PerformanceID
 		performanceModel := model.SysPerformance{}
 		performanceModel.UpdatedAt = time.Now()

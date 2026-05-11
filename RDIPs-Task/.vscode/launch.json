@@ -1,0 +1,27 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch Package",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceRoot}",
+      "env": {
+        "BROKER_HOST": "localhost",
+        "BROKER_PORT": "5672",
+        "BROKER_USER": "admin",
+        "BROKER_PASSWORD": "admin",
+        "BROKER_PROTOCOL": "amqp"
+      },
+      "args": ["guess.sock"],
+      "console": "integratedTerminal",
+      "asRoot": true,
+    }
+  ],
+  "inputs": [],
+  
+}
