@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ .Title }}</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+</head>
+<body>
+  <main class="page">
+    <div class="dashboard">
+      <a class="back-link" href="/" aria-label="Back to device selector">
+        <span aria-hidden="true">&larr;</span>
+        Back
+      </a>
+
+      <header class="dashboard-header">
+        <h1>Device Dashboard</h1>
+        <p>Performance ID: {{ .ID }}</p>
+      </header>
+
+      <section id="chart-panel" hx-get="/partials/performance-chart/{{ .ID }}" hx-trigger="load">
+        <div class="chart-card loading-card">
+          <p class="muted">Loading chart data...</p>
+        </div>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,39 @@
+<div class="chart-card">
+  <div class="chart-header">
+    <div>
+      <h2>Electric Capacity</h2>
+      {{ if .LastSeen }}<p>Last record: {{ .LastSeen }}</p>{{ end }}
+    </div>
+    <button class="ghost-button" type="button" hx-get="/partials/performance-chart/{{ .ID }}" hx-target="#chart-panel">Refresh</button>
+  </div>
+
+  {{ if .HasData }}
+    <div class="chart-wrap" role="img" aria-label="Electric capacity line chart">
+      <svg viewBox="0 0 {{ .Width }} {{ .Height }}" preserveAspectRatio="none">
+        <rect x="0" y="0" width="{{ .Width }}" height="{{ .Height }}" fill="white"></rect>
+        {{ range .YLabels }}
+          <line x1="58" x2="918" y1="{{ .Y }}" y2="{{ .Y }}" class="grid-line"></line>
+          <text x="{{ .X }}" y="{{ .Y }}" class="axis-label" text-anchor="end">{{ .Text }}</text>
+        {{ end }}
+        {{ range .XLabels }}
+          <text x="{{ .X }}" y="{{ .Y }}" class="axis-label" text-anchor="middle">{{ .Text }}</text>
+        {{ end }}
+        <line x1="58" y1="24" x2="58" y2="344" class="axis-line"></line>
+        <line x1="58" y1="344" x2="918" y2="344" class="axis-line"></line>
+        {{ range .Series }}
+          <polyline points="{{ .Points }}" fill="none" stroke="{{ .Color }}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"></polyline>
+        {{ end }}
+      </svg>
+    </div>
+
+    <div class="legend">
+      {{ range .Series }}
+        <span><i style="background: {{ .Color }}"></i>{{ .Name }}</span>
+      {{ end }}
+    </div>
+  {{ else }}
+    <div class="empty-state">
+      <p>{{ .Message }}</p>
+    </div>
+  {{ end }}
+</div>

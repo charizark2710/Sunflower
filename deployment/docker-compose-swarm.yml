@@ -33,6 +33,26 @@ services:
     environment:
       - CONSUMER_PRIORITY=10
 
+  dashboard-gw:
+    container_name: sunflower_dashboard_gw
+    env_file:
+      - .env
+    build:
+      context: ../RDIPs-Gateway/rdips-dashboard
+      dockerfile: Dockerfile
+    image: charizark2710/sunflower-dashboard-gw
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        window: 120s
+    ports:
+      - '5000:3000'
+    networks:
+      pi4:
+        aliases:
+          - sunflower-rdips
+
 networks:
   pi4:
     external: true

@@ -1,0 +1,23 @@
+<section class="panel">
+  <h2>Select a device</h2>
+
+  {{ if .Error }}
+    <p class="error">Error: {{ .Error }}</p>
+  {{ end }}
+
+  <form class="selector-form" hx-post="/select-device" hx-target="#selector-panel" hx-disabled-elt="button, select">
+    <select name="device_id" aria-label="Device">
+      <option value="" disabled selected>
+        {{ if .Devices }}-- Choose a device --{{ else }}No devices available{{ end }}
+      </option>
+      {{ range .Devices }}
+        <option value="{{ .ID }}">{{ .Name }} ({{ .Region }}) - {{ .Status }}</option>
+      {{ end }}
+    </select>
+    <button type="submit" {{ if not .Devices }}disabled{{ end }}>Open dashboard</button>
+  </form>
+
+  {{ if .Devices }}
+    <p class="count">{{ len .Devices }} device{{ if ne (len .Devices) 1 }}s{{ end }} found.</p>
+  {{ end }}
+</section>

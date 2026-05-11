@@ -1,36 +1,37 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# RDIPs Dashboard
 
-## Getting Started
+Small Go + htmx gateway for browsing RDIPs devices and viewing electric capacity performance data.
 
-First, run the development server:
+## Run locally
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+go run .
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The server listens on `PORT` or `3000` by default.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Configuration
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Configuration is loaded with Viper from `.env`, then overridden by process environment variables.
 
-## Learn More
+- `API_BASE_URL`: upstream RDIPs API URL. Defaults to `http://sunflower_api:8080`.
+- `API_KEY`: upstream API key.
+- `PORT`: dashboard HTTP port. Defaults to `3000`.
+- `HTTP_TIMEOUT_SECONDS`: upstream HTTP timeout. Defaults to `20`.
 
-To learn more about Next.js, take a look at the following resources:
+## Structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `internal/controllers`: HTTP route handlers.
+- `internal/services`: upstream RDIPs API access.
+- `internal/models`: shared request, response, and view models.
+- `internal/views`: template rendering.
+- `internal/chart`: chart view-model construction.
+- `internal/scenario`: scenario payload generation.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Build
 
-## Deploy on Vercel
+```bash
+go build -o rdips-dashboard .
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Docker uses a multi-stage Go build and keeps the runtime image on Alpine, matching the RDIPs backend container style.

@@ -1,19 +1,23 @@
 #!/bin/bash
 set -euo pipefail
 
-# Usage: ./deploy-swarm.sh [dev|prod] [ip] [--skip-infra]
+# Usage: ./deploy-swarm.sh [dev|prod] [ip] [--skip-infra] [--skip-build]
 MODE="${1:-dev}"
 IP="${2:-127.0.0.1}"
 SKIP_INFRA=false
+SKIP_BUILD=false
 
-# Check for the skip flag in any position
+# Check for flags in any position
 for arg in "$@"; do
     if [ "$arg" == "--skip-infra" ]; then
         SKIP_INFRA=true
     fi
+    if [ "$arg" == "--skip-build" ]; then
+        SKIP_BUILD=true
+    fi
 done
 
-# 1. Handle Credentials (unchanged)
+# 1. Handle Credentials
 GenerateRandomPw () {
     if [ -f "./.env" ]; then
         echo "Found existing .env file. Skipping password generation to maintain DB compatibility."
@@ -24,9 +28,7 @@ GenerateRandomPw () {
     declare -a keys=("postgres" "broker" "keycloak" "mongo" "api")
 
     for key in "${keys[@]}"; do
-        # Generates a secure 24-character hex string
         local pw=$(openssl rand -hex 12)
-        # Correct way to export dynamic variable names
         export "${key}_pw"="$pw"
     done
 
@@ -53,11 +55,10 @@ if [ "$SKIP_INFRA" = true ]; then
 else
     echo "Deploying infrastructure..."
     bash ./infrastructure/build.sh "./infrastructure" "$MODE" "$IP"
-
     sleep 1m && echo "Deploying infrastructure Done"
 fi
 
-# Export existing env vars for envsubst
+# 3. Environment Preparation
 set -a
 [ -f "./.env" ] && . ./.env
 set +a
@@ -66,8 +67,12 @@ echo "Preparing swarm stack configuration..."
 envsubst < ./docker-compose-swarm.yml > ./deploy-docker-compose-swarm.yml
 
 # 4. Build and Deploy
-echo "Building application services..."
-docker-compose -f docker-compose-swarm.yml --env-file ./.env build
+if [ "$SKIP_BUILD" = true ]; then
+    echo "Skipping build step as requested. Using existing/pushed images."
+else
+    echo "Building application services..."
+    docker-compose -f docker-compose-swarm.yml --env-file ./.env build
+fi
 
 echo "Deploying stack: sunflower..."
 docker stack deploy --compose-file deploy-docker-compose-swarm.yml sunflower
@@ -75,12 +80,3 @@ docker stack deploy --compose-file deploy-docker-compose-swarm.yml sunflower
 # 5. Cleanup
 rm ./deploy-docker-compose-swarm.yml
 echo "Deployment of 'sunflower' complete."
-
-# Scale services
-# docker service scale sunflower_db=1
-# docker service scale sunflower_keycloak=1
-# docker service scale sunflower_rabbitmq=1
-# docker service scale sunflower_memcached=1
-# docker service scale sunflower_api=1
-# docker service scale sunflower_server=1
-# docker service scale sunflower_pgadmin4=1

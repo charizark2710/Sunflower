@@ -1,0 +1,283 @@
+:root {
+  color-scheme: light dark;
+  --bg: #f6f7f9;
+  --panel: #ffffff;
+  --text: #18181b;
+  --muted: #64748b;
+  --border: #d9dee7;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --disabled: #cbd5e1;
+  --error: #dc2626;
+  --shadow: 0 12px 35px rgb(15 23 42 / 8%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #09090b;
+    --panel: #18181b;
+    --text: #f4f4f5;
+    --muted: #a1a1aa;
+    --border: #2f3037;
+    --disabled: #3f3f46;
+    --shadow: 0 12px 35px rgb(0 0 0 / 35%);
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.page {
+  min-height: 100vh;
+  padding: 32px 16px;
+}
+
+.page-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.intro,
+.panel {
+  width: min(100%, 576px);
+}
+
+.intro {
+  margin-bottom: 32px;
+  text-align: left;
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-size: clamp(2rem, 5vw, 3rem);
+  line-height: 1.08;
+}
+
+.intro p,
+.dashboard-header p,
+.chart-header p,
+.muted,
+.count {
+  color: var(--muted);
+}
+
+.intro p,
+.dashboard-header p {
+  margin-top: 8px;
+}
+
+.panel,
+.chart-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+.panel {
+  padding: 24px;
+}
+
+.panel h2 {
+  margin-bottom: 16px;
+  font-size: 1.25rem;
+}
+
+.selector-form {
+  display: flex;
+  gap: 12px;
+}
+
+select,
+button,
+.back-link {
+  min-height: 44px;
+  border-radius: 8px;
+  font: inherit;
+}
+
+select {
+  flex: 1;
+  min-width: 0;
+  padding: 0 12px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+button {
+  border: 0;
+  padding: 0 20px;
+  background: var(--primary);
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+button:hover {
+  background: var(--primary-hover);
+}
+
+button:disabled,
+button[disabled],
+.htmx-request button,
+.htmx-request select {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+button:disabled {
+  background: var(--disabled);
+}
+
+.error {
+  margin-bottom: 12px;
+  color: var(--error);
+}
+
+.count {
+  margin-top: 16px;
+  font-size: 0.8rem;
+}
+
+.dashboard {
+  width: min(100%, 1152px);
+  margin: 0 auto;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+  padding: 0 16px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.back-link:hover {
+  background: color-mix(in srgb, var(--panel) 90%, var(--text));
+}
+
+.dashboard-header {
+  margin-bottom: 32px;
+}
+
+.chart-card {
+  padding: 24px;
+}
+
+.loading-card,
+.empty-state {
+  min-height: 384px;
+  display: grid;
+  place-items: center;
+}
+
+.chart-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.chart-header h2 {
+  font-size: 1.5rem;
+}
+
+.ghost-button {
+  min-height: 36px;
+  padding: 0 14px;
+  background: transparent;
+  color: var(--primary);
+  border: 1px solid var(--border);
+}
+
+.ghost-button:hover {
+  background: rgb(37 99 235 / 8%);
+}
+
+.chart-wrap {
+  width: 100%;
+  height: 430px;
+}
+
+.chart-wrap svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.grid-line {
+  stroke: #e2e8f0;
+  stroke-width: 1;
+}
+
+.axis-line {
+  stroke: #94a3b8;
+  stroke-width: 1.2;
+}
+
+.axis-label {
+  fill: #64748b;
+  font-size: 13px;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 20px;
+  margin-top: 16px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend i {
+  width: 22px;
+  height: 3px;
+  border-radius: 99px;
+}
+
+@media (max-width: 640px) {
+  .selector-form,
+  .chart-header {
+    flex-direction: column;
+  }
+
+  button,
+  select {
+    width: 100%;
+  }
+
+  .chart-card,
+  .panel {
+    padding: 18px;
+  }
+}

@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ .Title }}</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+</head>
+<body>
+  <main class="page page-center">
+    <section class="intro">
+      <h1>RDIPs Dashboard</h1>
+      <p>Choose a device below to open its dashboard.</p>
+    </section>
+
+    <div id="selector-panel" hx-get="/partials/device-selector" hx-trigger="load">
+      <div class="panel">
+        <p class="muted">Loading devices...</p>
+      </div>
+    </div>
+  </main>
+</body>
+</html>
