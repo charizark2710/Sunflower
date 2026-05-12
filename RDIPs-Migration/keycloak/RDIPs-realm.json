@@ -503,6 +503,27 @@
       ],
       "notBefore": 0,
       "groups": []
+    },
+    {
+      "username": "${KC_BOOTSTRAP_ADMIN_USERNAME}",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${KC_BOOTSTRAP_ADMIN_PASSWORD}",
+          "temporary": false
+        }
+      ],
+      "clientRoles": {
+        "realm-management": [
+          "realm-admin",
+          "manage-users",
+          "view-users",
+          "manage-clients",
+          "view-clients"
+        ]
+      }
     }
   ],
   "scopeMappings": [

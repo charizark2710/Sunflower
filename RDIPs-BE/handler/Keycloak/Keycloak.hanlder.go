@@ -50,41 +50,9 @@ func getClientData(client_name string) (*string, *string, error) {
 		adminPw,
 		ADMIN_KEYCLOAK_REALM_NAME)
 
-	// TODO: remove after update migration
 	if err != nil {
 		utils.Log(LogConstant.Warning, err, adminUserName, adminPw, ADMIN_KEYCLOAK_REALM_NAME)
-
-		if gocloak.ParseAPIErrType(err) != gocloak.APIErrTypeInvalidGrant {
-			utils.Log(LogConstant.Error, err, adminUserName, adminPw, ADMIN_KEYCLOAK_REALM_NAME)
-			return nil, nil, err
-		}
-
-		// GET jwt from admin master
-		jwt, err = gocloakClient.LoginAdmin(ctx, adminUserName,
-			adminPw,
-			ADMIN_KEYCLOAK_REALM_NAME)
-		if err != nil {
-			utils.Log(LogConstant.Error, err)
-			return nil, nil, err
-		}
-		claim, ok := handler.ClaimsToken(jwt.AccessToken)
-		if !ok {
-			return nil, nil, fmt.Errorf("something went wrong")
-		}
-		err = gocloakClient.SetPassword(ctx, jwt.AccessToken, claim["sub"].(string), ADMIN_KEYCLOAK_REALM_NAME, adminPw, false)
-
-		if err != nil {
-			utils.Log(LogConstant.Error, err)
-			return nil, nil, err
-		}
-
-		jwt, err = gocloakClient.LoginAdmin(ctx, adminUserName,
-			adminPw,
-			ADMIN_KEYCLOAK_REALM_NAME)
-		if err != nil {
-			utils.Log(LogConstant.Error, err, adminUserName, adminPw, ADMIN_KEYCLOAK_REALM_NAME)
-			return nil, nil, err
-		}
+		return nil, nil, err
 	}
 
 	client, err := gocloakClient.GetClientRepresentation(ctx, jwt.AccessToken, ADMIN_KEYCLOAK_REALM_NAME, client_name)
