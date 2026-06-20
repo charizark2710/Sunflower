@@ -8,7 +8,7 @@ RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -o rdips-dashboard .
 
-FROM alpine:3.22.4 AS production
+FROM alpine:3.24 AS production
 
 RUN addgroup -g 1000 rdips && \
     adduser -u 1000 -G rdips -D sunflower

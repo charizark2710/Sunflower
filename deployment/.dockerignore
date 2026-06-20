@@ -26,3 +26,5 @@ yarn-error.log*
 
 **/.erlang.cookie
 config/settings.json
+.vscode
+.clangd

@@ -1,0 +1,9 @@
+ngx_addon_name=ngx_hmac_db_module
+
+# If you need external libraries (like libpq for Postgres or libmemcached), 
+# you would link them here.
+CORE_INCS="$CORE_INCS"
+CORE_LIBS="$CORE_LIBS"
+
+HTTP_MODULES="$HTTP_MODULES ngx_hmac_db_module"
+NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/ngx_hmac_db_module.c"

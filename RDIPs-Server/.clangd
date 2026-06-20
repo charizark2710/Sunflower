@@ -1,0 +1,9 @@
+CompileFlags:
+  Add:
+    - -I/usr/src/nginx/src/core
+    - -I/usr/src/nginx/src/event
+    - -I/usr/src/nginx/src/event/modules
+    - -I/usr/src/nginx/src/os/unix
+    - -I/usr/src/nginx/src/http
+    - -I/usr/src/nginx/src/http/modules
+    - -I/usr/src/nginx/objs

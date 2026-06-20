@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/usr/src/nginx/src/core",
+                "/usr/src/nginx/src/event",
+                "/usr/src/nginx/src/event/modules",
+                "/usr/src/nginx/src/os/unix",
+                "/usr/src/nginx/src/http",
+                "/usr/src/nginx/src/http/modules",
+                "/usr/src/nginx/objs"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "gnu11",
+            "intelliSenseMode": "linux-gcc-x64"
+        }
+    ],
+    "version": 4
+}
