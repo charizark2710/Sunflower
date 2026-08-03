@@ -1,12 +1,13 @@
 package handler
 
 import (
-	commonModel "RDIPs-BE/model/common"
 	"context"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/mongo"
 	"gorm.io/gorm"
+
+	commonModel "RDIPs-BE/model/common"
 )
 
 type CommonHandler interface {
@@ -24,8 +25,15 @@ type commonHandler struct {
 	deviceBody interface{}
 }
 
-func newCommonHandler(c *gin.Context) CommonHandler {
-	return &commonHandler{db: GetDbFromContext(c), mongoDB: GetMongoDBFromContext(c), context: c}
+func newCommonHandler(c *gin.Context, dbType commonModel.DBType) CommonHandler {
+	switch dbType {
+	case commonModel.Postgres:
+		return &commonHandler{db: GetDbFromContext[*gorm.DB](c, dbType), context: c}
+	case commonModel.MongoDB:
+		return &commonHandler{mongoDB: GetDbFromContext[*mongo.Database](c, dbType), context: c}
+	default:
+		return &commonHandler{db: GetDbFromContext[*gorm.DB](c, dbType), mongoDB: GetDbFromContext[*mongo.Database](c, dbType), context: c}
+	}
 }
 
 func (*commonHandler) Read(interface{}, ...map[string]interface{}) error {
@@ -50,28 +58,24 @@ func (*commonHandler) Update() error {
 	return nil
 }
 
-func GetDbFromContext(c *gin.Context) *gorm.DB {
+func GetDbFromContext[T any](c *gin.Context, dbType commonModel.DBType) T {
 	if c != nil {
-		val, _ := c.Get("DB")
-		if val != nil {
-			res, ok := val.(*gorm.DB)
-			if ok {
-				return res
+		if val, exists := c.Get(string(dbType)); exists {
+			if typedDB, ok := val.(T); ok {
+				return typedDB
 			}
 		}
 	}
-	return commonModel.Helper.GetDb()
-}
 
-func GetMongoDBFromContext(c *gin.Context) *mongo.Database {
-	if c != nil {
-		val, _ := c.Get("MongoDB")
-		if val != nil {
-			res, ok := val.(*mongo.Database)
-			if ok {
-				return res
-			}
-		}
+	rawDB, err := commonModel.Factory.GetDB(dbType)
+	if err != nil {
+		panic("Failed to get database from factory: " + err.Error())
 	}
-	return commonModel.Helper.GetMongoDB()
+
+	typedDB, ok := rawDB.(T)
+	if !ok {
+		panic("Failed to assert database type from factory")
+	}
+
+	return typedDB
 }

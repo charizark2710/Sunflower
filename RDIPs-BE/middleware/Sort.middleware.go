@@ -23,9 +23,9 @@ const (
 func SetSort() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if c.Request.Method == "GET" {
-			db, exist := c.Get("DB")
+			db, exist := c.Get(string(model.Postgres))
 			if !exist {
-				db = model.Helper.GetDb()
+				db, _ = model.Factory.GetGormDB()
 			}
 			sortByValue := c.Query("sortBy")
 			if sortByValue != "" {
@@ -43,7 +43,7 @@ func SetSort() gin.HandlerFunc {
 				}
 				db = db.(*gorm.DB).Order(fieldName + " " + direction)
 			}
-			c.Set("DB", db)
+			c.Set(string(model.Postgres), db)
 		}
 		c.Next()
 	}

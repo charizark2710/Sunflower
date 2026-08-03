@@ -2,6 +2,7 @@ package handler
 
 import (
 	"RDIPs-BE/model"
+	commonModel "RDIPs-BE/model/common"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -17,7 +18,7 @@ type deviceRelHandler struct {
 }
 
 func NewDeviceRelHandler(c *gin.Context, deviceRelModel *model.SysDeviceRel) DeviceRelHandler {
-	commonHanlerInstance := newCommonHandler(c)
+	commonHanlerInstance := newCommonHandler(c, commonModel.Postgres)
 	commonStruct := commonHanlerInstance.(*commonHandler)
 	return &deviceRelHandler{commonHandler: commonStruct, deviceRelBody: deviceRelModel}
 }

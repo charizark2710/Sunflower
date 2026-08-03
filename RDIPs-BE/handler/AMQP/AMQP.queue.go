@@ -74,7 +74,7 @@ func InitAmqpQueue(channel *amqp091.Channel) error {
 
 	priority, err := strconv.Atoi(os.Getenv("CONSUMER_PRIORITY"))
 	if err != nil {
-		utils.Log(LogConstant.Error, err)
+		utils.Log(LogConstant.Warning, err)
 		priority = 0 // default priority
 	}
 

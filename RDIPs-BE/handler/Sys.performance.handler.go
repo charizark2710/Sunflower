@@ -25,7 +25,7 @@ type performanceHandler struct {
 }
 
 func NewPerformanceHandler(c *gin.Context, performanceModel *model.SysPerformance) PerformanceHandler {
-	commonHanlerInstance := newCommonHandler(c)
+	commonHanlerInstance := newCommonHandler(c, "")
 	commonStruct := commonHanlerInstance.(*commonHandler)
 	return &performanceHandler{
 		commonHandler:   commonStruct,

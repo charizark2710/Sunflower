@@ -28,7 +28,7 @@ var logicOperator = map[string]string{AndOp: "&&", OrOp: "||"}
 func SetFilter() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if c.Request.Method == "GET" {
-			db := model.Helper.GetDb()
+			db, _ := model.Factory.GetGormDB()
 			filterValue := c.Query("filterBy")
 			if filterValue != "" {
 				if strings.Contains(filterValue, logicOperator[OrOp]) {
@@ -37,7 +37,7 @@ func SetFilter() gin.HandlerFunc {
 					db = db.Where(handleAndLogic(filterValue))
 				}
 			}
-			c.Set("DB", db)
+			c.Set(string(model.Postgres), db)
 		}
 		c.Next()
 	}

@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/bradfitz/gomemcache/memcache"
@@ -10,25 +11,49 @@ import (
 
 var CacheSrv = memcache.New(os.Getenv("CACHE_SERVER"))
 
-type helper struct {
-	db             *gorm.DB
-	defaultMongoDB *mongo.Database
+type DBType string
+
+const (
+	Postgres DBType = "postgres"
+	MongoDB  DBType = "mongodb"
+)
+
+type DBFactory struct {
+	databases map[DBType]any
 }
 
-var Helper *helper = &helper{}
+var Factory = NewDBFactory()
 
-func (h *helper) GetDb() *gorm.DB {
-	return h.db
+func NewDBFactory() *DBFactory {
+	return &DBFactory{
+		databases: make(map[DBType]any),
+	}
 }
 
-func (h *helper) SetDb(db *gorm.DB) {
-	h.db = db
+func (f *DBFactory) SetDB(dbType DBType, db any) {
+	f.databases[dbType] = db
 }
 
-func (h *helper) GetMongoDB() *mongo.Database {
-	return h.defaultMongoDB
+func (f *DBFactory) GetDB(dbType DBType) (any, error) {
+	db, exists := f.databases[dbType]
+	if !exists {
+		return nil, fmt.Errorf("database driver %s not initialized", dbType)
+	}
+	return db, nil
 }
 
-func (h *helper) SetMongoDB(mongoDB *mongo.Database) {
-	h.defaultMongoDB = mongoDB
+func (f *DBFactory) GetGormDB() (*gorm.DB, error) {
+	db, err := f.GetDB(Postgres)
+	if err != nil {
+		return nil, err
+	}
+	return db.(*gorm.DB), nil
+}
+
+func (f *DBFactory) GetMongoDB() (*mongo.Database, error) {
+	db, err := f.GetDB(MongoDB)
+	if err != nil {
+		return nil, err
+	}
+	return db.(*mongo.Database), nil
 }

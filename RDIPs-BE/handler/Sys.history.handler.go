@@ -3,6 +3,7 @@ package handler
 import (
 	LogConstant "RDIPs-BE/constant/LogConst"
 	"RDIPs-BE/model"
+	commonModel "RDIPs-BE/model/common"
 	"RDIPs-BE/utils"
 
 	"github.com/gin-gonic/gin"
@@ -18,7 +19,7 @@ type historyHandler struct {
 }
 
 func NewHistoryHandler(c *gin.Context, historyModel *model.SysHistory) HistoryHandler {
-	commonHanlerInstance := newCommonHandler(c)
+	commonHanlerInstance := newCommonHandler(c, commonModel.Postgres)
 	commonStruct := commonHanlerInstance.(*commonHandler)
 	return &historyHandler{commonHandler: commonStruct, historyBody: historyModel}
 }

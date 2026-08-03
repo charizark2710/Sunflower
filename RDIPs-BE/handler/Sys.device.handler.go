@@ -22,7 +22,7 @@ type deviceHandler struct {
 }
 
 func NewDeviceHandler(c *gin.Context, deviceModel *model.SysDevices) DeviceHandler {
-	commonHanlerInstance := newCommonHandler(c)
+	commonHanlerInstance := newCommonHandler(c, "")
 	commonStruct := commonHanlerInstance.(*commonHandler)
 	return &deviceHandler{
 		commonHandler: commonStruct,
